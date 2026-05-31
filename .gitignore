@@ -1,0 +1,103 @@
+# OS / Editor
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.swp
+*.swo
+
+.vscode/
+.idea/
+
+# ==========================================
+# Environment variables
+# ==========================================
+.env
+.env.*
+!.env.example
+
+# ==========================================
+# Frontend (Next.js)
+# ==========================================
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/.turbo/
+frontend/.vercel/
+frontend/coverage/
+
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+
+# ==========================================
+# Backend (NestJS)
+# ==========================================
+backend/node_modules/
+backend/dist/
+backend/build/
+backend/coverage/
+
+backend/npm-debug.log*
+backend/yarn-debug.log*
+backend/yarn-error.log*
+backend/pnpm-debug.log*
+
+# ==========================================
+# Python / ML Model
+# ==========================================
+
+# Virtual environments (IMPORTANT: include all common layouts)
+ml-model/.venv/
+ml-model/venv/
+ml-model/env/
+ml-model/bin/
+ml-model/lib/
+ml-model/lib64/
+ml-model/include/
+ml-model/pyvenv.cfg/
+
+# Python cache
+ml-model/__pycache__/
+ml-model/**/*.pyc
+ml-model/**/*.pyo
+ml-model/**/*.pyd
+
+# Tooling caches
+ml-model/.pytest_cache/
+ml-model/.mypy_cache/
+ml-model/.ruff_cache/
+
+# Coverage reports
+ml-model/.coverage
+ml-model/htmlcov/
+
+# Jupyter
+ml-model/.ipynb_checkpoints/
+
+# Build artifacts
+ml-model/build/
+ml-model/dist/
+ml-model/*.egg-info/
+ml-model/.eggs/
+
+# Optional ML artifacts (uncomment if needed)
+# ml-model/models/
+# ml-model/checkpoints/
+# ml-model/*.pt
+# ml-model/*.pth
+# ml-model/*.onnx
+# ml-model/*.pkl
+
+# ==========================================
+# Package managers (global)
+# ==========================================
+.pnpm-store/
+.npm/
+.yarn/
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state.yml
+.yarn/install-state.gz
