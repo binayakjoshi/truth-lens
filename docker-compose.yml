@@ -33,13 +33,11 @@ services:
 
   db:
     image: postgres:15-alpine
-    container_name: postgres
-    environment:
-      POSTGRES_DB: ${POSTGRES_DATABASE:-appdb}
-      POSTGRES_USER: ${POSTGRES_USERNAME:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secret}
+    container_name: db
+    env_file:
+      - ./backend/.env
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "${DB_PORT:-5432}:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
     healthcheck:
