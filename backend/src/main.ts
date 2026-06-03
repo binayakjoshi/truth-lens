@@ -5,6 +5,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import cookieParser from 'cookie-parser';
 import { dataSource } from 'config/db.config';
+import { AllExceptionsFilter } from './filters/exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -23,7 +24,7 @@ async function bootstrap() {
       transform: true,
     }),
   );
-
+  app.useGlobalFilters(new AllExceptionsFilter());
   app.use(cookieParser());
   app.useStaticAssets(join(process.cwd(), 'uploads'), {
     prefix: '/uploads/',
