@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AppService } from './app.service';
 
 import { JwtModule } from '@nestjs/jwt';
 import { UsersModule } from './users/users.module';
@@ -20,6 +19,5 @@ import { PostgresConnectionCredentialsOptions } from 'typeorm/driver/postgres/Po
     }),
     UsersModule,
   ],
-  providers: [AppService],
 })
 export class AppModule {}

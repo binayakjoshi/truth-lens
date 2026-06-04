@@ -2,6 +2,7 @@ import { config } from 'dotenv';
 
 import { DataSource, LoggerOptions } from 'typeorm';
 import { CustomNamingStrategy } from './strategy';
+import { User } from 'src/users/entities/user.entity';
 config();
 
 const isDev = process.env.ENVIRONMENT === 'development';
@@ -23,5 +24,5 @@ export const dataSource = new DataSource({
   migrations: ['dist/src/database/migrations/**/*.js'],
   migrationsRun: false,
   namingStrategy: new CustomNamingStrategy(),
-  entities: [],
+  entities: [User],
 });
