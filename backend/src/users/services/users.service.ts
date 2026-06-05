@@ -3,6 +3,7 @@ import {
   HttpStatus,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { CreateUserDto } from '../dtos/create-user.dto';
 import { UpdateUserDto } from '../dtos/update-user.dto';
@@ -114,6 +115,25 @@ export class UsersService {
       refreshToken,
       user: userData,
     });
+  }
+
+  async tokenVerification(accessToken: string) {
+    if (!process.env.JWT_SECRET) {
+      throw new NotFoundException('JWT secret is not provided');
+    }
+
+    const decodedUserData = this.jwtService.verify(accessToken, {
+      secret: process.env.JWT_SECRET,
+    });
+
+    if (!decodedUserData)
+      throw new UnauthorizedException('token validation failed.');
+    const user = await this.userRepo.findOne({
+      where: { id: decodedUserData.id, isDeleted: false },
+    });
+    if (!user) throw new NotFoundException('Active user not found.');
+
+    return createResponse(HttpStatus.OK, 'token validated successfully.', user);
   }
   findOne(id: number) {
     return `This action returns a #${id} user`;

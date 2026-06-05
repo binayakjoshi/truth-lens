@@ -17,7 +17,7 @@ export const dataSource = new DataSource({
   port: parseInt(process.env.DB_PORT || '5432'),
   username: process.env.POSTGRES_USERNAME,
   password: process.env.POSTGRES_PASSWORD,
-  database: process.env.DB_NAME,
+  database: process.env.POSTGRES_DB,
   synchronize: false,
   logging: loggingOptions,
   logger: 'advanced-console',
