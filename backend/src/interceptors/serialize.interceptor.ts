@@ -4,8 +4,8 @@ import {
   Injectable,
   NestInterceptor,
 } from '@nestjs/common';
-import { map } from 'rxjs/operators';
 import { plainToInstance, type ClassConstructor } from 'class-transformer';
+import { map } from 'rxjs/operators';
 
 @Injectable()
 export class SerializeInterceptor<T> implements NestInterceptor {

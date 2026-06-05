@@ -10,7 +10,7 @@ import { User } from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
 
 @Injectable()
-export class AuthGuard implements CanActivate {
+export class RefreshTokenGuard implements CanActivate {
   constructor(
     private readonly jwtService: JwtService,
 
@@ -22,26 +22,33 @@ export class AuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const response = context.switchToHttp().getResponse();
 
-    const accessToken = request.cookies['truth-access-token'];
+    const refreshToken = request.cookies?.['truth-refresh-token'];
 
-    if (!accessToken) {
-      throw new UnauthorizedException('Access token not found.');
+    if (!refreshToken) {
+      throw new UnauthorizedException('Refresh token not found.');
     }
 
     try {
-      const decodedData = this.jwtService.verify(accessToken, {
-        secret: process.env.JWT_SECRET,
+      const decodedData = this.jwtService.verify(refreshToken, {
+        secret: process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET,
       });
 
       const user = await this.userRepo.findOne({
-        where: { id: decodedData.id },
+        where: {
+          id: decodedData.id,
+          isDeleted: false,
+        },
       });
 
-      if (!user || user.isDeleted) {
+      if (!user) {
         const cookieOptions = {
           httpOnly: true,
-          secure: true,
-          sameSite: 'lax' as const,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite:
+            process.env.NODE_ENV === 'production'
+              ? ('none' as const)
+              : ('lax' as const),
+          path: '/',
         };
 
         response.clearCookie('truth-access-token', cookieOptions);
@@ -51,18 +58,20 @@ export class AuthGuard implements CanActivate {
       }
 
       request.user = {
-        id: decodedData.id,
-        email: decodedData.email,
-        username: decodedData.username,
+        id: user.id,
+        email: user.email,
+        username: user.username,
       };
+
+      request.refreshToken = refreshToken;
 
       return true;
     } catch (err) {
       if (err?.name === 'TokenExpiredError') {
-        throw new UnauthorizedException('Expired access token.');
+        throw new UnauthorizedException('Refresh token expired.');
       }
 
-      throw new UnauthorizedException('Invalid access token.');
+      throw new UnauthorizedException('Invalid refresh token.');
     }
   }
 }

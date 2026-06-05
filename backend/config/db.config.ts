@@ -1,8 +1,9 @@
 import { config } from 'dotenv';
-
-import { DataSource, LoggerOptions } from 'typeorm';
-import { CustomNamingStrategy } from './strategy';
 import { User } from 'src/users/entities/user.entity';
+import { DataSource, LoggerOptions } from 'typeorm';
+
+import { CustomNamingStrategy } from './strategy';
+
 config();
 
 const isDev = process.env.ENVIRONMENT === 'development';

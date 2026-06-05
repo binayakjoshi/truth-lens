@@ -22,7 +22,7 @@ export class IsUsernameOrEmailConstraint implements ValidatorConstraintInterface
 }
 
 export function IsUsernameOrEmail(validationOptions?: ValidationOptions) {
-  return function (object: Object, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       target: object.constructor,
       propertyName,

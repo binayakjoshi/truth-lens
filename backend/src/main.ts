@@ -1,10 +1,12 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
-import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
-import cookieParser from 'cookie-parser';
+
+import { ValidationPipe } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { dataSource } from 'config/db.config';
+import cookieParser from 'cookie-parser';
+
+import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './filters/exception.filter';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
 
