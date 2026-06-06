@@ -101,3 +101,8 @@ ml-model/.eggs/
 .yarn/unplugged/
 .yarn/build-state.yml
 .yarn/install-state.gz
+
+#others
+.venv/
+venv/
+env/
