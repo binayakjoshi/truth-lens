@@ -1,17 +1,59 @@
+import { User } from "@/context/user-context";
+import HomeIcon from "@mui/icons-material/Home";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+import Link from "next/link";
+import { cookies } from "next/headers";
+import LogoutModal from "@/components/users/logout-modal";
+export default async function Home() {
+  let user: User | null = null;
 
-import HomeIcon from "@mui/icons-material/Home";
+  const cookieStore = await cookies();
 
-export default function Home() {
+  try {
+    const res = await fetch("http://localhost:3000/api/auth/me", {
+      headers: {
+        Cookie: cookieStore.toString(),
+      },
+      cache: "no-store",
+    });
+
+    if (res.ok) {
+      const resData = await res.json();
+      user = resData.data;
+    }
+  } catch {
+    user = null;
+  }
+
   return (
     <Stack spacing={2} sx={{ p: 4 }}>
-      <Typography variant="h4">MUI + Next.js + Tailwind</Typography>
+      <Typography variant="h4">
+        Welcome back : {user ? user.username : "Guest User"}
+      </Typography>
 
-      <Button variant="contained" color="inherit" startIcon={<HomeIcon />}>
-        Home
-      </Button>
+      {user ? (
+        <LogoutModal />
+      ) : (
+        <>
+          <Link href="/login">
+            <Button
+              variant="contained"
+              color="success"
+              startIcon={<HomeIcon />}
+            >
+              Login
+            </Button>
+          </Link>
+
+          <Link href="/signup">
+            <Button variant="outlined" color="success" startIcon={<HomeIcon />}>
+              Signup
+            </Button>
+          </Link>
+        </>
+      )}
     </Stack>
   );
 }

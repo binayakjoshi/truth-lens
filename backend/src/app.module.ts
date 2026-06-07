@@ -1,11 +1,10 @@
 import { Module } from '@nestjs/common';
-import { AppService } from './app.service';
-
 import { JwtModule } from '@nestjs/jwt';
-import { UsersModule } from './users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { dataSource } from 'config/db.config';
 import { PostgresConnectionCredentialsOptions } from 'typeorm/driver/postgres/PostgresConnectionCredentialsOptions.js';
+
+import { UsersModule } from './users/users.module';
 @Module({
   imports: [
     TypeOrmModule.forRoot({
@@ -20,6 +19,5 @@ import { PostgresConnectionCredentialsOptions } from 'typeorm/driver/postgres/Po
     }),
     UsersModule,
   ],
-  providers: [AppService],
 })
 export class AppModule {}
