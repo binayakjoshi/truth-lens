@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 
 import NextLink from "next/link";
+import { useRouter } from "next/navigation";
 
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import {
@@ -15,6 +16,7 @@ import {
   Link,
   Typography,
 } from "@mui/material";
+import toast from "react-hot-toast";
 
 import Input from "@/components/custom-elements/input";
 import { useForm } from "@/hooks/use-form";
@@ -25,8 +27,6 @@ import {
   VALIDATOR_USERNAME,
   VALIDATOR_PASSWORD,
 } from "@/lib/validators";
-import toast from "react-hot-toast";
-import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -93,7 +93,9 @@ export default function RegisterPage() {
 
       <Box
         component="form"
-        onSubmit={submitHandler}
+        onSubmit={(e) => {
+          void submitHandler(e);
+        }}
         sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}
       >
         {/* First name + Last name side by side */}

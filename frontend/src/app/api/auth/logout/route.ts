@@ -1,13 +1,14 @@
+import { type NextRequest, NextResponse } from "next/server";
+
 import { createResponse } from "@/lib/create-response";
 import { fetchAndRefresh } from "@/lib/custom-fetch";
-import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
   try {
     const cookieHeader = request.headers.get("cookie") ?? "";
 
     const { res, newCookie } = await fetchAndRefresh(
-      `${process.env.BACKEND_URL}/users/logout`,
+      `${process.env.BACKEND_API_URL}/users/logout`,
       {},
       cookieHeader,
     );

@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 
 import NextLink from "next/link";
+import { useRouter } from "next/navigation";
 
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import {
@@ -15,13 +16,12 @@ import {
   Link,
   Typography,
 } from "@mui/material";
+import toast from "react-hot-toast";
 
 import Input from "@/components/custom-elements/input";
+import { useUser } from "@/context/user-context";
 import { useForm } from "@/hooks/use-form";
 import { VALIDATOR_EMAIL, VALIDATOR_PASSWORD } from "@/lib/validators";
-import toast from "react-hot-toast";
-import { useRouter } from "next/navigation";
-import { useUser } from "@/context/user-context";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -39,7 +39,6 @@ export default function LoginPage() {
   const submitHandler = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formState.isValid) return;
-    setIsLoading(true);
     const payload = {
       email: formState.inputs.email.value as string,
       password: formState.inputs.password.value as string,
@@ -63,7 +62,7 @@ export default function LoginPage() {
         }
       }
       if (res.ok) {
-        await fetchUser();
+        fetchUser();
         toast.success("Login successful. Redirecting ....");
         router.push("/");
       }
@@ -85,7 +84,9 @@ export default function LoginPage() {
 
       <Box
         component="form"
-        onSubmit={submitHandler}
+        onSubmit={(e) => {
+          void submitHandler(e);
+        }}
         sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}
       >
         <Input

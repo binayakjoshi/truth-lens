@@ -1,18 +1,20 @@
-import { User } from "@/context/user-context";
+import { cookies } from "next/headers";
+import Link from "next/link";
+
 import HomeIcon from "@mui/icons-material/Home";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import Link from "next/link";
-import { cookies } from "next/headers";
+
 import LogoutModal from "@/components/users/logout-modal";
+import { type User } from "@/context/user-context";
 export default async function Home() {
   let user: User | null = null;
 
   const cookieStore = await cookies();
 
   try {
-    const res = await fetch("http://localhost:3000/api/auth/me", {
+    const res = await fetch(`${process.env.PROXY_API_URL}/api/auth/me`, {
       headers: {
         Cookie: cookieStore.toString(),
       },

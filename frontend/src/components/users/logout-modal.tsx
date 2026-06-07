@@ -1,16 +1,19 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
+
 import { Button, Typography, Box } from "@mui/material";
-import AppModal from "../custom-elements/modal";
-import { useUser } from "@/context/user-context";
 import toast from "react-hot-toast";
+
+import { useUser } from "@/context/user-context";
+
+import AppModal from "../custom-elements/modal";
 
 const LogoutModal = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { logout } = useUser();
-  const handleLogout = async () => {
+  const handleLogout = () => {
     try {
       setIsLoading(true);
       logout();
@@ -48,7 +51,9 @@ const LogoutModal = () => {
             disabled={isLoading}
             variant="contained"
             color="error"
-            onClick={handleLogout}
+            onClick={() => {
+              void handleLogout();
+            }}
           >
             Logout
           </Button>

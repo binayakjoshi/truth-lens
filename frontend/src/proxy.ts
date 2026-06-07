@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 export function proxy(req: NextRequest) {
   const refreshToken = req.cookies.get("truth-refresh-token")?.value;

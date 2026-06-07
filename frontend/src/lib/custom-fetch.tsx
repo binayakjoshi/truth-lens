@@ -20,14 +20,13 @@ export const fetchAndRefresh = async (
     return fetch(input, { ...mergedInit, headers });
   };
 
-  let res = await doFetch(cookieHeader);
+  const res = await doFetch(cookieHeader);
 
   if (res.status === 401) {
     try {
       const refreshRes = await fetch(
-        `${process.env.BACKEND_URL}/users/refresh`,
+        `${process.env.BACKEND_API_URL}/users/refresh`,
         {
-          method: "POST",
           credentials: "include",
           headers: {
             ...(cookieHeader ? { cookie: cookieHeader } : {}),

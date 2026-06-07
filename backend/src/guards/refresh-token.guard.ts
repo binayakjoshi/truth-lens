@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
+import { COOKIE_NAMES, COOKIE_OPTIONS } from 'src/common/cookie';
 import { User } from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
 
@@ -41,18 +42,11 @@ export class RefreshTokenGuard implements CanActivate {
       });
 
       if (!user) {
-        const cookieOptions = {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite:
-            process.env.NODE_ENV === 'production'
-              ? ('none' as const)
-              : ('lax' as const),
-          path: '/',
-        };
-
-        response.clearCookie('truth-access-token', cookieOptions);
-        response.clearCookie('truth-refresh-token', cookieOptions);
+        response.clearCookie(COOKIE_NAMES.ACCESS_TOKEN, COOKIE_OPTIONS.ACCESS);
+        response.clearCookie(
+          COOKIE_NAMES.REFRESH_TOKEN,
+          COOKIE_OPTIONS.REFRESH,
+        );
 
         throw new UnauthorizedException('User account no longer exists.');
       }
@@ -67,6 +61,9 @@ export class RefreshTokenGuard implements CanActivate {
 
       return true;
     } catch (err) {
+      response.clearCookie(COOKIE_NAMES.ACCESS_TOKEN, COOKIE_OPTIONS.ACCESS);
+      response.clearCookie(COOKIE_NAMES.REFRESH_TOKEN, COOKIE_OPTIONS.REFRESH);
+
       if (err?.name === 'TokenExpiredError') {
         throw new UnauthorizedException('Refresh token expired.');
       }
