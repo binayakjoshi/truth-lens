@@ -1,17 +1,18 @@
 "use client";
 
 import React from "react";
+
+import CloseIcon from "@mui/icons-material/Close";
 import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogProps,
+  type DialogProps,
   IconButton,
   Typography,
-  SxProps,
-  Theme,
+  type SxProps,
+  type Theme,
 } from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
 
 type ModalSize = "sm" | "md" | "lg" | "xl";
 

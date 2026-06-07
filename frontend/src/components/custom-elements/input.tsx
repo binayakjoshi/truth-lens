@@ -98,7 +98,7 @@ const Input: React.FC<CustomInputProps> = (props) => {
 
   useEffect(() => {
     onInput(id, value, isValid);
-  }, [id, value, isValid]);
+  }, [id, value, isValid, onInput]);
 
   useEffect(() => {
     if (
@@ -111,7 +111,7 @@ const Input: React.FC<CustomInputProps> = (props) => {
         validators: props.validators,
       });
     }
-  }, [props.initialValue]);
+  }, [props.initialValue, inputState.value, props.validators]);
 
   const changeHandler = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,

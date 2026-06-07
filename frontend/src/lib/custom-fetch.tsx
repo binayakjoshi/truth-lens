@@ -20,7 +20,7 @@ export const fetchAndRefresh = async (
     return fetch(input, { ...mergedInit, headers });
   };
 
-  let res = await doFetch(cookieHeader);
+  const res = await doFetch(cookieHeader);
 
   if (res.status === 401) {
     try {
