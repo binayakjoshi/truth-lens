@@ -11,7 +11,8 @@ const VALIDATOR_TYPE_MAX = "MAX";
 const VALIDATOR_TYPE_EMAIL = "EMAIL";
 const VALIDATOR_TYPE_FILE = "FILE";
 const VALIDATOR_TYPE_NUMBER = "NUMBER";
-
+const VALIDATOR_TYPE_USERNAME = "USERNAME";
+const VALIDATOR_TYPE_PASSWORD = "PASSWORD";
 export const VALIDATOR_NO_SPACES = () => ({
   type: "NO_SPACES",
   validate: (value: string) => !/\s/.test(value),
@@ -56,7 +57,13 @@ export const VALIDATOR_NUMBER = (): Validator => ({
 export const VALIDATOR_BOOLEAN = () => ({
   type: "BOOLEAN",
 });
+export const VALIDATOR_USERNAME = (): Validator => ({
+  type: VALIDATOR_TYPE_USERNAME,
+});
 
+export const VALIDATOR_PASSWORD = (): Validator => ({
+  type: VALIDATOR_TYPE_PASSWORD,
+});
 export const validate = (value: any, validators: Validator[]): boolean => {
   if (value === null || value === undefined) return false;
 
@@ -96,6 +103,13 @@ export const validate = (value: any, validators: Validator[]): boolean => {
     if (validator.type === VALIDATOR_TYPE_NUMBER) {
       const num = Number(value);
       isValid = isValid && value.toString().trim() !== "" && !isNaN(num);
+    }
+    if (validator.type === VALIDATOR_TYPE_USERNAME) {
+      isValid = isValid && /^[a-z][a-z0-9_]*$/.test(value.trim().toLowerCase());
+    }
+
+    if (validator.type === VALIDATOR_TYPE_PASSWORD) {
+      isValid = isValid && /^(?=.*[0-9])(?=.*[!@#$%^&*])/.test(value.trim());
     }
   }
 

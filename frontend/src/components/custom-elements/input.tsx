@@ -1,8 +1,8 @@
 "use client";
 
 import type React from "react";
-import { useReducer, useEffect, ReactNode } from "react";
-import { validate, type Validator } from "@/lib/validators";
+import { useReducer, useEffect, type ReactNode } from "react";
+
 import {
   TextField,
   Radio,
@@ -12,6 +12,8 @@ import {
   FormLabel,
   FormHelperText,
 } from "@mui/material";
+
+import { validate, type Validator } from "@/lib/validators";
 
 interface InputState {
   value: string | boolean;
@@ -136,7 +138,7 @@ const Input: React.FC<CustomInputProps> = (props) => {
         multiline={props.element === "textarea"}
         rows={props.element === "textarea" ? props.rows || 3 : undefined}
         placeholder={props.placeholder}
-        value={inputState.value as string}
+        value={inputState.value}
         onChange={changeHandler}
         onBlur={touchHandler}
         error={isError}
@@ -179,7 +181,7 @@ const Input: React.FC<CustomInputProps> = (props) => {
         {props.label && <FormLabel>{props.label}</FormLabel>}
         <RadioGroup
           name={props.name}
-          value={inputState.value as string}
+          value={inputState.value}
           onChange={changeHandler}
           onBlur={touchHandler}
           row

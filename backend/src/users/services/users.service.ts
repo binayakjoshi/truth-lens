@@ -92,7 +92,7 @@ export class UsersService {
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-      throw new ConflictException('Invalid credentials. Please try again.');
+      throw new UnauthorizedException('Invalid credentials. Please try again.');
     }
 
     if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET is not defined');
