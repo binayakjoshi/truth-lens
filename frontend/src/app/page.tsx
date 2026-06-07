@@ -14,7 +14,7 @@ export default async function Home() {
   const cookieStore = await cookies();
 
   try {
-    const res = await fetch("http://localhost:3000/api/auth/me", {
+    const res = await fetch(`${process.env.PROXY_API_URL}/api/auth/me`, {
       headers: {
         Cookie: cookieStore.toString(),
       },

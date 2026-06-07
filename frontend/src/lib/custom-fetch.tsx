@@ -25,9 +25,8 @@ export const fetchAndRefresh = async (
   if (res.status === 401) {
     try {
       const refreshRes = await fetch(
-        `${process.env.BACKEND_URL}/users/refresh`,
+        `${process.env.BACKEND_API_URL}/users/refresh`,
         {
-          method: "POST",
           credentials: "include",
           headers: {
             ...(cookieHeader ? { cookie: cookieHeader } : {}),

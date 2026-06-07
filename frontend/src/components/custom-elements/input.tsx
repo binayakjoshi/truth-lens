@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useReducer, useEffect, type ReactNode } from "react";
+import { useReducer, useEffect, useRef, type ReactNode } from "react";
 
 import {
   TextField,
@@ -68,7 +68,7 @@ interface CustomInputProps {
 
 const inputReducer = (state: InputState, action: InputAction): InputState => {
   switch (action.type) {
-    case "CHANGE":
+    case "CHANGE": {
       if (action.val === undefined) return state;
       if (typeof action.val === "boolean") {
         return { ...state, value: action.val, isValid: true };
@@ -79,6 +79,7 @@ const inputReducer = (state: InputState, action: InputAction): InputState => {
         value: action.val,
         isValid: validate(action.val, action.validators),
       };
+    }
     case "TOUCH":
       return { ...state, isTouched: true };
     default:
@@ -93,25 +94,38 @@ const Input: React.FC<CustomInputProps> = (props) => {
     isValid: props.initialValid || false,
   });
 
-  const { id, onInput } = props;
+  const { id } = props;
   const { value, isValid } = inputState;
 
+  const onInputRef = useRef(props.onInput);
   useEffect(() => {
-    onInput(id, value, isValid);
-  }, [id, value, isValid, onInput]);
+    onInputRef.current = props.onInput;
+  });
+
+  useEffect(() => {
+    onInputRef.current(id, value, isValid);
+  }, [id, value, isValid]);
+
+  const prevInitialValueRef = useRef(props.initialValue);
+
+  const validatorsRef = useRef(props.validators);
+  useEffect(() => {
+    validatorsRef.current = props.validators;
+  });
 
   useEffect(() => {
     if (
       props.initialValue !== undefined &&
-      props.initialValue !== inputState.value
+      props.initialValue !== prevInitialValueRef.current
     ) {
+      prevInitialValueRef.current = props.initialValue;
       dispatch({
         type: "CHANGE",
         val: props.initialValue,
-        validators: props.validators,
+        validators: validatorsRef.current,
       });
     }
-  }, [props.initialValue, inputState.value, props.validators]);
+  }, [props.initialValue]);
 
   const changeHandler = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,

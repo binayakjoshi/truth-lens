@@ -51,7 +51,7 @@ const LogoutModal = () => {
             disabled={isLoading}
             variant="contained"
             color="error"
-            onSubmit={() => {
+            onClick={() => {
               void handleLogout();
             }}
           >

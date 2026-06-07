@@ -13,6 +13,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import type { Response, Request } from 'express';
+import { COOKIE_NAMES } from 'src/common/cookie';
 import { Auth } from 'src/common/decorators/auth.decorator';
 import { Serialize } from 'src/common/decorators/serialize';
 import { RefreshTokenGuard } from 'src/guards/refresh-token.guard';
@@ -94,22 +95,8 @@ export class UsersController {
   @Get('/logout')
   @Auth()
   logout(@Res({ passthrough: true }) res: Response) {
-    const isDev = process.env.NODE_ENV !== 'production';
-    res.clearCookie('truth-access-token', {
-      httpOnly: true,
-      sameSite: isDev ? ('lax' as const) : ('none' as const),
-      secure: !isDev,
-      maxAge: 15 * 60 * 1000,
-      path: '/',
-    });
-    res.clearCookie('truth-refresh-token', {
-      httpOnly: true,
-      sameSite: isDev ? ('lax' as const) : ('none' as const),
-      secure: !isDev,
-
-      maxAge: 24 * 60 * 60 * 1000,
-      path: '/',
-    });
+    res.clearCookie(COOKIE_NAMES.ACCESS_TOKEN, { path: '/' });
+    res.clearCookie(COOKIE_NAMES.REFRESH_TOKEN, { path: '/' });
 
     return {
       success: true,
