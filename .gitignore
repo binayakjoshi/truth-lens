@@ -82,6 +82,7 @@ ml-model/build/
 ml-model/dist/
 ml-model/*.egg-info/
 ml-model/.eggs/
+ml-model/pyvenv.cfg/
 
 # Optional ML artifacts (uncomment if needed)
 # ml-model/models/
