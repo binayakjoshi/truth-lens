@@ -5,7 +5,9 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
   Index,
+  OneToMany,
 } from 'typeorm';
+import { OtpRecord } from './otp-record.entity';
 
 @Entity()
 export class User {
@@ -40,4 +42,6 @@ export class User {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @OneToMany(() => OtpRecord, (otp) => otp.user) otpRecord: OtpRecord;
 }

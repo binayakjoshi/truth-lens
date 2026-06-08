@@ -5,6 +5,7 @@ import { dataSource } from 'config/db.config';
 import { PostgresConnectionCredentialsOptions } from 'typeorm/driver/postgres/PostgresConnectionCredentialsOptions.js';
 
 import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
 @Module({
   imports: [
     TypeOrmModule.forRoot({
@@ -18,6 +19,7 @@ import { UsersModule } from './users/users.module';
       signOptions: { expiresIn: '60m' },
     }),
     UsersModule,
+    AuthModule,
   ],
 })
 export class AppModule {}

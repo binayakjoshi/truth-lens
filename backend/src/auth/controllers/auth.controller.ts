@@ -1,0 +1,97 @@
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Req,
+  Res,
+  UnauthorizedException,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import { AuthService } from '../services/auth.service';
+import { CookieInterceptor } from 'src/interceptors/cookie-interceptor';
+
+import type { Response, Request } from 'express';
+import { COOKIE_NAMES } from 'src/common/cookie';
+import { Auth } from 'src/common/decorators/auth.decorator';
+import { Serialize } from 'src/common/decorators/serialize';
+import { RefreshTokenGuard } from 'src/guards/refresh-token.guard';
+
+import { LoginDto } from 'src/users/dtos/login-dto';
+import { UserResponseDto } from 'src/users/dtos/user.dto';
+@Controller('auth')
+export class AuthController {
+  constructor(private readonly authService: AuthService) {}
+
+  @Post('/login')
+  @UseInterceptors(CookieInterceptor)
+  async userLogin(
+    @Body() loginDto: LoginDto,
+
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = (await this.authService.login(loginDto)) as any;
+
+    res.locals.accessToken = result.data?.accessToken;
+    res.locals.refreshToken = result.data?.refreshToken;
+
+    return {
+      success: result.success,
+      message: result.message,
+      status: result.status,
+      data: null,
+    };
+  }
+
+  @Get('/me')
+  @Auth()
+  @Serialize(UserResponseDto)
+  async getMe(@Req() req: Request) {
+    const accessToken = req.cookies?.['truth-access-token'];
+    if (!accessToken) throw new UnauthorizedException('No access token found.');
+    const result = this.authService.tokenVerification(accessToken);
+    return result;
+  }
+
+  @Get('/refresh')
+  @UseGuards(RefreshTokenGuard)
+  @UseInterceptors(CookieInterceptor)
+  async refreshToken(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const refreshToken = req.cookies?.['truth-refresh-token'];
+
+    if (!refreshToken) {
+      throw new UnauthorizedException('No refresh token found');
+    }
+
+    const result = (await this.authService.refreshAccessToken(
+      refreshToken,
+    )) as any;
+
+    res.locals.accessToken = result.data.accessToken;
+
+    return {
+      success: true,
+      message: 'Access token refreshed successfully',
+      status: 200,
+      data: null,
+    };
+  }
+
+  @Get('/logout')
+  @Auth()
+  logout(@Res({ passthrough: true }) res: Response) {
+    res.clearCookie(COOKIE_NAMES.ACCESS_TOKEN, { path: '/' });
+    res.clearCookie(COOKIE_NAMES.REFRESH_TOKEN, { path: '/' });
+
+    return {
+      success: true,
+      message: 'User successfully logged out',
+      status: 200,
+      data: null,
+    };
+  }
+}
