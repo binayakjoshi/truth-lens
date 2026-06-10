@@ -8,6 +8,7 @@ import {
   Delete,
 } from '@nestjs/common';
 import { Serialize } from 'src/common/decorators/serialize';
+
 import { CreateUserDto } from '../dtos/create-user.dto';
 import { UpdateUserDto } from '../dtos/update-user.dto';
 import { UserResponseDto } from '../dtos/user.dto';

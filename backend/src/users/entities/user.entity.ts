@@ -7,6 +7,7 @@ import {
   Index,
   OneToMany,
 } from 'typeorm';
+
 import { OtpRecord } from './otp-record.entity';
 
 @Entity()

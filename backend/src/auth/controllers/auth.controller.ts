@@ -9,17 +9,16 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { AuthService } from '../services/auth.service';
-import { CookieInterceptor } from 'src/interceptors/cookie-interceptor';
-
 import type { Response, Request } from 'express';
 import { COOKIE_NAMES } from 'src/common/cookie';
 import { Auth } from 'src/common/decorators/auth.decorator';
 import { Serialize } from 'src/common/decorators/serialize';
 import { RefreshTokenGuard } from 'src/guards/refresh-token.guard';
-
+import { CookieInterceptor } from 'src/interceptors/cookie-interceptor';
 import { LoginDto } from 'src/users/dtos/login-dto';
 import { UserResponseDto } from 'src/users/dtos/user.dto';
+
+import { AuthService } from '../services/auth.service';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}

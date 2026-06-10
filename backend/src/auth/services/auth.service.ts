@@ -9,16 +9,17 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { LoginDto } from 'src/users/dtos/login-dto';
-import { User } from 'src/users/entities/user.entity';
-import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { createResponse } from 'src/utils/response-handler';
-import { otpEmailTemplate } from '../template/otp-email-template';
-import { OtpRecord } from 'src/users/entities/otp-record.entity';
-
 import * as nodemailer from 'nodemailer';
 import { Transporter } from 'nodemailer';
+import { LoginDto } from 'src/users/dtos/login-dto';
+import { OtpRecord } from 'src/users/entities/otp-record.entity';
+import { User } from 'src/users/entities/user.entity';
+import { createResponse } from 'src/utils/response-handler';
+import { Repository } from 'typeorm';
+
+import { otpEmailTemplate } from '../template/otp-email-template';
+
 @Injectable()
 export class AuthService {
   private readonly transporter: Transporter;

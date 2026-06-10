@@ -3,6 +3,7 @@ import { User } from 'src/users/entities/user.entity';
 import { DataSource, LoggerOptions } from 'typeorm';
 
 import { CustomNamingStrategy } from './strategy';
+import { OtpRecord } from 'src/users/entities/otp-record.entity';
 
 config();
 
@@ -25,5 +26,5 @@ export const dataSource = new DataSource({
   migrations: ['dist/src/database/migrations/**/*.js'],
   migrationsRun: false,
   namingStrategy: new CustomNamingStrategy(),
-  entities: [User],
+  entities: [User, OtpRecord],
 });
