@@ -7,7 +7,6 @@ from facenet_pytorch import MTCNN
 from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 
-# --- Configuration ---
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Point directly to the locally extracted folder shown in your workspace
@@ -160,7 +159,6 @@ def init_pipeline():
     """Initializes the verification configurations and triggers structural extraction passes."""
     random.seed(RANDOM_SEED)
 
-    # --- Hardware Verification Status ---
     print(f"Target Device Context: {device.type.upper()}")
     if device.type == "cuda":
         print(f"RTX GPU Acceleration Locked & Loaded: {torch.cuda.get_device_name(0)}")
@@ -168,7 +166,6 @@ def init_pipeline():
         print(
             "WARNING: PyTorch could not locate CUDA dependencies. Falling back to CPU."
         )
-    # ------------------------------------
 
     print(f" Scanning local files inside: {INPUT_DATASET_DIR}")
     if not os.path.exists(INPUT_DATASET_DIR):
