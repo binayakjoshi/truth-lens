@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
+import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { dataSource } from 'config/db.config';
 import { PostgresConnectionCredentialsOptions } from 'typeorm/driver/postgres/PostgresConnectionCredentialsOptions.js';
@@ -18,6 +19,7 @@ import { UsersModule } from './users/users.module';
       secret: process.env.JWT_SECRET || 'defaultSecret',
       signOptions: { expiresIn: '60m' },
     }),
+    ScheduleModule.forRoot(),
     UsersModule,
     AuthModule,
   ],

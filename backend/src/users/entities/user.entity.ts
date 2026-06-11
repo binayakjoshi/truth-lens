@@ -6,6 +6,7 @@ import {
   UpdateDateColumn,
   Index,
   OneToMany,
+  DeleteDateColumn,
 } from 'typeorm';
 
 import { OtpRecord } from './otp-record.entity';
@@ -35,8 +36,8 @@ export class User {
   @Column({ nullable: false })
   password: string;
 
-  @Column({ default: false })
-  isDeleted: boolean;
+  @DeleteDateColumn({ nullable: true })
+  deletedAt: Date | null;
 
   @CreateDateColumn()
   createdAt: Date;

@@ -37,7 +37,7 @@ export class RefreshTokenGuard implements CanActivate {
       const user = await this.userRepo.findOne({
         where: {
           id: decodedData.id,
-          isDeleted: false,
+          deletedAt: undefined,
         },
       });
 

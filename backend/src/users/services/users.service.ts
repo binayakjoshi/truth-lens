@@ -38,7 +38,7 @@ export class UsersService {
       email,
       password: hashedPassword,
       isVerified: false,
-      isDeleted: false,
+      deletedAt: null,
     });
 
     const savedUser = await this.userRepo.save(user);

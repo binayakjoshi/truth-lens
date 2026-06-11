@@ -1,3 +1,5 @@
+import { randomInt } from 'crypto';
+
 import {
   ConflictException,
   HttpStatus,
@@ -12,12 +14,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import * as nodemailer from 'nodemailer';
 import { Transporter } from 'nodemailer';
-import { LoginDto } from 'src/users/dtos/login-dto';
 import { OtpRecord } from 'src/users/entities/otp-record.entity';
 import { User } from 'src/users/entities/user.entity';
 import { createResponse } from 'src/utils/response-handler';
 import { Repository } from 'typeorm';
 
+import { LoginDto } from '../dtos/login-dto';
 import { otpEmailTemplate } from '../template/otp-email-template';
 
 @Injectable()
@@ -129,7 +131,7 @@ export class AuthService {
     if (!decodedUserData)
       throw new UnauthorizedException('token validation failed.');
     const user = await this.userRepo.findOne({
-      where: { id: decodedUserData.id, isDeleted: false },
+      where: { id: decodedUserData.id, deletedAt: undefined },
     });
     if (!user) throw new NotFoundException('Active user not found.');
 
@@ -149,7 +151,7 @@ export class AuthService {
       const user = await this.userRepo.findOne({
         where: {
           id: payload.id,
-          isDeleted: false,
+          deletedAt: undefined,
         },
       });
 
@@ -177,13 +179,92 @@ export class AuthService {
     }
   }
 
-  private generateOtp(): string {
-    const digits = '0123456789';
-    let otp = '';
-    for (let i = 0; i < 6; i++) {
-      otp += digits[Math.floor(Math.random() * digits.length)];
+  async resendOtp(email: string) {
+    const user = await this.userRepo.findOne({ where: { email } });
+    if (!user) {
+      throw new NotFoundException(
+        'Could not find user with the provided email',
+      );
     }
-    return otp;
+    if (user.isVerified) {
+      throw new ConflictException('User is already verified');
+    }
+
+    await this.otpRecordRepo.update(
+      { userId: user.id, isUsed: false },
+      { isUsed: true },
+    );
+
+    const otpCode = this.generateOtp();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+    const otpRecord = this.otpRecordRepo.create({
+      user,
+      userId: user.id,
+      expiresAt,
+      code: otpCode,
+    });
+    await this.otpRecordRepo.save(otpRecord);
+    await this.sendOtpEmail(user.email, user.firstName, otpCode);
+
+    return createResponse(
+      HttpStatus.OK,
+      `A new verification code has been sent to ${user.email}`,
+      { email: user.email },
+    );
+  }
+
+  async verifyOtp(email: string, code: string) {
+    const user = await this.userRepo.findOne({ where: { email } });
+    if (!user) {
+      throw new NotFoundException(
+        'Could not find user with the provided email',
+      );
+    }
+    if (user.isVerified) {
+      throw new ConflictException('User is already verified');
+    }
+
+    const otpRecord = await this.otpRecordRepo.findOne({
+      where: { userId: user.id, code, isUsed: false },
+      order: { createdAt: 'DESC' }, // always pick the latest
+    });
+
+    if (!otpRecord) {
+      throw new UnauthorizedException('Invalid or already used OTP code');
+    }
+    if (otpRecord.expiresAt < new Date()) {
+      throw new UnauthorizedException('OTP code has expired');
+    }
+
+    await this.otpRecordRepo.manager.transaction(async (manager) => {
+      await manager.update(OtpRecord, { id: otpRecord.id }, { isUsed: true });
+      await manager.update(User, { id: user.id }, { isVerified: true });
+    });
+
+    if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET is not defined');
+    const userData = {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+    };
+    const accessToken = this.jwtService.sign(userData, {
+      secret: process.env.JWT_SECRET,
+      expiresIn: '15m',
+    });
+    const refreshToken = this.jwtService.sign(userData, {
+      secret: process.env.JWT_SECRET,
+      expiresIn: '7d',
+    });
+
+    return createResponse(HttpStatus.OK, 'Email verified successfully', {
+      accessToken,
+      refreshToken,
+      user: userData,
+    });
+  }
+
+  private generateOtp(): string {
+    return String(randomInt(0, 1_000_000)).padStart(6, '0');
   }
 
   private async sendOtpEmail(

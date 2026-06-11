@@ -1,9 +1,9 @@
 import { config } from 'dotenv';
+import { OtpRecord } from 'src/users/entities/otp-record.entity';
 import { User } from 'src/users/entities/user.entity';
 import { DataSource, LoggerOptions } from 'typeorm';
 
 import { CustomNamingStrategy } from './strategy';
-import { OtpRecord } from 'src/users/entities/otp-record.entity';
 
 config();
 

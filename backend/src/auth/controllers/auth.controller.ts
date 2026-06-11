@@ -15,9 +15,11 @@ import { Auth } from 'src/common/decorators/auth.decorator';
 import { Serialize } from 'src/common/decorators/serialize';
 import { RefreshTokenGuard } from 'src/guards/refresh-token.guard';
 import { CookieInterceptor } from 'src/interceptors/cookie-interceptor';
-import { LoginDto } from 'src/users/dtos/login-dto';
 import { UserResponseDto } from 'src/users/dtos/user.dto';
 
+import { LoginDto } from '../dtos/login-dto';
+import { ResendOtpDto } from '../dtos/resend-otp.dto';
+import { VerifyOtpDto } from '../dtos/verify-otp.dto';
 import { AuthService } from '../services/auth.service';
 @Controller('auth')
 export class AuthController {
@@ -52,7 +54,30 @@ export class AuthController {
     const result = this.authService.tokenVerification(accessToken);
     return result;
   }
+  @Post('/resend-otp')
+  async resendOtp(@Body() resendOtpDto: ResendOtpDto) {
+    return this.authService.resendOtp(resendOtpDto.email);
+  }
 
+  @Post('/verify-otp')
+  @UseInterceptors(CookieInterceptor)
+  async verifyOtp(
+    @Body() verifyOtpDto: VerifyOtpDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = (await this.authService.verifyOtp(
+      verifyOtpDto.email,
+      verifyOtpDto.code,
+    )) as any;
+    res.locals.accessToken = result.data?.accessToken;
+    res.locals.refreshToken = result.data?.refreshToken;
+    return {
+      success: result.success,
+      message: result.message,
+      status: result.status,
+      data: null,
+    };
+  }
   @Get('/refresh')
   @UseGuards(RefreshTokenGuard)
   @UseInterceptors(CookieInterceptor)
