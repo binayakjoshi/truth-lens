@@ -45,7 +45,10 @@ export class AuthController {
       success: result.success,
       message: result.message,
       status: result.status,
-      data: null,
+      data: {
+        email: result.data.email,
+        otpExpiration: result.data.expiresAt ?? null,
+      },
     };
   }
 
@@ -55,13 +58,31 @@ export class AuthController {
   async getMe(@Req() req: Request) {
     const accessToken = req.cookies?.['truth-access-token'];
     if (!accessToken) throw new UnauthorizedException('No access token found.');
-    const result = this.authService.tokenVerification(accessToken);
+    const result = await this.authService.tokenVerification(accessToken);
     return result;
   }
   @Post('/resend-otp')
   @UseInterceptors(CookieInterceptor)
-  async resendOtp(@Body() resendOtpDto: ResendOtpDto) {
-    return this.authService.resendOtp(resendOtpDto.email);
+  async resendOtp(
+    @Body() resendOtpDto: ResendOtpDto,
+
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = (await this.authService.resendOtp(
+      resendOtpDto.email,
+    )) as any;
+    if (result.message.includes('verification'))
+      res.locals.verificationEmail = result.data?.email;
+
+    return {
+      success: result.success,
+      message: result.message,
+      status: result.status,
+      data: {
+        email: result.data.email,
+        otpExpiration: result.data.expiresAt ?? null,
+      },
+    };
   }
 
   @Post('/verify-otp')

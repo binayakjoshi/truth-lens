@@ -80,7 +80,10 @@ export class AuthService {
       return createResponse(
         HttpStatus.OK,
         `A 6-digit verification code has been sent to ${user.email}`,
-        { email: user.email },
+        {
+          email: user.email,
+          expiresAt: otpRecord.expiresAt,
+        },
       );
     }
 
@@ -199,7 +202,7 @@ export class AuthService {
     return createResponse(
       HttpStatus.OK,
       `A new verification code has been sent to ${user.email}`,
-      { email: user.email },
+      { email: user.email, expiresAt },
     );
   }
 

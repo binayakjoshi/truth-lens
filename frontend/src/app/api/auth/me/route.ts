@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     const cookieHeader = request.headers.get("cookie") ?? "";
 
     const { res, newCookie } = await fetchAndRefresh(
-      `${process.env.BACKEND_API_URL}/users/me`,
+      `${process.env.BACKEND_API_URL}/auth/me`,
       {},
       cookieHeader,
     );
