@@ -5,10 +5,11 @@ import { User } from 'src/users/entities/user.entity';
 
 import { AuthController } from './controllers/auth.controller';
 import { AuthService } from './services/auth.service';
+import { EmailService } from 'src/email/services/email.service';
 
 @Module({
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, EmailService],
 
   imports: [TypeOrmModule.forFeature([User, OtpRecord])],
 })

@@ -34,8 +34,12 @@ export class AuthController {
   ) {
     const result = (await this.authService.login(loginDto)) as any;
 
-    res.locals.accessToken = result.data?.accessToken;
-    res.locals.refreshToken = result.data?.refreshToken;
+    if (result.message.includes('verification'))
+      res.locals.verificationEmail = result.data?.email;
+    else {
+      res.locals.accessToken = result.data?.accessToken;
+      res.locals.refreshToken = result.data?.refreshToken;
+    }
 
     return {
       success: result.success,
@@ -55,6 +59,7 @@ export class AuthController {
     return result;
   }
   @Post('/resend-otp')
+  @UseInterceptors(CookieInterceptor)
   async resendOtp(@Body() resendOtpDto: ResendOtpDto) {
     return this.authService.resendOtp(resendOtpDto.email);
   }
@@ -63,14 +68,22 @@ export class AuthController {
   @UseInterceptors(CookieInterceptor)
   async verifyOtp(
     @Body() verifyOtpDto: VerifyOtpDto,
+
+    @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
+    const verificationEmail = req.cookies?.['truth-verification-email'];
+    if (!verificationEmail)
+      throw new UnauthorizedException(
+        'verification time has expired please try again.',
+      );
     const result = (await this.authService.verifyOtp(
-      verifyOtpDto.email,
+      verificationEmail,
       verifyOtpDto.code,
     )) as any;
     res.locals.accessToken = result.data?.accessToken;
     res.locals.refreshToken = result.data?.refreshToken;
+    res.clearCookie('truth-verification-email');
     return {
       success: result.success,
       message: result.message,
@@ -78,6 +91,7 @@ export class AuthController {
       data: null,
     };
   }
+
   @Get('/refresh')
   @UseGuards(RefreshTokenGuard)
   @UseInterceptors(CookieInterceptor)

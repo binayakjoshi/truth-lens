@@ -7,6 +7,7 @@ import { PostgresConnectionCredentialsOptions } from 'typeorm/driver/postgres/Po
 
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
+import { EmailModule } from './email/email.module';
 @Module({
   imports: [
     TypeOrmModule.forRoot({
@@ -22,6 +23,7 @@ import { UsersModule } from './users/users.module';
     ScheduleModule.forRoot(),
     UsersModule,
     AuthModule,
+    EmailModule,
   ],
 })
 export class AppModule {}

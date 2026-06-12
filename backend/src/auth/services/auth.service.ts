@@ -4,44 +4,30 @@ import {
   ConflictException,
   HttpStatus,
   Injectable,
-  InternalServerErrorException,
-  Logger,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
-import * as nodemailer from 'nodemailer';
-import { Transporter } from 'nodemailer';
 import { OtpRecord } from 'src/users/entities/otp-record.entity';
 import { User } from 'src/users/entities/user.entity';
 import { createResponse } from 'src/utils/response-handler';
 import { Repository } from 'typeorm';
 
 import { LoginDto } from '../dtos/login-dto';
-import { otpEmailTemplate } from '../template/otp-email-template';
+import { EmailService } from 'src/email/services/email.service';
 
 @Injectable()
 export class AuthService {
-  private readonly transporter: Transporter;
   constructor(
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
     @InjectRepository(OtpRecord)
     private readonly otpRecordRepo: Repository<OtpRecord>,
     private readonly jwtService: JwtService,
-  ) {
-    this.transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_APP_PASSWORD,
-      },
-    });
-  }
-
-  private readonly logger = new Logger(AuthService.name);
+    private readonly emailService: EmailService,
+  ) {}
 
   async login(loginDto: LoginDto) {
     const { username, email, password } = loginDto;
@@ -87,7 +73,9 @@ export class AuthService {
         code: otpCode,
       });
       await this.otpRecordRepo.save(otpRecord);
-      await this.sendOtpEmail(user.email, user.firstName, otpCode);
+      this.emailService
+        .sendOtpEmail(user.email, user.firstName, otpCode)
+        .catch(() => {});
 
       return createResponse(
         HttpStatus.OK,
@@ -204,7 +192,9 @@ export class AuthService {
       code: otpCode,
     });
     await this.otpRecordRepo.save(otpRecord);
-    await this.sendOtpEmail(user.email, user.firstName, otpCode);
+    this.emailService
+      .sendOtpEmail(user.email, user.firstName, otpCode)
+      .catch(() => {});
 
     return createResponse(
       HttpStatus.OK,
@@ -265,30 +255,5 @@ export class AuthService {
 
   private generateOtp(): string {
     return String(randomInt(0, 1_000_000)).padStart(6, '0');
-  }
-
-  private async sendOtpEmail(
-    toEmail: string,
-    firstName: string,
-    otp: string,
-  ): Promise<void> {
-    try {
-      await this.transporter.sendMail({
-        from: `${process.env.GMAIL_USER}`,
-
-        to: toEmail,
-        subject: `${otp} is your TruthLens verification code`,
-        html: otpEmailTemplate(otp, firstName),
-      });
-
-      this.logger.log(`OTP email sent to ${toEmail}`);
-    } catch (err) {
-      this.logger.error(
-        `Unexpected error sending OTP to ${toEmail}`,
-        err instanceof Error ? err.stack : String(err),
-      );
-
-      throw new InternalServerErrorException('Failed to send OTP email');
-    }
   }
 }
