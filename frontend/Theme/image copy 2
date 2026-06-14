@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Login | TruthLens AI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono&amp;family=Geist:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-tint": "#4d44e3",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed-variant": "#3323cc",
+                        "secondary-fixed": "#6ffbbe",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "primary-container": "#4f46e5",
+                        "outline": "#777587",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-container": "#dad7ff",
+                        "surface-variant": "#e4e1ee",
+                        "on-primary": "#ffffff",
+                        "background": "#fcf8ff",
+                        "on-tertiary-container": "#ffd4a4",
+                        "on-surface": "#1b1b24",
+                        "error": "#ba1a1a",
+                        "surface-container": "#f0ecf9",
+                        "surface": "#fcf8ff",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "on-tertiary": "#ffffff",
+                        "inverse-primary": "#c3c0ff",
+                        "on-secondary-container": "#00714d",
+                        "on-secondary-fixed-variant": "#005236",
+                        "primary": "#3525cd",
+                        "tertiary-container": "#885500",
+                        "error-container": "#ffdad6",
+                        "surface-dim": "#dcd8e5",
+                        "outline-variant": "#c7c4d8",
+                        "on-secondary-fixed": "#002113",
+                        "on-error-container": "#93000a",
+                        "inverse-surface": "#302f39",
+                        "secondary-container": "#6cf8bb",
+                        "on-primary-fixed": "#001a69",
+                        "primary-fixed": "#e2dfff",
+                        "tertiary": "#684000",
+                        "surface-container-highest": "#e4e1ee",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "on-tertiary-fixed": "#2a1700",
+                        "tertiary-fixed": "#ffddb8",
+                        "secondary-fixed-dim": "#4edea3",
+                        "on-background": "#1b1b24",
+                        "on-surface-variant": "#464555",
+                        "secondary": "#006c49",
+                        "surface-container-high": "#eae6f4",
+                        "surface-container-low": "#f5f2ff",
+                        "surface-bright": "#fcf8ff",
+                        "inverse-on-surface": "#f3effc"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-md": "16px",
+                        "stack-lg": "32px",
+                        "margin-mobile": "16px",
+                        "unit": "4px",
+                        "stack-sm": "8px",
+                        "margin-desktop": "48px",
+                        "gutter": "24px",
+                        "container-max": "1280px"
+                    },
+                    "fontFamily": {
+                        "mono-sm": ["JetBrains Mono"],
+                        "headline-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-md": ["Geist"],
+                        "body-sm": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-sm": ["Geist"]
+                    },
+                    "fontSize": {
+                        "mono-sm": ["13px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "label-md": ["14px", {"lineHeight": "1", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "body-sm": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "1", "letterSpacing": "0.03em", "fontWeight": "500"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col selection:bg-primary-fixed-dim">
+<!-- TopNavBar (Simplified for Auth Flow) -->
+<header class="fixed top-0 w-full bg-background border-b border-outline-variant z-50">
+<div class="max-w-container-max mx-auto px-margin-desktop flex items-center justify-between h-16">
+<div class="flex items-center gap-3">
+<span class="font-headline-md text-headline-md font-bold text-primary">TruthLens AI</span>
+</div>
+<div class="hidden md:flex items-center gap-stack-lg">
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Support</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Documentation</a>
+</div>
+</div>
+</header>
+<main class="flex-grow flex items-center justify-center pt-16 px-margin-mobile md:px-margin-desktop relative overflow-hidden">
+<!-- Abstract Background Element -->
+<div class="absolute inset-0 pointer-events-none opacity-40">
+<div class="absolute top-[-10%] right-[-5%] w-[400px] h-[400px] bg-primary-fixed-dim blur-[120px] rounded-full"></div>
+<div class="absolute bottom-[-10%] left-[-5%] w-[350px] h-[350px] bg-secondary-fixed-dim blur-[100px] rounded-full opacity-60"></div>
+</div>
+<!-- Login Container -->
+<div class="w-full max-w-[440px] relative z-10">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-stack-lg shadow-sm">
+<!-- Brand Anchor Header -->
+<div class="text-center mb-stack-lg">
+<h1 class="font-headline-lg text-headline-lg text-on-surface mb-unit">Welcome back</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Log in to your forensic workspace</p>
+</div>
+<!-- Social Login Buttons -->
+<div class="grid grid-cols-2 gap-stack-md mb-stack-lg">
+<button class="flex items-center justify-center gap-2 px-4 py-2.5 border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface hover:bg-surface-container transition-all active:scale-95">
+<span class="material-symbols-outlined text-[18px]">account_circle</span>
+                        Google
+                    </button>
+<button class="flex items-center justify-center gap-2 px-4 py-2.5 border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface hover:bg-surface-container transition-all active:scale-95">
+<span class="material-symbols-outlined text-[18px]">terminal</span>
+                        GitHub
+                    </button>
+</div>
+<div class="relative flex items-center mb-stack-lg">
+<div class="flex-grow border-t border-outline-variant"></div>
+<span class="flex-shrink mx-4 font-label-sm text-label-sm text-outline">OR CONTINUE WITH EMAIL</span>
+<div class="flex-grow border-t border-outline-variant"></div>
+</div>
+<!-- Login Form -->
+<form class="space-y-stack-md" onsubmit="return false;">
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-unit" for="email">Email</label>
+<input class="w-full px-4 py-3 rounded-lg border border-outline-variant bg-surface text-body-md focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-outline-variant" id="email" placeholder="name@company.com" type="email"/>
+</div>
+<div>
+<div class="flex justify-between items-center mb-unit">
+<label class="block font-label-md text-label-md text-on-surface" for="password">Password</label>
+<a class="font-label-sm text-label-sm text-primary hover:underline" href="#">Forgot password?</a>
+</div>
+<div class="relative">
+<input class="w-full px-4 py-3 rounded-lg border border-outline-variant bg-surface text-body-md focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-outline-variant" id="password" placeholder="••••••••" type="password"/>
+<button class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface transition-colors" type="button">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</div>
+</div>
+<div class="pt-unit">
+<button class="w-full bg-primary text-on-primary font-label-md text-label-md py-3.5 rounded-lg hover:bg-surface-tint active:scale-[0.98] transition-all shadow-sm" type="submit">
+                            Log in to TruthLens
+                        </button>
+</div>
+</form>
+<div class="mt-stack-lg pt-stack-lg border-t border-outline-variant text-center">
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                        Don't have an account? 
+                        <a class="text-primary font-bold hover:underline" href="#">Request Access</a>
+</p>
+</div>
+</div>
+<!-- Trusted by Section -->
+<div class="mt-stack-lg text-center">
+<p class="font-label-sm text-label-sm text-outline uppercase tracking-widest mb-stack-md">Trusted by leading investigative teams</p>
+<div class="flex flex-wrap justify-center gap-gutter opacity-40 grayscale contrast-125">
+<div class="h-6 w-24 bg-on-surface-variant rounded-sm"></div>
+<div class="h-6 w-20 bg-on-surface-variant rounded-sm"></div>
+<div class="h-6 w-28 bg-on-surface-variant rounded-sm"></div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full py-stack-lg bg-surface border-t border-outline-variant">
+<div class="max-w-container-max mx-auto px-margin-desktop flex flex-col md:flex-row justify-between items-center gap-stack-md">
+<p class="font-body-sm text-body-sm text-on-surface-variant">© 2024 TruthLens AI. All forensic analyses are encrypted.</p>
+<div class="flex gap-stack-md">
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary hover:underline transition-all" href="#">Privacy Policy</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary hover:underline transition-all" href="#">Terms of Service</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary hover:underline transition-all" href="#">Security Disclosure</a>
+</div>
+</div>
+</footer>
+<!-- Side Illustration (Visible on Desktop) -->
+<div class="hidden xl:block fixed right-0 top-0 h-full w-[35vw] pointer-events-none">
+<div class="h-full w-full bg-surface-container-low border-l border-outline-variant p-margin-desktop flex flex-col justify-center gap-stack-lg">
+<div class="relative w-full aspect-square max-w-[500px] mx-auto overflow-hidden rounded-xl shadow-xl border border-outline-variant">
+<img alt="Cybersecurity Forensics" class="w-full h-full object-cover" data-alt="A macro close-up of a high-tech digital forensic dashboard displayed on a semi-transparent glass screen. In the background, soft indigo and cool slate blue server rack lights blur into a bokeh effect. The screen shows complex data visualizations, cryptographic hashes, and deep-learning neural network nodes connecting in real-time. The overall mood is high-security, professional, and computationally sophisticated with a clean, light-mode finish." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDzVo8vSc6au8tbR9SEoy40ZThhEpV9zz6ZRs5bCTOle7kPO0svxI_b2NGGfNC7WZoAI6wxSeFkC0Ipeu5Xr52r_HpHBqeN3y0RGHXgXq3zq1vEhB2g3AK7hYI_J9ChLrOwZ2sdYYxYYJ3ZR8QkqBcrKQGnUdrTbGUOs4Tol8DWqWfPuJ2nsECtn4jcrbkvLDtuApMBFHJQyANQIyms6UCAsBqEctJDyMCwcbfNxgIrXPVojHos35ZUUFBz3Bn4dvTCFvkt-7q4IAE"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest/80 to-transparent"></div>
+<div class="absolute bottom-6 left-6 right-6 p-stack-md bg-white/90 backdrop-blur-md rounded-lg border border-outline-variant shadow-lg">
+<p class="font-mono-sm text-mono-sm text-primary mb-1 uppercase tracking-tighter">Verified Analysis System</p>
+<p class="font-body-sm text-body-sm text-on-surface italic">"TruthLens reduced our validation latency by 74% in the first quarter."</p>
+<div class="mt-2 flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-secondary-container"></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Lead Compliance Officer, FinTech Global</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+        // Micro-interaction for form focus
+        const inputs = document.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.addEventListener('focus', () => {
+                input.parentElement.closest('.bg-surface-container-lowest').style.transition = 'all 0.3s ease';
+                input.parentElement.closest('.bg-surface-container-lowest').style.boxShadow = '0 10px 25px -5px rgba(53, 37, 205, 0.1)';
+            });
+            input.addEventListener('blur', () => {
+                input.parentElement.closest('.bg-surface-container-lowest').style.boxShadow = '0 1px 2px 0 rgba(0, 0, 0, 0.05)';
+            });
+        });
+
+        // Toggle password visibility
+        const toggleBtn = document.querySelector('button .material-symbols-outlined:contains("visibility")');
+        if (toggleBtn) {
+            toggleBtn.parentElement.addEventListener('click', () => {
+                const passwordInput = document.getElementById('password');
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                toggleBtn.textContent = type === 'password' ? 'visibility' : 'visibility_off';
+            });
+        }
+    </script>
+</body></html>

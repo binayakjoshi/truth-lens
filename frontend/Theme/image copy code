@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TruthLens - New Analysis</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;family=JetBrains+Mono:wght@400&amp;family=Geist:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "primary-fixed": "#e2dfff",
+                        "surface-variant": "#e4e1ee",
+                        "outline-variant": "#c7c4d8",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-container": "#ffd4a4",
+                        "surface-container-low": "#f5f2ff",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "secondary-container": "#6cf8bb",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "on-background": "#1b1b24",
+                        "on-secondary-fixed-variant": "#005236",
+                        "on-primary-fixed": "#0f0069",
+                        "on-primary-container": "#dad7ff",
+                        "tertiary": "#684000",
+                        "secondary": "#006c49",
+                        "surface-container": "#f0ecf9",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "surface-dim": "#dcd8e5",
+                        "on-secondary-container": "#00714d",
+                        "on-primary-fixed-variant": "#3323cc",
+                        "inverse-primary": "#c3c0ff",
+                        "secondary-fixed-dim": "#4edea3",
+                        "secondary-fixed": "#6ffbbe",
+                        "on-secondary-fixed": "#002113",
+                        "primary": "#3525cd",
+                        "surface-container-high": "#eae6f4",
+                        "on-surface": "#1b1b24",
+                        "inverse-surface": "#302f39",
+                        "on-error-container": "#93000a",
+                        "surface": "#fcf8ff",
+                        "tertiary-container": "#885500",
+                        "on-tertiary-fixed": "#2a1700",
+                        "surface-container-highest": "#e4e1ee",
+                        "on-error": "#ffffff",
+                        "primary-container": "#4f46e5",
+                        "outline": "#777587",
+                        "surface-bright": "#fcf8ff",
+                        "background": "#fcf8ff",
+                        "inverse-on-surface": "#f3effc",
+                        "error": "#ba1a1a",
+                        "surface-tint": "#4d44e3",
+                        "tertiary-fixed": "#ffddb8",
+                        "on-secondary": "#ffffff",
+                        "on-surface-variant": "#464555"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-sm": "8px",
+                        "container-max": "1280px",
+                        "stack-lg": "32px",
+                        "margin-mobile": "16px",
+                        "gutter": "24px",
+                        "unit": "4px",
+                        "margin-desktop": "48px",
+                        "stack-md": "16px"
+                    },
+                    "fontFamily": {
+                        "mono-sm": ["JetBrains Mono"],
+                        "headline-md": ["Inter"],
+                        "label-md": ["Geist"],
+                        "body-lg": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-sm": ["Geist"],
+                        "display-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "mono-sm": ["13px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "label-md": ["14px", {"lineHeight": "1", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "body-sm": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "1", "letterSpacing": "0.03em", "fontWeight": "500"}],
+                        "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface min-h-screen antialiased flex">
+<!-- SideNavBar Component -->
+<nav class="fixed left-0 top-0 h-full w-64 bg-surface-container-low border-r border-outline-variant flex flex-col gap-stack-md p-stack-md z-40">
+<!-- Header -->
+<div class="flex flex-col gap-unit mb-stack-md px-stack-sm pt-stack-sm">
+<h1 class="font-headline-lg text-headline-lg font-black text-primary">TruthLens</h1>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Forensic Workspace</span>
+</div>
+<!-- Navigation Links -->
+<div class="flex flex-col gap-unit flex-grow">
+<!-- Dashboard (Inactive) -->
+<a class="flex items-center gap-stack-sm px-stack-sm py-3 text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-outline">dashboard</span>
+<span>Dashboard</span>
+</a>
+<!-- New Analysis (Active) -->
+<a class="flex items-center gap-stack-sm px-stack-sm py-3 bg-primary-fixed text-on-primary-fixed rounded-lg font-bold transition-all scale-95 duration-100 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">analytics</span>
+<span>New Analysis</span>
+</a>
+<!-- History (Inactive) -->
+<a class="flex items-center gap-stack-sm px-stack-sm py-3 text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-outline">history</span>
+<span>History</span>
+</a>
+<!-- Reports (Inactive) -->
+<a class="flex items-center gap-stack-sm px-stack-sm py-3 text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-outline">description</span>
+<span>Reports</span>
+</a>
+<!-- Settings (Inactive) -->
+<a class="flex items-center gap-stack-sm px-stack-sm py-3 text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg font-label-md text-label-md mt-auto" href="#">
+<span class="material-symbols-outlined text-outline">settings</span>
+<span>Settings</span>
+</a>
+</div>
+</nav>
+<!-- Main Workspace -->
+<main class="ml-64 flex-1 p-margin-desktop w-full max-w-[1536px] mx-auto min-h-screen flex flex-col gap-stack-lg">
+<!-- Header Area -->
+<header class="flex flex-col gap-stack-sm">
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Start a New Analysis</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">Deploy deep forensic inspection on suspicious media. Our ensemble models will analyze metadata, error level analysis, and generative artifacts.</p>
+</header>
+<!-- Upload Zone (Bento Primary Action) -->
+<div class="w-full bg-surface-container-lowest border-2 border-dashed border-outline-variant rounded-xl flex flex-col items-center justify-center py-24 px-8 gap-stack-md transition-colors duration-200 hover:bg-surface-container-low hover:border-primary cursor-pointer relative overflow-hidden group" id="dropzone">
+<div class="bg-surface-container flex items-center justify-center w-20 h-20 rounded-full mb-stack-sm group-hover:scale-110 transition-transform duration-300">
+<span class="material-symbols-outlined text-[40px] text-primary">cloud_upload</span>
+</div>
+<div class="text-center flex flex-col gap-stack-sm">
+<h3 class="font-headline-md text-headline-md text-on-surface">Drag and drop an image or click to browse</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Supports JPG, PNG, WEBP up to 20MB.</p>
+</div>
+<button class="mt-stack-sm px-6 py-3 bg-primary text-on-primary rounded-lg font-label-md text-label-md hover:opacity-90 transition-opacity shadow-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-on-primary text-[18px]">search</span>
+                Select File
+            </button>
+<!-- Hidden Input for actual functionality -->
+<input accept=".jpg,.jpeg,.png,.webp" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" type="file"/>
+</div>
+<!-- Recent Activity Section -->
+<section class="mt-stack-md flex flex-col gap-stack-md">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-md text-headline-md text-on-surface">Recent Activity</h3>
+<a class="font-label-sm text-label-sm text-primary hover:underline flex items-center gap-1" href="#">
+                    View All <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<!-- Activity Item 1 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-stack-md flex flex-col gap-stack-sm hover:border-outline transition-colors">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline text-[20px]">image</span>
+<span class="font-mono-sm text-mono-sm text-on-surface font-medium truncate w-32" title="evidence_a14_src.jpg">evidence_a14_src.jpg</span>
+</div>
+<span class="bg-error-container text-on-error-container px-2 py-1 rounded-full font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px] text-on-error-container">warning</span> AI Generated
+                        </span>
+</div>
+<div class="flex items-center justify-between mt-auto pt-stack-sm border-t border-surface-variant">
+<span class="font-body-sm text-body-sm text-on-surface-variant">2 hours ago</span>
+<button class="font-label-sm text-label-sm text-primary hover:underline">View Report</button>
+</div>
+</div>
+<!-- Activity Item 2 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-stack-md flex flex-col gap-stack-sm hover:border-outline transition-colors">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline text-[20px]">image</span>
+<span class="font-mono-sm text-mono-sm text-on-surface font-medium truncate w-32" title="IMG_8829_unverified.png">IMG_8829_unveri...</span>
+</div>
+<span class="bg-secondary-container text-on-secondary-container px-2 py-1 rounded-full font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px] text-on-secondary-container">check_circle</span> Authentic
+                        </span>
+</div>
+<div class="flex items-center justify-between mt-auto pt-stack-sm border-t border-surface-variant">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Yesterday, 14:30</span>
+<button class="font-label-sm text-label-sm text-primary hover:underline">View Report</button>
+</div>
+</div>
+<!-- Activity Item 3 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-stack-md flex flex-col gap-stack-sm hover:border-outline transition-colors">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline text-[20px]">image</span>
+<span class="font-mono-sm text-mono-sm text-on-surface font-medium truncate w-32" title="screenshot_2024.webp">screenshot_2024...</span>
+</div>
+<span class="bg-surface-variant text-on-surface-variant px-2 py-1 rounded-full font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px] text-on-surface-variant">sync</span> In Progress
+                        </span>
+</div>
+<div class="flex items-center justify-between mt-auto pt-stack-sm border-t border-surface-variant">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Just now</span>
+<div class="w-16 h-1 bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-primary w-2/3 animate-pulse"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<script>
+        // Simple drag and drop visual feedback script
+        const dropzone = document.getElementById('dropzone');
+        
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropzone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropzone.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropzone.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight(e) {
+            dropzone.classList.add('border-primary', 'bg-surface-container-low');
+            dropzone.classList.remove('border-outline-variant', 'bg-surface-container-lowest');
+        }
+
+        function unhighlight(e) {
+            dropzone.classList.remove('border-primary', 'bg-surface-container-low');
+            dropzone.classList.add('border-outline-variant', 'bg-surface-container-lowest');
+        }
+    </script>
+</body></html>
