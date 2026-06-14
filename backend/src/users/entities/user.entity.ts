@@ -5,7 +5,11 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
   Index,
+  OneToMany,
+  DeleteDateColumn,
 } from 'typeorm';
+
+import { OtpRecord } from './otp-record.entity';
 
 @Entity()
 export class User {
@@ -32,12 +36,14 @@ export class User {
   @Column({ nullable: false })
   password: string;
 
-  @Column({ default: false })
-  isDeleted: boolean;
+  @DeleteDateColumn({ nullable: true })
+  deletedAt: Date | null;
 
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @OneToMany(() => OtpRecord, (otp) => otp.user) otpRecord: OtpRecord;
 }

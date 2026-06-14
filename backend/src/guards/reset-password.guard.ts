@@ -1,40 +1,41 @@
 import {
   CanActivate,
   ExecutionContext,
-  Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
+import { COOKIE_NAMES } from 'src/common/cookie';
 import { User } from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
 
-@Injectable()
-export class AuthGuard implements CanActivate {
+export class ResetPasswordGuard implements CanActivate {
   constructor(
-    private readonly jwtService: JwtService,
+    private jwtService: JwtService,
 
     @InjectRepository(User)
-    private readonly userRepo: Repository<User>,
+    private userRepo: Repository<User>,
   ) {}
-
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const response = context.switchToHttp().getResponse();
 
-    const accessToken = request.cookies['truth-access-token'];
+    const verificationToken = request.cookies[COOKIE_NAMES.VERIFICATION_TOKEN];
 
-    if (!accessToken) {
-      throw new UnauthorizedException('Access token not found.');
-    }
+    if (!verificationToken)
+      throw new UnauthorizedException('Cannot find verification token');
 
     try {
-      const decodedData = this.jwtService.verify(accessToken, {
+      const decodedData = this.jwtService.verify(verificationToken, {
         secret: process.env.JWT_SECRET,
       });
+      if (!decodedData)
+        throw new UnauthorizedException('Invalid or expired token.');
 
       const user = await this.userRepo.findOne({
-        where: { id: decodedData.id },
+        where: {
+          id: decodedData.id,
+        },
       });
 
       if (!user || user.deletedAt) {
@@ -44,8 +45,7 @@ export class AuthGuard implements CanActivate {
           sameSite: 'lax' as const,
         };
 
-        response.clearCookie('truth-access-token', cookieOptions);
-        response.clearCookie('truth-refresh-token', cookieOptions);
+        response.clearCookie(COOKIE_NAMES.VERIFICATION_TOKEN, cookieOptions);
 
         throw new UnauthorizedException('User account no longer exists.');
       }
@@ -58,11 +58,10 @@ export class AuthGuard implements CanActivate {
 
       return true;
     } catch (err) {
-      if (err?.name === 'TokenExpiredError') {
-        throw new UnauthorizedException('Expired access token.');
-      }
+      if (err?.name === 'TokenExpiredError')
+        throw new UnauthorizedException('Expired  token.');
 
-      throw new UnauthorizedException('Invalid access token.');
+      throw new UnauthorizedException('Invalid  token.');
     }
   }
 }
