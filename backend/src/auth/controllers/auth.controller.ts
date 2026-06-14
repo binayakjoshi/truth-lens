@@ -10,7 +10,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import type { Response, Request } from 'express';
-import { COOKIE_NAMES } from 'src/common/cookie';
+import { COOKIE_NAMES, COOKIE_OPTIONS } from 'src/common/cookie';
 import { Auth } from 'src/common/decorators/auth.decorator';
 import { Serialize } from 'src/common/decorators/serialize';
 import { RefreshTokenGuard } from 'src/guards/refresh-token.guard';
@@ -21,6 +21,8 @@ import { LoginDto } from '../dtos/login-dto';
 import { ResendOtpDto } from '../dtos/resend-otp.dto';
 import { VerifyOtpDto } from '../dtos/verify-otp.dto';
 import { AuthService } from '../services/auth.service';
+import { GoogleAuthGuard } from 'src/guards/google-auth.guard';
+import { User } from 'src/users/entities/user.entity';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -118,6 +120,7 @@ export class AuthController {
       data: null,
     };
   }
+
   @Get('/refresh')
   @UseGuards(RefreshTokenGuard)
   @UseInterceptors(CookieInterceptor)
@@ -157,5 +160,28 @@ export class AuthController {
       status: 200,
       data: null,
     };
+  }
+
+  @Get('google')
+  @UseGuards(GoogleAuthGuard)
+  googleAuth(): void {}
+
+  @Get('google/callback')
+  @UseGuards(GoogleAuthGuard)
+  async googleCallback(
+    @Req() req: Request & { user: User },
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<void> {
+    const { accessToken, refreshToken } = await this.authService.googleLogin(
+      req.user,
+    );
+    res.cookie(COOKIE_NAMES.ACCESS_TOKEN, accessToken, COOKIE_OPTIONS.ACCESS);
+    res.cookie(
+      COOKIE_NAMES.REFRESH_TOKEN,
+      refreshToken,
+      COOKIE_OPTIONS.REFRESH,
+    );
+
+    res.redirect(process.env.FRONTEND_URL ?? 'http://localhost:3000');
   }
 }

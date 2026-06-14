@@ -50,13 +50,17 @@ export class AuthService {
     } else if (email) {
       user = await this.userRepo.findOne({ where: { email } });
 
-      if (!user) {
+      if (!user)
         throw new NotFoundException(
           'Could not find user with the provided email',
         );
-      }
     }
     if (!user) throw new NotFoundException('Could not find user');
+
+    if (!user.password)
+      throw new UnauthorizedException(
+        'This account is linked to Google. Please sign in with Google instead.',
+      );
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
@@ -303,6 +307,88 @@ export class AuthService {
       verificationToken,
       user: userData,
     });
+  }
+
+  async findOrCreateGoogleUser(googleUser: {
+    googleId: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+  }): Promise<User> {
+    const { googleId, email, firstName, lastName } = googleUser;
+
+    const byGoogleId = await this.userRepo.findOne({ where: { googleId } });
+    if (byGoogleId) return byGoogleId;
+
+    const byEmail = await this.userRepo.findOne({ where: { email } });
+    if (byEmail) {
+      byEmail.googleId = googleId;
+      byEmail.isVerified = true;
+      await this.userRepo.save(byEmail); // ← await first
+      return byEmail; // ← then return
+    }
+
+    const username = await this.generateUniqueUsername(firstName, lastName);
+
+    const newUser = this.userRepo.create({
+      googleId,
+      email,
+      firstName,
+      lastName,
+      username,
+      password: undefined,
+      isVerified: true,
+    });
+
+    await this.userRepo.save(newUser); // ← await first
+    return newUser; // ← then return
+  }
+
+  async googleLogin(
+    user: User,
+  ): Promise<{ accessToken: string; refreshToken: string; userData: object }> {
+    if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET is not defined');
+
+    const userData = {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+    };
+
+    const accessToken = this.jwtService.sign(userData, {
+      secret: process.env.JWT_SECRET,
+      expiresIn: '15m',
+    });
+
+    const refreshToken = this.jwtService.sign(userData, {
+      secret: process.env.JWT_SECRET,
+      expiresIn: '7d',
+    });
+
+    return { accessToken, refreshToken, userData };
+  }
+
+  private async generateUniqueUsername(
+    firstName: string,
+    lastName: string,
+  ): Promise<string> {
+    const normalize = (s: string) =>
+      s
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]/g, '');
+
+    const base = `${normalize(firstName)}.${normalize(lastName)}`;
+    let username = base;
+    let counter = 1;
+
+    while (await this.userRepo.findOne({ where: { username } })) {
+      username = `${base}${counter}`;
+      counter++;
+    }
+
+    return username;
   }
 
   private generateOtp(): string {

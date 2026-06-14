@@ -5,6 +5,7 @@ import {
   HttpStatus,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
@@ -76,6 +77,10 @@ export class UsersService {
     if (!user)
       throw new NotFoundException(
         'Could not find user for the provided email.',
+      );
+    if (!user.password && user.googleId)
+      throw new UnauthorizedException(
+        'Cannot reset password for accounts linked with google.',
       );
     const code = this.generateOtp();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000);

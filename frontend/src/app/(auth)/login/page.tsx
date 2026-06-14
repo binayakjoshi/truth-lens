@@ -22,6 +22,7 @@ import Input from "@/components/custom-elements/input";
 import { useUser } from "@/context/user-context";
 import { useForm } from "@/hooks/use-form";
 import { VALIDATOR_EMAIL, VALIDATOR_PASSWORD } from "@/lib/validators";
+import ContinueWithGoogle from "@/components/auth/continue-google";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -143,7 +144,6 @@ export default function LoginPage() {
             Forgot password?
           </Link>
         </Box>
-
         <Button
           type="submit"
           variant="contained"
@@ -163,7 +163,7 @@ export default function LoginPage() {
             OR
           </Typography>
         </Divider>
-
+        <ContinueWithGoogle />
         <Typography
           variant="body2"
           color="text.secondary"

@@ -27,6 +27,7 @@ import {
   VALIDATOR_USERNAME,
   VALIDATOR_PASSWORD,
 } from "@/lib/validators";
+import ContinueWithGoogle from "@/components/auth/continue-google";
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -204,7 +205,7 @@ export default function RegisterPage() {
             OR
           </Typography>
         </Divider>
-
+        <ContinueWithGoogle />
         <Typography
           variant="body2"
           color="text.secondary"
