@@ -37,9 +37,9 @@ export class CreateUserDto {
   @IsNotEmpty()
   @Transform(({ value }) => value?.trim())
   @MinLength(8, { message: 'Password must be at least 8 characters long' })
-  @Matches(/^(?=.*[0-9])(?=.*[!@#$%^&*])/, {
+  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*]).+$/, {
     message:
-      'Password must contain at least one number and one special character',
+      'Password must contain at least one uppercase letter, one number and one special character',
   })
   password: string;
 }
