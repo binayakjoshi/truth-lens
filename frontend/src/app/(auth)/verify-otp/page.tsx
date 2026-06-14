@@ -99,7 +99,7 @@ export default function VerifyOtpPage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        if (res.status === 409 || res.status == 404 || res.status === 401)
+        if (res.status === 409 || res.status === 404 || res.status === 401)
           toast.error(data.message);
         else toast.error("Could not verify otp code. Please try again later.");
 
@@ -112,7 +112,7 @@ export default function VerifyOtpPage() {
     } finally {
       setIsVerifying(false);
     }
-  }, [isComplete, otp, router]);
+  }, [isComplete, otp, router, verificationEmail]);
 
   // Auto-submit once all digits are filled
   useEffect(() => {
