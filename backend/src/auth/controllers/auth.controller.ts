@@ -13,16 +13,16 @@ import type { Response, Request } from 'express';
 import { COOKIE_NAMES, COOKIE_OPTIONS } from 'src/common/cookie';
 import { Auth } from 'src/common/decorators/auth.decorator';
 import { Serialize } from 'src/common/decorators/serialize';
+import { GoogleAuthGuard } from 'src/guards/google-auth.guard';
 import { RefreshTokenGuard } from 'src/guards/refresh-token.guard';
 import { CookieInterceptor } from 'src/interceptors/cookie-interceptor';
 import { UserResponseDto } from 'src/users/dtos/user.dto';
+import { User } from 'src/users/entities/user.entity';
 
 import { LoginDto } from '../dtos/login-dto';
 import { ResendOtpDto } from '../dtos/resend-otp.dto';
 import { VerifyOtpDto } from '../dtos/verify-otp.dto';
 import { AuthService } from '../services/auth.service';
-import { GoogleAuthGuard } from 'src/guards/google-auth.guard';
-import { User } from 'src/users/entities/user.entity';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -168,11 +168,11 @@ export class AuthController {
 
   @Get('google/callback')
   @UseGuards(GoogleAuthGuard)
-  async googleCallback(
+  googleCallback(
     @Req() req: Request & { user: User },
     @Res({ passthrough: true }) res: Response,
-  ): Promise<void> {
-    const { accessToken, refreshToken } = await this.authService.googleLogin(
+  ) {
+    const { accessToken, refreshToken } = this.authService.googleLogin(
       req.user,
     );
     res.cookie(COOKIE_NAMES.ACCESS_TOKEN, accessToken, COOKIE_OPTIONS.ACCESS);

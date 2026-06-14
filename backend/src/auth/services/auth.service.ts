@@ -344,9 +344,11 @@ export class AuthService {
     return newUser; // ← then return
   }
 
-  async googleLogin(
-    user: User,
-  ): Promise<{ accessToken: string; refreshToken: string; userData: object }> {
+  googleLogin(user: User): {
+    accessToken: string;
+    refreshToken: string;
+    userData: object;
+  } {
     if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET is not defined');
 
     const userData = {

@@ -18,6 +18,7 @@ import {
 } from "@mui/material";
 import toast from "react-hot-toast";
 
+import ContinueWithGoogle from "@/components/auth/continue-google";
 import Input from "@/components/custom-elements/input";
 import { useForm } from "@/hooks/use-form";
 import {
@@ -27,7 +28,6 @@ import {
   VALIDATOR_USERNAME,
   VALIDATOR_PASSWORD,
 } from "@/lib/validators";
-import ContinueWithGoogle from "@/components/auth/continue-google";
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);

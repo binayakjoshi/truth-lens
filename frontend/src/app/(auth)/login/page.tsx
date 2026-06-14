@@ -18,11 +18,11 @@ import {
 } from "@mui/material";
 import toast from "react-hot-toast";
 
+import ContinueWithGoogle from "@/components/auth/continue-google";
 import Input from "@/components/custom-elements/input";
 import { useUser } from "@/context/user-context";
 import { useForm } from "@/hooks/use-form";
 import { VALIDATOR_EMAIL, VALIDATOR_PASSWORD } from "@/lib/validators";
-import ContinueWithGoogle from "@/components/auth/continue-google";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
