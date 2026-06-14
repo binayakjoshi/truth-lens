@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import { useRouter } from "next/navigation";
 
-import { MarkEmailRead } from "@mui/icons-material";
+import { LockReset } from "@mui/icons-material";
 import { Box, Button, CircularProgress, Link, Typography } from "@mui/material";
 import toast from "react-hot-toast";
 
@@ -12,7 +12,7 @@ import { useUser } from "@/context/user-context";
 
 const OTP_LENGTH = 6;
 
-export default function VerifyOtpPage() {
+export default function VerifyResetPage() {
   const [digits, setDigits] = useState<string[]>(Array(OTP_LENGTH).fill(""));
   const [isVerifying, setIsVerifying] = useState(false);
   const [isResending, setIsResending] = useState(false);
@@ -20,6 +20,7 @@ export default function VerifyOtpPage() {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const router = useRouter();
   const { otpExpiration, setOtpExpiration, verificationEmail } = useUser();
+
   // Derive countdown from otpExpiration timestamp
   useEffect(() => {
     if (!otpExpiration) return;
@@ -91,28 +92,29 @@ export default function VerifyOtpPage() {
     if (!isComplete) return;
     try {
       setIsVerifying(true);
-      const res = await fetch("/api/auth/verify-otp", {
+      const res = await fetch("/api/auth/verify-reset-otp", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: verificationEmail, code: otp }),
+        body: JSON.stringify({ code: otp, email: verificationEmail }),
       });
       const data = await res.json();
       if (!res.ok) {
-        if (res.status === 409 || res.status == 404 || res.status === 401)
+        if (res.status === 409 || res.status === 404 || res.status === 401) {
           toast.error(data.message);
-        else toast.error("Could not verify otp code. Please try again later.");
-
+        } else {
+          toast.error("Could not verify code. Please try again later.");
+        }
         setDigits(Array(OTP_LENGTH).fill(""));
         focusInput(0);
         return;
       }
-      toast.success("Email verified. Welcome!");
-      router.push("/");
+      toast.success("Code verified. Set your new password.");
+      router.push("/reset-password");
     } finally {
       setIsVerifying(false);
     }
-  }, [isComplete, otp, router]);
+  }, [isComplete, otp, router, verificationEmail]);
 
   // Auto-submit once all digits are filled
   useEffect(() => {
@@ -123,16 +125,18 @@ export default function VerifyOtpPage() {
   const handleResend = async () => {
     try {
       setIsResending(true);
-      const res = await fetch("/api/auth/resend-otp", {
+      const res = await fetch("/api/auth/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: verificationEmail }),
       });
       const data = await res.json();
       if (!res.ok) {
-        if (res.status === 409 || res.status === 404) toast.error(data.message);
-        else
-          toast.error("Could not resend the otp code. Please try again later.");
+        if (res.status === 409 || res.status === 404) {
+          toast.error(data.message);
+        } else {
+          toast.error("Could not resend the code. Please try again later.");
+        }
         return;
       }
       toast.success("A new code has been sent.");
@@ -143,8 +147,10 @@ export default function VerifyOtpPage() {
       setIsResending(false);
     }
   };
+
   const fmtCountdown = (s: number) =>
     `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+
   return (
     <>
       <Box sx={{ mb: 5 }}>
@@ -161,14 +167,14 @@ export default function VerifyOtpPage() {
             opacity: 0.9,
           }}
         >
-          <MarkEmailRead sx={{ color: "#fff", fontSize: 24 }} />
+          <LockReset sx={{ color: "#fff", fontSize: 24 }} />
         </Box>
 
         <Typography variant="h4" sx={{ mb: 1, fontWeight: 700 }}>
           Check your inbox
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          We sent a 6-digit code to{" "}
+          We sent a 6-digit reset code to{" "}
           {verificationEmail ? (
             <Typography
               component="span"
@@ -181,7 +187,7 @@ export default function VerifyOtpPage() {
           ) : (
             "your email address"
           )}
-          . Enter it below to verify your account.
+          . Enter it below to continue.
         </Typography>
       </Box>
 
@@ -248,7 +254,7 @@ export default function VerifyOtpPage() {
         {isVerifying ? (
           <CircularProgress size={20} color="inherit" />
         ) : (
-          "Verify email"
+          "Verify code"
         )}
       </Button>
 
