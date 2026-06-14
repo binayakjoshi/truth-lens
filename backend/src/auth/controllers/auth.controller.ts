@@ -34,12 +34,8 @@ export class AuthController {
   ) {
     const result = (await this.authService.login(loginDto)) as any;
 
-    if (result.message.includes('verification'))
-      res.locals.verificationEmail = result.data?.email;
-    else {
-      res.locals.accessToken = result.data?.accessToken;
-      res.locals.refreshToken = result.data?.refreshToken;
-    }
+    res.locals.accessToken = result.data?.accessToken;
+    res.locals.refreshToken = result.data?.refreshToken;
 
     return {
       success: result.success,
@@ -61,6 +57,7 @@ export class AuthController {
     const result = await this.authService.tokenVerification(accessToken);
     return result;
   }
+
   @Post('/resend-otp')
   @UseInterceptors(CookieInterceptor)
   async resendOtp(
@@ -90,21 +87,11 @@ export class AuthController {
   async verifyOtp(
     @Body() verifyOtpDto: VerifyOtpDto,
 
-    @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const verificationEmail = req.cookies?.['truth-verification-email'];
-    if (!verificationEmail)
-      throw new UnauthorizedException(
-        'verification time has expired please try again.',
-      );
-    const result = (await this.authService.verifyOtp(
-      verificationEmail,
-      verifyOtpDto.code,
-    )) as any;
+    const result = (await this.authService.verifyOtp(verifyOtpDto)) as any;
     res.locals.accessToken = result.data?.accessToken;
     res.locals.refreshToken = result.data?.refreshToken;
-    res.clearCookie('truth-verification-email');
     return {
       success: result.success,
       message: result.message,
@@ -113,6 +100,24 @@ export class AuthController {
     };
   }
 
+  @Post('/verify-reset-password')
+  @UseInterceptors(CookieInterceptor)
+  async verifyResetOtp(
+    @Body() verifyOtpDto: VerifyOtpDto,
+
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = (await this.authService.verifyResetOtp(verifyOtpDto)) as any;
+
+    res.locals.verificationToken = result.data.verificationToken;
+
+    return {
+      success: result.success,
+      message: result.message,
+      status: result.status,
+      data: null,
+    };
+  }
   @Get('/refresh')
   @UseGuards(RefreshTokenGuard)
   @UseInterceptors(CookieInterceptor)

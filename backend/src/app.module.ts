@@ -6,8 +6,8 @@ import { dataSource } from 'config/db.config';
 import { PostgresConnectionCredentialsOptions } from 'typeorm/driver/postgres/PostgresConnectionCredentialsOptions.js';
 
 import { AuthModule } from './auth/auth.module';
-import { UsersModule } from './users/users.module';
 import { EmailModule } from './email/email.module';
+import { UsersModule } from './users/users.module';
 @Module({
   imports: [
     TypeOrmModule.forRoot({

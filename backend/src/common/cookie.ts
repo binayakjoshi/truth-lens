@@ -3,7 +3,7 @@ const isDev = process.env.NODE_ENV !== 'production';
 export const COOKIE_NAMES = {
   ACCESS_TOKEN: 'truth-access-token',
   REFRESH_TOKEN: 'truth-refresh-token',
-  VERIFICATION_EMAIL: 'truth-verification-email',
+  VERIFICATION_TOKEN: 'truth-verification-token',
 } as const;
 
 export const COOKIE_OPTIONS = {
@@ -22,11 +22,11 @@ export const COOKIE_OPTIONS = {
     path: '/',
   },
 
-  VERIFICATION_EMAIL: {
+  VERIFICATION: {
     httpOnly: true,
     sameSite: isDev ? ('lax' as const) : ('none' as const),
     secure: !isDev,
-    maxAge: 5 * 60 * 1000,
+    maxAge: 10 * 60 * 1000,
     path: '/',
   },
 } as const;

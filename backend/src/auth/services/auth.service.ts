@@ -10,13 +10,14 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
+import { EmailService } from 'src/email/services/email.service';
 import { OtpRecord } from 'src/users/entities/otp-record.entity';
 import { User } from 'src/users/entities/user.entity';
 import { createResponse } from 'src/utils/response-handler';
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 
 import { LoginDto } from '../dtos/login-dto';
-import { EmailService } from 'src/email/services/email.service';
+import { VerifyOtpDto } from '../dtos/verify-otp.dto';
 
 @Injectable()
 export class AuthService {
@@ -122,7 +123,7 @@ export class AuthService {
     if (!decodedUserData)
       throw new UnauthorizedException('token validation failed.');
     const user = await this.userRepo.findOne({
-      where: { id: decodedUserData.id, deletedAt: undefined },
+      where: { id: decodedUserData.id, deletedAt: IsNull() },
     });
     if (!user) throw new NotFoundException('Active user not found.');
 
@@ -142,7 +143,7 @@ export class AuthService {
       const user = await this.userRepo.findOne({
         where: {
           id: payload.id,
-          deletedAt: undefined,
+          deletedAt: IsNull(),
         },
       });
 
@@ -206,7 +207,8 @@ export class AuthService {
     );
   }
 
-  async verifyOtp(email: string, code: string) {
+  async verifyOtp(dto: VerifyOtpDto) {
+    const { email, code } = dto;
     const user = await this.userRepo.findOne({ where: { email } });
     if (!user) {
       throw new NotFoundException(
@@ -223,10 +225,12 @@ export class AuthService {
     });
 
     if (!otpRecord) {
-      throw new UnauthorizedException('Invalid or already used OTP code');
+      throw new UnauthorizedException('Invalid OTP code. Please try again.');
     }
     if (otpRecord.expiresAt < new Date()) {
-      throw new UnauthorizedException('OTP code has expired');
+      throw new UnauthorizedException(
+        'OTP code has expired. Please request for a new one.',
+      );
     }
 
     await this.otpRecordRepo.manager.transaction(async (manager) => {
@@ -252,6 +256,51 @@ export class AuthService {
     return createResponse(HttpStatus.OK, 'Email verified successfully', {
       accessToken,
       refreshToken,
+      user: userData,
+    });
+  }
+
+  async verifyResetOtp(dto: VerifyOtpDto) {
+    const { email, code } = dto;
+    const user = await this.userRepo.findOne({
+      where: { email, isVerified: true, deletedAt: IsNull() },
+    });
+    if (!user)
+      throw new NotFoundException(
+        'Could not find user with the provided email',
+      );
+
+    const otpRecord = await this.otpRecordRepo.findOne({
+      where: { userId: user.id, code, isUsed: false },
+      order: { createdAt: 'DESC' }, // always pick the latest
+    });
+
+    if (!otpRecord)
+      throw new UnauthorizedException('Invalid OTP code. Please try again.');
+    if (otpRecord.expiresAt < new Date())
+      throw new UnauthorizedException(
+        'OTP code has expired. Please request for a new one.',
+      );
+
+    await this.otpRecordRepo.manager.transaction(async (manager) => {
+      await manager.update(OtpRecord, { id: otpRecord.id }, { isUsed: true });
+      await manager.update(User, { id: user.id }, { isVerified: true });
+    });
+
+    if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET is not defined');
+    const userData = {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+    };
+
+    const verificationToken = this.jwtService.sign(userData, {
+      secret: process.env.JWT_SECRET,
+      expiresIn: '15m',
+    });
+
+    return createResponse(HttpStatus.OK, 'OTP code verified successfully.', {
+      verificationToken,
       user: userData,
     });
   }

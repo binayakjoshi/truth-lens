@@ -3,9 +3,9 @@ import {
   InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
-
 import * as nodemailer from 'nodemailer';
 import { Transporter } from 'nodemailer';
+
 import { otpEmailTemplate } from '../templates/otp-email-template';
 
 @Injectable()
