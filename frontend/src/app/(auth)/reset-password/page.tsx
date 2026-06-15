@@ -13,10 +13,10 @@ import {
   InputAdornment,
   Typography,
 } from "@mui/material";
-import toast from "react-hot-toast";
 
 import Input from "@/components/custom-elements/input";
 import { useForm } from "@/hooks/use-form";
+import { useToast } from "@/hooks/use-toast";
 import { VALIDATOR_PASSWORD } from "@/lib/validators";
 
 export default function ResetPasswordPage() {
@@ -24,6 +24,7 @@ export default function ResetPasswordPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { success, error } = useToast();
 
   const [formState, inputHandler] = useForm(
     {
@@ -53,14 +54,14 @@ export default function ResetPasswordPage() {
 
       if (!res.ok) {
         if (res.status === 400 || res.status === 404) {
-          toast.error(resData.message);
+          error(resData.message);
         } else {
-          toast.error("Something went wrong. Please try again later.");
+          error("Something went wrong. Please try again later.");
         }
         return;
       }
 
-      toast.success("Password reset successfully. Please sign in.");
+      success("Password reset successfully. Please sign in.");
       router.push("/login");
     } finally {
       setIsLoading(false);

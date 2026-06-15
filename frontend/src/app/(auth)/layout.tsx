@@ -4,6 +4,8 @@ import Image from "next/image";
 
 import { Box, Typography } from "@mui/material";
 
+import ThemeToggle from "@/components/ui/theme-toggle";
+
 export default function AuthLayout({
   children,
 }: {
@@ -133,8 +135,18 @@ export default function AuthLayout({
           py: 8,
           bgcolor: "background.paper",
           overflowY: "auto",
+          position: "relative",
         }}
       >
+        <Box
+          sx={{
+            position: "absolute",
+            top: 24,
+            right: 24,
+          }}
+        >
+          <ThemeToggle />
+        </Box>
         {/* Mobile brand */}
         <Box
           sx={{
