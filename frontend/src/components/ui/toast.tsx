@@ -1,45 +1,93 @@
-import { useEffect } from 'react';
-import { toast, ToastOptions } from 'react-hot-toast';
+"use client";
 
-type ToastVariant = 'success' | 'error' | 'warning' | 'info';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from "react";
 
-export const Toast = ({
-  variant,
-  children,
-}: {
+import { Alert, Snackbar } from "@mui/material";
+
+export type ToastVariant = "success" | "error" | "warning" | "info";
+
+type ToastState = {
+  open: boolean;
+  message: string;
   variant: ToastVariant;
-  children: React.ReactNode;
-}) => {
-  useEffect(() => {
-    const message = typeof children === 'string' ? children : JSON.stringify(children);
-    const options: ToastOptions = {
-      duration: 4000,
-      style: {
-        background: 'var(--mui-palette-background-paper)',
-        color: 'var(--mui-palette-text-primary)',
-        borderRadius: 12,
-        border: '1px solid var(--mui-palette-divider)',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-      },
-    };
-
-    switch (variant) {
-      case 'success':
-        toast.success(message, options);
-        break;
-      case 'error':
-        toast.error(message, options);
-        break;
-      case 'warning':
-        toast(message, { ...options, icon: '⚠️' });
-        break;
-      case 'info':
-        toast(message, { ...options, icon: 'ℹ️' });
-        break;
-    }
-  }, [variant, children]);
-
-  return null;
 };
 
-export default Toast;
+type ToastContextValue = {
+  toast: (message: string, variant?: ToastVariant) => void;
+  success: (message: string) => void;
+  error: (message: string) => void;
+  warning: (message: string) => void;
+  info: (message: string) => void;
+};
+
+const ToastContext = createContext<ToastContextValue | null>(null);
+
+const initialState: ToastState = {
+  open: false,
+  message: "",
+  variant: "info",
+};
+
+export function ToastProvider({ children }: { children: React.ReactNode }) {
+  const [state, setState] = useState<ToastState>(initialState);
+
+  const showToast = useCallback((message: string, variant: ToastVariant = "info") => {
+    setState({ open: true, message, variant });
+  }, []);
+
+  const handleClose = useCallback(() => {
+    setState((prev) => ({ ...prev, open: false }));
+  }, []);
+
+  const value = useMemo<ToastContextValue>(
+    () => ({
+      toast: showToast,
+      success: (message: string) => showToast(message, "success"),
+      error: (message: string) => showToast(message, "error"),
+      warning: (message: string) => showToast(message, "warning"),
+      info: (message: string) => showToast(message, "info"),
+    }),
+    [showToast],
+  );
+
+  return (
+    <ToastContext.Provider value={value}>
+      {children}
+      <Snackbar
+        open={state.open}
+        autoHideDuration={4000}
+        onClose={handleClose}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleClose}
+          severity={state.variant}
+          variant="filled"
+          sx={{
+            width: "100%",
+            borderRadius: 2,
+            fontFamily: "var(--font-roboto), sans-serif",
+            boxShadow: "0 8px 32px rgba(0,0,0,0.25)",
+            "& .MuiAlert-icon": { opacity: 0.95 },
+          }}
+        >
+          {state.message}
+        </Alert>
+      </Snackbar>
+    </ToastContext.Provider>
+  );
+}
+
+export function useToastContext() {
+  const context = useContext(ToastContext);
+  if (!context) {
+    throw new Error("useToastContext must be used within ToastProvider");
+  }
+  return context;
+}

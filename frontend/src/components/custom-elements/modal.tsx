@@ -4,9 +4,12 @@ import React from "react";
 
 import CloseIcon from "@mui/icons-material/Close";
 import {
+  Box,
+  Button,
   Dialog,
-  DialogTitle,
+  DialogActions,
   DialogContent,
+  DialogTitle,
   type DialogProps,
   IconButton,
   Typography,
@@ -25,6 +28,12 @@ interface AppModalProps {
   showCloseButton?: boolean;
   closeOnBackdrop?: boolean;
   paperSx?: SxProps<Theme>;
+  onConfirm?: () => void;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  confirmColor?: "primary" | "error";
+  confirmDisabled?: boolean;
+  hideActions?: boolean;
 }
 
 const SIZE_MAP: Record<ModalSize, DialogProps["maxWidth"]> = {
@@ -43,24 +52,19 @@ const AppModal: React.FC<AppModalProps> = ({
   showCloseButton = true,
   closeOnBackdrop = true,
   paperSx,
+  onConfirm,
+  confirmLabel = "Confirm",
+  cancelLabel = "Cancel",
+  confirmColor = "primary",
+  confirmDisabled = false,
+  hideActions = false,
 }) => {
   const handleClose: DialogProps["onClose"] = (_e, reason) => {
     if (reason === "backdropClick" && !closeOnBackdrop) return;
     onClose();
   };
-  // slotProps={{
-  //        paper: {
-  //          sx: {
-  //            borderRadius: 2,
-  //            p: { xs: 2, sm: 3 },
-  //            maxHeight: "90vh",
-  //            ...paperSx,
-  //          },
-  //        },
-  //        backdrop: {
-  //          sx: { bgcolor: "rgba(0,0,0,0.5)" },
-  //        },
-  //     }}
+
+  const showFooter = !hideActions && onConfirm !== undefined;
 
   return (
     <Dialog
@@ -74,20 +78,22 @@ const AppModal: React.FC<AppModalProps> = ({
             borderRadius: 2,
             p: { xs: 2, sm: 3 },
             maxHeight: "90vh",
-            bgcolor: "#ffffff", // ← add this
-            color: "rgba(0,0,0,0.87)", // ← and this for text
+            border: "1px solid",
+            borderColor: "divider",
             ...paperSx,
           },
         },
+        backdrop: {
+          sx: { bgcolor: "rgba(0,0,0,0.55)" },
+        },
       }}
     >
-      {/* Header */}
       {(title || showCloseButton) && (
         <DialogTitle
           component="div"
           sx={{
             p: 0,
-            mb: 3,
+            mb: 2,
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
@@ -118,8 +124,27 @@ const AppModal: React.FC<AppModalProps> = ({
         </DialogTitle>
       )}
 
-      {/* Body */}
       <DialogContent sx={{ p: 0 }}>{children}</DialogContent>
+
+      {showFooter && (
+        <DialogActions sx={{ px: 0, pt: 3, pb: 0 }}>
+          <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1.5, width: "100%" }}>
+            <Button variant="outlined" onClick={onClose}>
+              {cancelLabel}
+            </Button>
+            {onConfirm && (
+              <Button
+                variant="contained"
+                color={confirmColor}
+                disabled={confirmDisabled}
+                onClick={onConfirm}
+              >
+                {confirmLabel}
+              </Button>
+            )}
+          </Box>
+        </DialogActions>
+      )}
     </Dialog>
   );
 };

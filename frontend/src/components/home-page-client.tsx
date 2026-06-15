@@ -1,12 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import CloudUploadOutlinedIcon from "@mui/icons-material/CloudUploadOutlined";
-import AddIcon from "@mui/icons-material/Add";
-import HistoryIcon from "@mui/icons-material/History";
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import { Box, Button, Typography, Container, Grid, Paper, Stack } from "@mui/material";
 
+import AddIcon from "@mui/icons-material/Add";
+import DashboardIcon from "@mui/icons-material/Dashboard";
+import HistoryIcon from "@mui/icons-material/History";
+import {
+  Box,
+  Button,
+  Container,
+  Grid,
+  Paper,
+  Stack,
+  Typography,
+} from "@mui/material";
+
+import ThemeToggle from "@/components/ui/theme-toggle";
 import LogoutModal from "@/components/users/logout-modal";
 import { type User } from "@/context/user-context";
 
@@ -25,7 +34,6 @@ export default function HomePageClient({ user }: HomePageClientProps) {
         flexDirection: "column",
       }}
     >
-      {/* Header / Nav */}
       <Box
         component="header"
         sx={{
@@ -57,6 +65,7 @@ export default function HomePageClient({ user }: HomePageClientProps) {
         </Box>
 
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <ThemeToggle />
           {user ? (
             <LogoutModal />
           ) : (
@@ -76,10 +85,8 @@ export default function HomePageClient({ user }: HomePageClientProps) {
         </Box>
       </Box>
 
-      {/* Main Content */}
       <Container maxWidth="lg" sx={{ pt: 10, pb: 6, flex: 1 }}>
         {!user ? (
-          /* Logged out state — Landing Hero */
           <Box sx={{ textAlign: "center", maxWidth: 800, mx: "auto", mt: 8 }}>
             <Typography
               variant="h1"
@@ -103,9 +110,14 @@ export default function HomePageClient({ user }: HomePageClientProps) {
               }}
             >
               Enterprise-grade deepfake detection with Grad-CAM explainability.
-              Upload media and receive instant authenticity analysis designed for professionals.
+              Upload media and receive instant authenticity analysis designed
+              for professionals.
             </Typography>
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2} justifyContent="center">
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              spacing={2}
+              sx={{ justifyContent: "center" }}
+            >
               <Link href="/signup" style={{ textDecoration: "none" }}>
                 <Button
                   variant="contained"
@@ -135,10 +147,12 @@ export default function HomePageClient({ user }: HomePageClientProps) {
             </Stack>
           </Box>
         ) : (
-          /* Logged in state — Dashboard overview */
           <Box>
             <Box sx={{ mb: 6 }}>
-              <Typography variant="h4" sx={{ fontWeight: 600, mb: 1, letterSpacing: "-0.02em" }}>
+              <Typography
+                variant="h4"
+                sx={{ fontWeight: 600, mb: 1, letterSpacing: "-0.02em" }}
+              >
                 Overview
               </Typography>
               <Typography variant="body1" color="text.secondary">
@@ -147,7 +161,7 @@ export default function HomePageClient({ user }: HomePageClientProps) {
             </Box>
 
             <Grid container spacing={3}>
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Paper
                   elevation={0}
                   sx={{
@@ -176,16 +190,27 @@ export default function HomePageClient({ user }: HomePageClientProps) {
                   <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
                     New Analysis
                   </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                    Upload new media for deepfake inspection and metadata extraction.
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: 3 }}
+                  >
+                    Upload new media for deepfake inspection and metadata
+                    extraction.
                   </Typography>
-                  <Button variant="contained" disableElevation sx={{ mt: "auto", width: "100%" }}>
-                    Upload Media
-                  </Button>
+                  <Link href="/analysis" style={{ textDecoration: "none", width: "100%", marginTop: "auto" }}>
+                    <Button
+                      variant="contained"
+                      disableElevation
+                      fullWidth
+                    >
+                      Upload Media
+                    </Button>
+                  </Link>
                 </Paper>
               </Grid>
 
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Paper
                   elevation={0}
                   sx={{
@@ -214,19 +239,25 @@ export default function HomePageClient({ user }: HomePageClientProps) {
                   <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
                     Recent Activity
                   </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: 3 }}
+                  >
                     View your past reports and forensic history.
                   </Typography>
-                  
+
                   <Box sx={{ mt: "auto", width: "100%" }}>
-                    <Typography variant="body2" sx={{ color: "text.disabled", display: "block", textAlign: "center", py: 2, borderTop: "1px solid", borderColor: "divider" }}>
-                      No recent analyses found.
-                    </Typography>
+                    <Link href="/history" style={{ textDecoration: "none" }}>
+                      <Button variant="outlined" fullWidth>
+                        View History
+                      </Button>
+                    </Link>
                   </Box>
                 </Paper>
               </Grid>
 
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Paper
                   elevation={0}
                   sx={{
@@ -255,15 +286,49 @@ export default function HomePageClient({ user }: HomePageClientProps) {
                   <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
                     System Status
                   </Typography>
-                  
-                  <Box sx={{ mt: 2, width: "100%", display: "flex", flexDirection: "column", gap: 2 }}>
-                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <Typography variant="body2" color="text.secondary">Forensic Engine</Typography>
-                      <Typography variant="body2" sx={{ color: "success.main", fontWeight: 600 }}>Online</Typography>
+
+                  <Box
+                    sx={{
+                      mt: 2,
+                      width: "100%",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 2,
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Typography variant="body2" color="text.secondary">
+                        Forensic Engine
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{ color: "success.main", fontWeight: 600 }}
+                      >
+                        Online
+                      </Typography>
                     </Box>
-                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <Typography variant="body2" color="text.secondary">Metadata Extractor</Typography>
-                      <Typography variant="body2" sx={{ color: "success.main", fontWeight: 600 }}>Online</Typography>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Typography variant="body2" color="text.secondary">
+                        Metadata Extractor
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{ color: "success.main", fontWeight: 600 }}
+                      >
+                        Online
+                      </Typography>
                     </Box>
                   </Box>
                 </Paper>

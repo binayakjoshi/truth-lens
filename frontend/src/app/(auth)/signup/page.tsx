@@ -16,10 +16,10 @@ import {
   Link,
   Typography,
 } from "@mui/material";
-import toast from "react-hot-toast";
 
 import Input from "@/components/custom-elements/input";
 import { useForm } from "@/hooks/use-form";
+import { useToast } from "@/hooks/use-toast";
 import {
   VALIDATOR_EMAIL,
   VALIDATOR_MAXLENGTH,
@@ -32,6 +32,7 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { success, error } = useToast();
   const [formState, inputHandler] = useForm(
     {
       firstName: { value: "", isValid: false, touched: false },
@@ -68,12 +69,12 @@ export default function RegisterPage() {
       if (!res.ok) {
         setIsLoading(false);
         if (res.status === 400 || res.status === 409) {
-          toast.error(resData.message);
+          error(resData.message);
           return;
         }
       }
       if (res.ok) {
-        toast.success("Successfully created an account. Redirecting ....");
+        success("Successfully created an account. Redirecting ....");
         router.push("/login");
       }
     } finally {

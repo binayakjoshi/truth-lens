@@ -1,13 +1,8 @@
 import { cookies } from "next/headers";
-import Link from "next/link";
 
-import HomeIcon from "@mui/icons-material/Home";
-import Button from "@mui/material/Button";
-import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
-
-import LogoutModal from "@/components/users/logout-modal";
+import HomePageClient from "@/components/home-page-client";
 import { type User } from "@/context/user-context";
+
 export default async function Home() {
   let user: User | null = null;
 
@@ -29,33 +24,5 @@ export default async function Home() {
     user = null;
   }
 
-  return (
-    <Stack spacing={2} sx={{ p: 4 }}>
-      <Typography variant="h4">
-        Welcome back : {user ? user.username : "Guest User"}
-      </Typography>
-
-      {user ? (
-        <LogoutModal />
-      ) : (
-        <>
-          <Link href="/login">
-            <Button
-              variant="contained"
-              color="success"
-              startIcon={<HomeIcon />}
-            >
-              Login
-            </Button>
-          </Link>
-
-          <Link href="/signup">
-            <Button variant="outlined" color="success" startIcon={<HomeIcon />}>
-              Signup
-            </Button>
-          </Link>
-        </>
-      )}
-    </Stack>
-  );
+  return <HomePageClient user={user} />;
 }
