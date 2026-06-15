@@ -40,7 +40,7 @@ export default function ForgotPasswordPage() {
       const resData = await res.json();
 
       if (!res.ok) {
-        if (res.status === 404 || res.status === 400) {
+        if (res.status === 404 || res.status === 400 || res.status === 401) {
           error(resData.message);
         } else {
           error("Something went wrong. Please try again later.");

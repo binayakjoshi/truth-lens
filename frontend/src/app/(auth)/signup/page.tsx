@@ -17,6 +17,7 @@ import {
   Typography,
 } from "@mui/material";
 
+import ContinueWithGoogle from "@/components/auth/continue-google";
 import Input from "@/components/custom-elements/input";
 import { useForm } from "@/hooks/use-form";
 import { useToast } from "@/hooks/use-toast";
@@ -205,7 +206,7 @@ export default function RegisterPage() {
             OR
           </Typography>
         </Divider>
-
+        <ContinueWithGoogle />
         <Typography
           variant="body2"
           color="text.secondary"

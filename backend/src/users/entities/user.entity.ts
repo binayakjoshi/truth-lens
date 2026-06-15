@@ -33,8 +33,14 @@ export class User {
   @Column({ default: false })
   isVerified: boolean;
 
-  @Column({ nullable: false })
+  @Column({ nullable: true }) //need to migrate
   password: string;
+
+  @Column({
+    type: 'varchar',
+    nullable: true,
+  })
+  googleId: string | null;
 
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date | null;
