@@ -18,6 +18,7 @@ import {
 } from "@mui/material";
 import toast from "react-hot-toast";
 
+import ContinueWithGoogle from "@/components/auth/continue-google";
 import Input from "@/components/custom-elements/input";
 import { useUser } from "@/context/user-context";
 import { useForm } from "@/hooks/use-form";
@@ -143,7 +144,6 @@ export default function LoginPage() {
             Forgot password?
           </Link>
         </Box>
-
         <Button
           type="submit"
           variant="contained"
@@ -163,7 +163,7 @@ export default function LoginPage() {
             OR
           </Typography>
         </Divider>
-
+        <ContinueWithGoogle />
         <Typography
           variant="body2"
           color="text.secondary"
