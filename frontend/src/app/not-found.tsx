@@ -23,7 +23,8 @@ export default function NotFound() {
           width: 500,
           height: 500,
           borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(138,92,246,0.1) 0%, transparent 70%)",
+          background:
+            "radial-gradient(circle, rgba(138,92,246,0.1) 0%, transparent 70%)",
           filter: "blur(80px)",
           pointerEvents: "none",
           top: "20%",
@@ -36,7 +37,8 @@ export default function NotFound() {
           fontSize: "clamp(7rem, 15vw, 11rem)",
           fontWeight: 800,
           lineHeight: 1,
-          background: "linear-gradient(135deg, #8a5cf6 0%, #c084fc 50%, #8a5cf6 100%)",
+          background:
+            "linear-gradient(135deg, #8a5cf6 0%, #c084fc 50%, #8a5cf6 100%)",
           WebkitBackgroundClip: "text",
           WebkitTextFillColor: "transparent",
           letterSpacing: "-0.04em",
@@ -105,7 +107,13 @@ export default function NotFound() {
           gap: "12px",
         }}
       >
-        <div style={{ width: 32, height: 1, backgroundColor: "rgba(138,92,246,0.25)" }} />
+        <div
+          style={{
+            width: 32,
+            height: 1,
+            backgroundColor: "rgba(138,92,246,0.25)",
+          }}
+        />
         <span
           style={{
             color: "rgba(245,240,232,0.25)",
@@ -117,7 +125,13 @@ export default function NotFound() {
         >
           TruthLens Forensics
         </span>
-        <div style={{ width: 32, height: 1, backgroundColor: "rgba(138,92,246,0.25)" }} />
+        <div
+          style={{
+            width: 32,
+            height: 1,
+            backgroundColor: "rgba(138,92,246,0.25)",
+          }}
+        />
       </div>
     </div>
   );

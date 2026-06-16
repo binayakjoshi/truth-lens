@@ -27,6 +27,9 @@ const playfair = Playfair_Display({
 export const metadata: Metadata = {
   title: "Truth Lens",
   description: "A web application to detect AI generated images",
+  icons: {
+    icon: "/icon.png",
+  },
 };
 
 export default async function RootLayout({
