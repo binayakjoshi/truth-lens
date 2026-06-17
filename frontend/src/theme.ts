@@ -26,15 +26,15 @@ const palettes: Record<
 > = {
   dark: {
     mode: "dark",
-    background: { default: "#0c0c0e", paper: "#111114" },
+    background: { default: "#0c0c0e", paper: "#16161a" },
     text: {
       primary: "#f5f0e8",
-      secondary: "rgba(245,240,232,0.45)",
-      disabled: "rgba(245,240,232,0.25)",
+      secondary: "rgba(245,240,232,0.65)",
+      disabled: "rgba(245,240,232,0.35)",
     },
-    divider: "rgba(255,255,255,0.08)",
-    inputBg: "rgba(255,255,255,0.03)",
-    disabledButtonBg: "rgba(255,255,255,0.06)",
+    divider: "rgba(255,255,255,0.12)",
+    inputBg: "rgba(255,255,255,0.05)",
+    disabledButtonBg: "rgba(255,255,255,0.08)",
   },
   light: {
     mode: "light",
@@ -65,7 +65,7 @@ export function createAppTheme(mode: ThemeMode) {
     },
     shape: sharedTokens.shape,
     typography: {
-      fontFamily: "var(--font-playfair), serif",
+      fontFamily: "var(--font-roboto), sans-serif",
       body1: { fontFamily: "var(--font-roboto), sans-serif" },
       body2: { fontFamily: "var(--font-roboto), sans-serif" },
       caption: { fontFamily: "var(--font-roboto), sans-serif" },
@@ -99,7 +99,7 @@ export function createAppTheme(mode: ThemeMode) {
         styleOverrides: {
           root: ({ theme }: { theme: Theme }) => ({
             textTransform: "none" as const,
-            fontFamily: "var(--font-playfair), serif",
+            fontFamily: "var(--font-roboto), sans-serif",
             fontWeight: 600,
             fontSize: "0.95rem",
             letterSpacing: "0.02em",
