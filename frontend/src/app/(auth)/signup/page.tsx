@@ -18,6 +18,7 @@ import {
 } from "@mui/material";
 import toast from "react-hot-toast";
 
+import ContinueWithGoogle from "@/components/auth/continue-google";
 import Input from "@/components/custom-elements/input";
 import { useForm } from "@/hooks/use-form";
 import {
@@ -204,7 +205,7 @@ export default function RegisterPage() {
             OR
           </Typography>
         </Divider>
-
+        <ContinueWithGoogle />
         <Typography
           variant="body2"
           color="text.secondary"

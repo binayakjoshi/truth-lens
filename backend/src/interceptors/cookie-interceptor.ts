@@ -17,20 +17,27 @@ export class CookieInterceptor implements NestInterceptor {
       map((result) => {
         const accessToken = response.locals?.accessToken;
         const refreshToken = response.locals?.refreshToken;
-        if (accessToken) {
+
+        const verificationToken = response.locals?.verificationToken;
+        if (accessToken)
           response.cookie(
             COOKIE_NAMES.ACCESS_TOKEN,
             accessToken,
             COOKIE_OPTIONS.ACCESS,
           );
-        }
-        if (refreshToken) {
+
+        if (refreshToken)
           response.cookie(
             COOKIE_NAMES.REFRESH_TOKEN,
             refreshToken,
             COOKIE_OPTIONS.REFRESH,
           );
-        }
+        if (verificationToken)
+          response.cookie(
+            COOKIE_NAMES.VERIFICATION_TOKEN,
+            verificationToken,
+            COOKIE_OPTIONS.VERIFICATION,
+          );
         return result;
       }),
     );

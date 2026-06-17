@@ -18,6 +18,10 @@ interface UserContextValue {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  otpExpiration: string | null;
+  setOtpExpiration: (exp: string) => void;
+  verificationEmail: string | null;
+  setVerificationEmail: (email: string) => void;
   fetchUser: () => void;
   logout: () => void;
 }
@@ -27,7 +31,11 @@ const UserContext = createContext<UserContextValue | undefined>(undefined);
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [otpExpiration, setOtpExpiration] = useState<string | null>(null);
 
+  const [verificationEmail, setVerificationEmail] = useState<string | null>(
+    null,
+  );
   const fetchUser = useCallback(() => {
     void (async () => {
       try {
@@ -78,10 +86,14 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     <UserContext.Provider
       value={{
         user,
+        verificationEmail,
+        setVerificationEmail,
         isLoading,
         isAuthenticated: !!user,
         fetchUser,
         logout,
+        otpExpiration,
+        setOtpExpiration,
       }}
     >
       {children}

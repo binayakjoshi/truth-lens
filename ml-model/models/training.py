@@ -48,7 +48,7 @@ image_datasets = {
 
 dataloaders = {
     x: DataLoader(
-        image_datasets[x], batch_size=32, shuffle=True, num_workers=0, pin_memory=True
+        image_datasets[x], batch_size=32, shuffle=True, num_workers=4, pin_memory=True
     )
     for x in ["train", "valid", "test"]
 }

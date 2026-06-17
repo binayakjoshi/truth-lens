@@ -37,7 +37,7 @@ export class AuthGuard implements CanActivate {
         where: { id: decodedData.id },
       });
 
-      if (!user || user.isDeleted) {
+      if (!user || user.deletedAt) {
         const cookieOptions = {
           httpOnly: true,
           secure: true,

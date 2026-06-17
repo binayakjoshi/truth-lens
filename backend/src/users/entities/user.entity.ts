@@ -5,7 +5,11 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
   Index,
+  OneToMany,
+  DeleteDateColumn,
 } from 'typeorm';
+
+import { OtpRecord } from './otp-record.entity';
 
 @Entity()
 export class User {
@@ -29,15 +33,23 @@ export class User {
   @Column({ default: false })
   isVerified: boolean;
 
-  @Column({ nullable: false })
+  @Column({ nullable: true }) //need to migrate
   password: string;
 
-  @Column({ default: false })
-  isDeleted: boolean;
+  @Column({
+    type: 'varchar',
+    nullable: true,
+  })
+  googleId: string | null;
+
+  @DeleteDateColumn({ nullable: true })
+  deletedAt: Date | null;
 
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @OneToMany(() => OtpRecord, (otp) => otp.user) otpRecord: OtpRecord;
 }

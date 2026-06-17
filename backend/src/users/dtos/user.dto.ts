@@ -29,5 +29,5 @@ export class UserResponseDto {
   password: string;
 
   @Exclude()
-  isDeleted: boolean;
+  deletedAt: boolean;
 }

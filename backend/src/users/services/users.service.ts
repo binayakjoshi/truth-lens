@@ -1,3 +1,5 @@
+import { randomInt } from 'crypto';
+
 import {
   ConflictException,
   HttpStatus,
@@ -5,15 +7,17 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
+import { EmailService } from 'src/email/services/email.service';
 import { createResponse } from 'src/utils/response-handler';
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 
 import { CreateUserDto } from '../dtos/create-user.dto';
-import { LoginDto } from '../dtos/login-dto';
+import { ForgotPasswordDto } from '../dtos/forgot-password.dto';
+import { ResetPasswordDto } from '../dtos/reset-password.dto';
 import { UpdateUserDto } from '../dtos/update-user.dto';
+import { OtpRecord } from '../entities/otp-record.entity';
 import { User } from '../entities/user.entity';
 @Injectable()
 export class UsersService {
@@ -21,7 +25,9 @@ export class UsersService {
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
 
-    private readonly jwtService: JwtService,
+    @InjectRepository(OtpRecord)
+    private readonly otpRepo: Repository<OtpRecord>,
+    private readonly emailService: EmailService,
   ) {}
   async create(createUserDto: CreateUserDto) {
     const { username, email, password, firstName, lastName } = createUserDto;
@@ -48,7 +54,7 @@ export class UsersService {
       email,
       password: hashedPassword,
       isVerified: false,
-      isDeleted: false,
+      deletedAt: null,
     });
 
     const savedUser = await this.userRepo.save(user);
@@ -62,120 +68,63 @@ export class UsersService {
     );
   }
 
-  async login(loginDto: LoginDto) {
-    const { username, email, password } = loginDto;
+  async forgotPassword(dto: ForgotPasswordDto) {
+    const { email } = dto;
 
-    if (!username && !email) {
-      throw new ConflictException('Username or email must be provided');
-    }
-
-    let user: User | null = null;
-
-    if (username) {
-      user = await this.userRepo.findOne({ where: { username } });
-
-      if (!user) {
-        throw new NotFoundException(
-          'Could not find user with the provided username',
-        );
-      }
-    } else if (email) {
-      user = await this.userRepo.findOne({ where: { email } });
-
-      if (!user) {
-        throw new NotFoundException(
-          'Could not find user with the provided email',
-        );
-      }
-    }
-    if (!user) throw new NotFoundException('Could not find user');
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials. Please try again.');
-    }
-
-    if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET is not defined');
-
-    const userData = {
-      id: user.id,
-      username: user.username,
-      email: user.email,
-    };
-    const accessToken = this.jwtService.sign(userData, {
-      secret: process.env.JWT_SECRET,
-      expiresIn: '15m',
-    });
-
-    const refreshToken = this.jwtService.sign(userData, {
-      secret: process.env.JWT_SECRET,
-      expiresIn: '7d',
-    });
-    return createResponse(HttpStatus.OK, 'Login successful', {
-      accessToken,
-      refreshToken,
-      user: userData,
-    });
-  }
-
-  async tokenVerification(accessToken: string) {
-    if (!process.env.JWT_SECRET) {
-      throw new NotFoundException('JWT secret is not provided');
-    }
-
-    const decodedUserData = this.jwtService.verify(accessToken, {
-      secret: process.env.JWT_SECRET,
-    });
-
-    if (!decodedUserData)
-      throw new UnauthorizedException('token validation failed.');
     const user = await this.userRepo.findOne({
-      where: { id: decodedUserData.id, isDeleted: false },
+      where: { email, deletedAt: IsNull(), isVerified: true },
     });
-    if (!user) throw new NotFoundException('Active user not found.');
+    if (!user)
+      throw new NotFoundException(
+        'Could not find user for the provided email.',
+      );
+    if (!user.password && user.googleId)
+      throw new UnauthorizedException(
+        'Cannot reset password for accounts linked with google.',
+      );
+    const code = this.generateOtp();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+    const otpRecord = this.otpRepo.create({
+      user,
+      userId: user.id,
+      expiresAt,
+      code,
+    });
+    this.otpRepo.save(otpRecord);
 
-    return createResponse(HttpStatus.OK, 'token validated successfully.', user);
+    this.emailService
+      .sendOtpEmail(user.email, user.firstName, code)
+      .catch(() => {});
+
+    return createResponse(
+      HttpStatus.OK,
+      `A 6-digit verification code has been sent to ${user.email}`,
+      {
+        email: user.email,
+        expiresAt: otpRecord.expiresAt,
+      },
+    );
   }
 
-  async refreshAccessToken(refreshToken: string) {
-    if (!process.env.JWT_SECRET) {
-      throw new Error('JWT_SECRET is not defined');
-    }
+  async resetPassword(dto: ResetPasswordDto, id: string) {
+    const { password } = dto;
 
-    try {
-      const payload = this.jwtService.verify(refreshToken, {
-        secret: process.env.JWT_SECRET,
-      });
+    const user = await this.userRepo.findOne({ where: { id } });
 
-      const user = await this.userRepo.findOne({
-        where: {
-          id: payload.id,
-          isDeleted: false,
-        },
-      });
+    if (!user) throw new NotFoundException('Active user not found');
 
-      if (!user) {
-        throw new UnauthorizedException('User not found');
-      }
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-      const newAccessToken = this.jwtService.sign(
-        {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-        },
-        {
-          secret: process.env.JWT_SECRET,
-          expiresIn: '15m',
-        },
-      );
+    user.password = hashedPassword;
 
-      return createResponse(HttpStatus.OK, 'Access token refreshed', {
-        accessToken: newAccessToken,
-      });
-    } catch {
-      throw new UnauthorizedException('Invalid refresh token');
-    }
+    await this.userRepo.save(user);
+    return createResponse(
+      HttpStatus.OK,
+      'Password updated sucessfully. Please Login with your new password.',
+    );
+  }
+  private generateOtp(): string {
+    return String(randomInt(0, 1_000_000)).padStart(6, '0');
   }
   findOne(id: number) {
     return `This action returns a #${id} user`;

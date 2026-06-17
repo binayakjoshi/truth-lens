@@ -18,6 +18,7 @@ import {
 } from "@mui/material";
 import toast from "react-hot-toast";
 
+import ContinueWithGoogle from "@/components/auth/continue-google";
 import Input from "@/components/custom-elements/input";
 import { useUser } from "@/context/user-context";
 import { useForm } from "@/hooks/use-form";
@@ -27,7 +28,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const { fetchUser } = useUser();
+  const { fetchUser, setOtpExpiration, setVerificationEmail } = useUser();
   const [formState, inputHandler] = useForm(
     {
       email: { value: "", isValid: false, touched: false },
@@ -62,6 +63,13 @@ export default function LoginPage() {
         }
       }
       if (res.ok) {
+        if (resData.message.includes("verification")) {
+          setOtpExpiration(resData.data.otpExpiration);
+          setVerificationEmail(resData.data.email);
+          toast.success("Account not verifed. Please verify your email");
+          router.push("/verify-otp");
+          return;
+        }
         fetchUser();
         toast.success("Login successful. Redirecting ....");
         router.push("/");
@@ -136,7 +144,6 @@ export default function LoginPage() {
             Forgot password?
           </Link>
         </Box>
-
         <Button
           type="submit"
           variant="contained"
@@ -156,7 +163,7 @@ export default function LoginPage() {
             OR
           </Typography>
         </Divider>
-
+        <ContinueWithGoogle />
         <Typography
           variant="body2"
           color="text.secondary"
