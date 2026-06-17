@@ -3,8 +3,8 @@ import { cookies } from "next/headers";
 
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import type { Metadata } from "next";
+import { Toaster } from "react-hot-toast";
 
-import { ToastProvider } from "@/components/ui/toast";
 import { ThemeProvider } from "@/context/theme-context";
 import { UserProvider } from "@/context/user-context";
 import { parseThemeMode, THEME_COOKIE } from "@/lib/theme-cookie";
@@ -50,7 +50,8 @@ export default async function RootLayout({
         <UserProvider>
           <AppRouterCacheProvider options={{ enableCssLayer: true }}>
             <ThemeProvider initialMode={initialMode}>
-              <ToastProvider>{children}</ToastProvider>
+              <Toaster position="bottom-right" />
+              {children}
             </ThemeProvider>
           </AppRouterCacheProvider>
         </UserProvider>

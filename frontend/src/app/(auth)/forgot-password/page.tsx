@@ -5,18 +5,18 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Box, Button, CircularProgress, Typography } from "@mui/material";
+import toast from "react-hot-toast";
 
 import Input from "@/components/custom-elements/input";
 import { useUser } from "@/context/user-context";
 import { useForm } from "@/hooks/use-form";
-import { useToast } from "@/hooks/use-toast";
 import { VALIDATOR_EMAIL } from "@/lib/validators";
 
 export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { setOtpExpiration, setVerificationEmail } = useUser();
-  const { success, error } = useToast();
+
   const [formState, inputHandler] = useForm(
     {
       email: { value: "", isValid: false, touched: false },
@@ -41,16 +41,16 @@ export default function ForgotPasswordPage() {
 
       if (!res.ok) {
         if (res.status === 404 || res.status === 400 || res.status === 401) {
-          error(resData.message);
+          toast.error(resData.message);
         } else {
-          error("Something went wrong. Please try again later.");
+          toast.error("Something went wrong. Please try again later.");
         }
         return;
       }
 
       setVerificationEmail(resData.data.email);
       setOtpExpiration(resData.data.otpExpiration);
-      success("Reset code sent. Check your inbox.");
+      toast.success("Reset code sent. Check your inbox.");
       router.push("/verify-reset");
     } finally {
       setIsLoading(false);

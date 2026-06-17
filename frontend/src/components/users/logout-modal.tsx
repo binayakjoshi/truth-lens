@@ -3,23 +3,22 @@
 import { useState } from "react";
 
 import { Button } from "@mui/material";
+import toast from "react-hot-toast";
 
 import AppModal from "@/components/custom-elements/modal";
 import { useUser } from "@/context/user-context";
-import { useToast } from "@/hooks/use-toast";
 
 const LogoutModal = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { logout } = useUser();
-  const { error } = useToast();
 
   const handleLogout = () => {
     try {
       setIsLoading(true);
       logout();
     } catch {
-      error("Failed to log out. Please try again.");
+      toast.error("Failed to log out. Please try again.");
     } finally {
       setIsLoading(false);
       setIsOpen(false);

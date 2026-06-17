@@ -6,9 +6,9 @@ import { useRouter } from "next/navigation";
 
 import { MarkEmailRead } from "@mui/icons-material";
 import { Box, Button, CircularProgress, Link, Typography } from "@mui/material";
+import toast from "react-hot-toast";
 
 import { useUser } from "@/context/user-context";
-import { useToast } from "@/hooks/use-toast";
 
 const OTP_LENGTH = 6;
 
@@ -20,7 +20,7 @@ export default function VerifyOtpPage() {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const router = useRouter();
   const { otpExpiration, setOtpExpiration, verificationEmail } = useUser();
-  const { success, error } = useToast();
+
   // Derive countdown from otpExpiration timestamp
   useEffect(() => {
     if (!otpExpiration) return;
@@ -101,19 +101,19 @@ export default function VerifyOtpPage() {
       const data = await res.json();
       if (!res.ok) {
         if (res.status === 409 || res.status === 404 || res.status === 401)
-          error(data.message);
-        else error("Could not verify otp code. Please try again later.");
+          toast.error(data.message);
+        else toast.error("Could not verify otp code. Please try again later.");
 
         setDigits(Array(OTP_LENGTH).fill(""));
         focusInput(0);
         return;
       }
-      success("Email verified. Welcome!");
+      toast.success("Email verified. Welcome!");
       router.push("/");
     } finally {
       setIsVerifying(false);
     }
-  }, [isComplete, otp, router, verificationEmail, error, success]);
+  }, [isComplete, otp, router, verificationEmail]);
 
   // Auto-submit once all digits are filled
   useEffect(() => {
@@ -131,11 +131,12 @@ export default function VerifyOtpPage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        if (res.status === 409 || res.status === 404) error(data.message);
-        else error("Could not resend the otp code. Please try again later.");
+        if (res.status === 409 || res.status === 404) toast.error(data.message);
+        else
+          toast.error("Could not resend the otp code. Please try again later.");
         return;
       }
-      success("A new code has been sent.");
+      toast.success("A new code has been sent.");
       setOtpExpiration(data.data.otpExpiration);
       setDigits(Array(OTP_LENGTH).fill(""));
       focusInput(0);

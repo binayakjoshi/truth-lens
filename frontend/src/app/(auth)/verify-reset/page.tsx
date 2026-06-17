@@ -6,9 +6,9 @@ import { useRouter } from "next/navigation";
 
 import { LockReset } from "@mui/icons-material";
 import { Box, Button, CircularProgress, Link, Typography } from "@mui/material";
+import toast from "react-hot-toast";
 
 import { useUser } from "@/context/user-context";
-import { useToast } from "@/hooks/use-toast";
 
 const OTP_LENGTH = 6;
 
@@ -20,7 +20,6 @@ export default function VerifyResetPage() {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const router = useRouter();
   const { otpExpiration, setOtpExpiration, verificationEmail } = useUser();
-  const { success, error } = useToast();
 
   // Derive countdown from otpExpiration timestamp
   useEffect(() => {
@@ -102,20 +101,20 @@ export default function VerifyResetPage() {
       const data = await res.json();
       if (!res.ok) {
         if (res.status === 409 || res.status === 404 || res.status === 401) {
-          error(data.message);
+          toast.error(data.message);
         } else {
-          error("Could not verify code. Please try again later.");
+          toast.error("Could not verify code. Please try again later.");
         }
         setDigits(Array(OTP_LENGTH).fill(""));
         focusInput(0);
         return;
       }
-      success("Code verified. Set your new password.");
+      toast.success("Code verified. Set your new password.");
       router.push("/reset-password");
     } finally {
       setIsVerifying(false);
     }
-  }, [isComplete, otp, router, verificationEmail, error, success]);
+  }, [isComplete, otp, router, verificationEmail]);
 
   // Auto-submit once all digits are filled
   useEffect(() => {
@@ -134,13 +133,13 @@ export default function VerifyResetPage() {
       const data = await res.json();
       if (!res.ok) {
         if (res.status === 409 || res.status === 404) {
-          error(data.message);
+          toast.error(data.message);
         } else {
-          error("Could not resend the code. Please try again later.");
+          toast.error("Could not resend the code. Please try again later.");
         }
         return;
       }
-      success("A new code has been sent.");
+      toast.success("A new code has been sent.");
       setOtpExpiration(data.data.otpExpiration);
       setDigits(Array(OTP_LENGTH).fill(""));
       focusInput(0);
