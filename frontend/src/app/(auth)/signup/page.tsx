@@ -98,8 +98,20 @@ export default function RegisterPage() {
         onSubmit={(e) => {
           void submitHandler(e);
         }}
-        sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 2.5,
+          animation: "fadeSlideUp 0.6s ease-out forwards",
+          opacity: 0,
+        }}
       >
+        <style>{`
+          @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+        `}</style>
         {/* First name + Last name side by side */}
         <Box sx={{ display: "flex", gap: 2 }}>
           <Input
@@ -107,7 +119,6 @@ export default function RegisterPage() {
             element="input"
             type="text"
             label="First name"
-            placeholder="Jane"
             validators={[VALIDATOR_REQUIRE(), VALIDATOR_MAXLENGTH(20)]}
             errorText="First name is required (max 20 chars)."
             onInput={inputHandler}
@@ -120,7 +131,6 @@ export default function RegisterPage() {
             element="input"
             type="text"
             label="Last name"
-            placeholder="Doe"
             validators={[VALIDATOR_REQUIRE(), VALIDATOR_MAXLENGTH(20)]}
             errorText="Last name is required (max 20 chars)."
             onInput={inputHandler}
@@ -135,7 +145,6 @@ export default function RegisterPage() {
           element="input"
           type="text"
           label="Username"
-          placeholder="jane_doe42"
           validators={[VALIDATOR_USERNAME()]}
           errorText="Must start with a lowercase letter; only lowercase letters, numbers, and underscores allowed."
           onInput={inputHandler}
@@ -149,7 +158,6 @@ export default function RegisterPage() {
           element="input"
           type="email"
           label="Email address"
-          placeholder="you@example.com"
           validators={[VALIDATOR_EMAIL()]}
           errorText="Please enter a valid email address."
           onInput={inputHandler}

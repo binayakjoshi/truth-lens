@@ -74,14 +74,25 @@ export default function ForgotPasswordPage() {
         onSubmit={(e) => {
           void submitHandler(e);
         }}
-        sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 2.5,
+          animation: "fadeSlideUp 0.6s ease-out forwards",
+          opacity: 0,
+        }}
       >
+        <style>{`
+          @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+        `}</style>
         <Input
           id="email"
           element="input"
           type="email"
           label="Email address"
-          placeholder="you@example.com"
           validators={[VALIDATOR_EMAIL()]}
           errorText="Please enter a valid email address."
           onInput={inputHandler}

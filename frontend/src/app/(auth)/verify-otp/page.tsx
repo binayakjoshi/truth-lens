@@ -148,7 +148,19 @@ export default function VerifyOtpPage() {
     `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
   return (
     <>
-      <Box sx={{ mb: 5 }}>
+      <Box
+        sx={{
+          mb: 5,
+          animation: "fadeSlideUp 0.6s ease-out forwards",
+          opacity: 0,
+        }}
+      >
+        <style>{`
+          @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+        `}</style>
         <Box
           sx={{
             width: 48,
@@ -192,6 +204,8 @@ export default function VerifyOtpPage() {
           gap: { xs: 1, sm: 1.5 },
           mb: 3,
           justifyContent: "center",
+          animation: "fadeSlideUp 0.6s ease-out 0.1s forwards",
+          opacity: 0,
         }}
         onPaste={handlePaste}
       >
@@ -244,7 +258,11 @@ export default function VerifyOtpPage() {
         fullWidth
         disabled={!isComplete || isVerifying}
         onClick={() => void handleVerify()}
-        sx={{ mb: 3 }}
+        sx={{
+          mb: 3,
+          animation: "fadeSlideUp 0.6s ease-out 0.2s forwards",
+          opacity: 0,
+        }}
       >
         {isVerifying ? (
           <CircularProgress size={20} color="inherit" />
