@@ -16,12 +16,12 @@ import {
   Link,
   Typography,
 } from "@mui/material";
-import toast from "react-hot-toast";
 
 import ContinueWithGoogle from "@/components/auth/continue-google";
 import Input from "@/components/custom-elements/input";
 import { useUser } from "@/context/user-context";
 import { useForm } from "@/hooks/use-form";
+import { useToast } from "@/hooks/use-toast";
 import { VALIDATOR_EMAIL, VALIDATOR_PASSWORD } from "@/lib/validators";
 
 export default function LoginPage() {
@@ -29,6 +29,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { fetchUser, setOtpExpiration, setVerificationEmail } = useUser();
+  const { success, error } = useToast();
   const [formState, inputHandler] = useForm(
     {
       email: { value: "", isValid: false, touched: false },
@@ -58,7 +59,7 @@ export default function LoginPage() {
       if (!res.ok) {
         setIsLoading(false);
         if (res.status === 401 || res.status === 404) {
-          toast.error(resData.message);
+          error(resData.message);
           return;
         }
       }
@@ -66,12 +67,12 @@ export default function LoginPage() {
         if (resData.message.includes("verification")) {
           setOtpExpiration(resData.data.otpExpiration);
           setVerificationEmail(resData.data.email);
-          toast.success("Account not verifed. Please verify your email");
+          success("Account not verifed. Please verify your email");
           router.push("/verify-otp");
           return;
         }
         fetchUser();
-        toast.success("Login successful. Redirecting ....");
+        success("Login successful. Redirecting ....");
         router.push("/");
       }
     } finally {

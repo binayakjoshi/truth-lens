@@ -2,27 +2,28 @@
 
 import { useState } from "react";
 
-import { Button, Typography, Box } from "@mui/material";
-import toast from "react-hot-toast";
+import { Button } from "@mui/material";
 
+import AppModal from "@/components/custom-elements/modal";
 import { useUser } from "@/context/user-context";
-
-import AppModal from "../custom-elements/modal";
+import { useToast } from "@/hooks/use-toast";
 
 const LogoutModal = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { logout } = useUser();
+  const { error } = useToast();
+
   const handleLogout = () => {
     try {
       setIsLoading(true);
       logout();
     } catch {
-      toast.error("Failed to log out. Please try again.");
+      error("Failed to log out. Please try again.");
     } finally {
       setIsLoading(false);
+      setIsOpen(false);
     }
-    setIsOpen(false);
   };
 
   return (
@@ -37,27 +38,13 @@ const LogoutModal = () => {
         title="Confirm Logout"
         size="sm"
         closeOnBackdrop
+        onConfirm={handleLogout}
+        confirmLabel="Logout"
+        confirmColor="error"
+        confirmDisabled={isLoading}
       >
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
-          Are you sure you want to log out? You will need to sign in again to
-          access your account.
-        </Typography>
-
-        <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1.5 }}>
-          <Button variant="outlined" onClick={() => setIsOpen(false)}>
-            Cancel
-          </Button>
-          <Button
-            disabled={isLoading}
-            variant="contained"
-            color="error"
-            onClick={() => {
-              void handleLogout();
-            }}
-          >
-            Logout
-          </Button>
-        </Box>
+        Are you sure you want to log out? You will need to sign in again to
+        access your account.
       </AppModal>
     </>
   );
