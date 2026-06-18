@@ -40,7 +40,7 @@ data_transforms = {
     ),
 }
 
-data_dir = "./data/real_vs_fake"
+data_dir = "./data/truthlens_dataset"
 image_datasets = {
     x: datasets.ImageFolder(root=f"{data_dir}/{x}", transform=data_transforms[x])
     for x in ["train", "valid", "test"]
@@ -204,8 +204,5 @@ if __name__ == "__main__":
     # Run Testing Engine
     labels, predictions = test_model(trained_model, criterion)
 
-    """ Save target weights for FastAPI production use
-     Since we wrapped everything inside a custom container class, we strip the 'backbone.' prefix 
-     out during loading or save the state dict cleanly so FastAPI reads it natively. """
     torch.save(trained_model.state_dict(), "truthlens_efficientnet_b0.pth")
     print("\nProduction weights successfully saved as 'truthlens_efficientnet_b0.pth'")

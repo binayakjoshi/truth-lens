@@ -85,7 +85,9 @@ ml-model/.eggs/
 ml-model/pyvenv.cfg/
 
 # Optional ML artifacts (uncomment if needed)
-# ml-model/models/
+ml-model/models/data
+ml-model/models/data/*
+ml-model/models/FaceForensics++_C23
 # ml-model/checkpoints/
 # ml-model/*.pt
 # ml-model/*.pth
