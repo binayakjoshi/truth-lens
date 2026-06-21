@@ -196,9 +196,7 @@ def process_images(
     return real_stats, fake_stats
 
 
-def write_run_log(
-    total: ExtractStats, real: ExtractStats, fake: ExtractStats
-) -> None:
+def write_run_log(total: ExtractStats, real: ExtractStats, fake: ExtractStats) -> None:
     log_path = os.path.join(OUTPUT_ROOT, "extract_log.txt")
     os.makedirs(OUTPUT_ROOT, exist_ok=True)
 
@@ -237,8 +235,8 @@ def run_extraction() -> None:
         raise FileNotFoundError(f"Input directory not found: {INPUT_DATASET_DIR}")
 
     real_videos, fake_videos, labeled_images = discover_media()
-    real_images = [(p, l) for p, l in labeled_images if l == "real"]
-    fake_images = [(p, l) for p, l in labeled_images if l == "fake"]
+    real_images = [(p, label) for p, label in labeled_images if label == "real"]
+    fake_images = [(p, label) for p, label in labeled_images if label == "fake"]
 
     print(
         f"\nFound -> Real: {len(real_videos)} videos, {len(real_images)} images | "
@@ -261,7 +259,9 @@ def run_extraction() -> None:
     if fake_videos:
         fake_stats = process_videos(fake_videos, fake_out, "Fake")
 
-    img_real, img_fake = process_images(labeled_images, {"real": real_out, "fake": fake_out})
+    img_real, img_fake = process_images(
+        labeled_images, {"real": real_out, "fake": fake_out}
+    )
     real_stats.merge(img_real)
     fake_stats.merge(img_fake)
 

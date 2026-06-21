@@ -160,9 +160,7 @@ def process_images(
     return stats
 
 
-def write_run_log(
-    total: CleanStats, real: CleanStats, fake: CleanStats
-) -> None:
+def write_run_log(total: CleanStats, real: CleanStats, fake: CleanStats) -> None:
     log_path = os.path.join(OUTPUT_ROOT, "clean_log.txt")
     os.makedirs(OUTPUT_ROOT, exist_ok=True)
 

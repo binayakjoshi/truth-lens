@@ -138,14 +138,14 @@ def process_images(image_paths: list[str], output_dir: str, label: str) -> FaceS
     return stats
 
 
-def write_run_log(
-    total: FaceStats, real: FaceStats, fake: FaceStats
-) -> None:
+def write_run_log(total: FaceStats, real: FaceStats, fake: FaceStats) -> None:
     log_path = os.path.join(OUTPUT_ROOT, "face_log.txt")
     os.makedirs(OUTPUT_ROOT, exist_ok=True)
 
     with open(log_path, "w", encoding="utf-8") as f:
-        f.write(f"Face detection run: {datetime.now().isoformat(timespec='seconds')}\n\n")
+        f.write(
+            f"Face detection run: {datetime.now().isoformat(timespec='seconds')}\n\n"
+        )
         f.write("Configuration\n")
         f.write(f"  input_root                : {INPUT_ROOT}\n")
         f.write(f"  output_root               : {OUTPUT_ROOT}\n")
