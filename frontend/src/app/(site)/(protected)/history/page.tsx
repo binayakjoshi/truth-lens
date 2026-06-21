@@ -1,10 +1,6 @@
-"use client";
-
-import React from "react";
-
 import { Box, Typography, Container, Paper } from "@mui/material";
 
-export default function HistoryPage() {
+export default async function HistoryPage() {
   return (
     <Container maxWidth="lg" sx={{ py: 8 }}>
       <Box sx={{ mb: 4 }}>

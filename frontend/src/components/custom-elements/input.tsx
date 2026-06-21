@@ -164,6 +164,9 @@ const Input: React.FC<CustomInputProps> = (props) => {
             readOnly: props.readOnly,
             autoComplete: props.autocomplete,
             endAdornment: props.endAdornment,
+            sx: {
+              height: props.height ? `${props.height}px` : "56px",
+            },
           },
           htmlInput:
             props.type === "number"

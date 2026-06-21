@@ -1,10 +1,17 @@
+"use client";
+
 import { Box, CircularProgress, Typography } from "@mui/material";
 
-export default function Loading() {
+type LoadingProps = {
+  text?: string;
+};
+
+export default function LoadingOverlay({ text = "Loading…" }: LoadingProps) {
   return (
     <Box
       sx={{
-        minHeight: "100vh",
+        minHeight: "100%",
+        width: "100%",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -12,6 +19,7 @@ export default function Loading() {
         bgcolor: "background.default",
         position: "relative",
         overflow: "hidden",
+        py: 8,
       }}
     >
       <Box
@@ -26,7 +34,6 @@ export default function Loading() {
           pointerEvents: "none",
         }}
       />
-
       <Box
         sx={{
           position: "relative",
@@ -52,7 +59,6 @@ export default function Loading() {
             },
           }}
         />
-
         <Box
           sx={{
             position: "absolute",
@@ -69,7 +75,6 @@ export default function Loading() {
             },
           }}
         />
-
         <CircularProgress
           size={48}
           thickness={3}
@@ -81,35 +86,21 @@ export default function Loading() {
           }}
         />
       </Box>
-
       <Typography
-        variant="h5"
+        variant="body2"
         sx={{
-          fontWeight: 700,
-          letterSpacing: "-0.01em",
-          color: "text.primary",
-          animation: "fadeInUp 0.8s ease-out",
+          color: "text.secondary",
+          letterSpacing: "0.08em",
+          fontSize: "0.75rem",
+          textTransform: "uppercase",
+          animation: "fadeInUp 0.8s ease-out 0.15s both",
           "@keyframes fadeInUp": {
             "0%": { opacity: 0, transform: "translateY(8px)" },
             "100%": { opacity: 1, transform: "translateY(0)" },
           },
         }}
       >
-        TruthLens
-      </Typography>
-
-      <Typography
-        variant="body2"
-        sx={{
-          mt: 1,
-          color: "text.secondary",
-          letterSpacing: "0.08em",
-          fontSize: "0.75rem",
-          textTransform: "uppercase",
-          animation: "fadeInUp 0.8s ease-out 0.15s both",
-        }}
-      >
-        Loading…
+        {text}
       </Typography>
     </Box>
   );
