@@ -13,7 +13,6 @@ const LogoutModal = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { logout } = useUser();
   const { error } = useToast();
-
   const handleLogout = () => {
     try {
       setIsLoading(true);

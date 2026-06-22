@@ -1,7 +1,3 @@
-"use client";
-
-import React from "react";
-
 import { Box, Typography, Container, Paper } from "@mui/material";
 
 export default function HistoryPage() {

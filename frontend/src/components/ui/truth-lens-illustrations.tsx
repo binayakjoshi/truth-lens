@@ -8,39 +8,38 @@ export default function TruthLensIllustration() {
       aria-label="TruthLens AI detection illustration"
     >
       <defs>
-        {/* Grad-CAM heatmap gradient — cool → hot */}
+        {/* Grad-CAM heatmap gradient — cool → hot (amber theme) */}
         <radialGradient id="heatCore" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#ff3b3b" stopOpacity="0.9" />
-          <stop offset="35%" stopColor="#ff8c00" stopOpacity="0.7" />
-          <stop offset="65%" stopColor="#ffe000" stopOpacity="0.4" />
-          <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.0" />
+          <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.9" />
+          <stop offset="35%" stopColor="#d97706" stopOpacity="0.7" />
+          <stop offset="65%" stopColor="#fbbf24" stopOpacity="0.4" />
+          <stop offset="100%" stopColor="#78350f" stopOpacity="0.0" />
         </radialGradient>
         <radialGradient id="heatSec" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#ff6b00" stopOpacity="0.7" />
-          <stop offset="60%" stopColor="#ffe000" stopOpacity="0.3" />
-          <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.0" />
+          <stop offset="0%" stopColor="#fbbf24" stopOpacity="0.7" />
+          <stop offset="60%" stopColor="#f59e0b" stopOpacity="0.3" />
+          <stop offset="100%" stopColor="#78350f" stopOpacity="0.0" />
         </radialGradient>
         <radialGradient id="glow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#8a5cf6" stopOpacity="0.25" />
-          <stop offset="100%" stopColor="#8a5cf6" stopOpacity="0" />
+          <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.18" />
+          <stop offset="100%" stopColor="#f59e0b" stopOpacity="0" />
         </radialGradient>
 
         {/* Photo-like base gradient */}
         <linearGradient id="photoBase" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#1e1b2e" />
-          <stop offset="100%" stopColor="#0f172a" />
+          <stop offset="0%" stopColor="#141008" />
+          <stop offset="100%" stopColor="#0e0c08" />
         </linearGradient>
         <linearGradient id="scanLine" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#8a5cf6" stopOpacity="0" />
-          <stop offset="50%" stopColor="#8a5cf6" stopOpacity="0.6" />
-          <stop offset="100%" stopColor="#8a5cf6" stopOpacity="0" />
+          <stop offset="0%" stopColor="#f59e0b" stopOpacity="0" />
+          <stop offset="50%" stopColor="#f59e0b" stopOpacity="0.5" />
+          <stop offset="100%" stopColor="#f59e0b" stopOpacity="0" />
         </linearGradient>
 
         <clipPath id="photoClip">
           <rect x="100" y="60" width="280" height="210" rx="12" />
         </clipPath>
 
-        {/* Noise filter for film grain */}
         <filter id="grain">
           <feTurbulence
             type="fractalNoise"
@@ -57,7 +56,7 @@ export default function TruthLensIllustration() {
       {/* ── Ambient background glow ── */}
       <ellipse cx="240" cy="200" rx="200" ry="160" fill="url(#glow)" />
 
-      {/* ── Image frame (the "photo" being analyzed) ── */}
+      {/* ── Image frame ── */}
       <rect
         x="100"
         y="60"
@@ -65,38 +64,38 @@ export default function TruthLensIllustration() {
         height="210"
         rx="12"
         fill="url(#photoBase)"
-        stroke="#2d2640"
+        stroke="#3d2e0a"
         strokeWidth="1.5"
       />
 
       {/* Simulated portrait silhouette */}
       <g clipPath="url(#photoClip)" opacity="0.9">
         {/* Sky / background */}
-        <rect x="100" y="60" width="280" height="130" fill="#1a1035" />
+        <rect x="100" y="60" width="280" height="130" fill="#1c1507" />
         {/* Ground */}
-        <rect x="100" y="190" width="280" height="80" fill="#12111a" />
+        <rect x="100" y="190" width="280" height="80" fill="#120f04" />
 
         {/* Abstract face outline */}
-        <ellipse cx="240" cy="145" rx="52" ry="62" fill="#2e2550" />
-        <ellipse cx="240" cy="118" rx="36" ry="40" fill="#3b3068" />
+        <ellipse cx="240" cy="145" rx="52" ry="62" fill="#2c1f06" />
+        <ellipse cx="240" cy="118" rx="36" ry="40" fill="#3d2e0a" />
         {/* Eyes */}
-        <ellipse cx="225" cy="112" rx="7" ry="8" fill="#0f0e18" />
-        <ellipse cx="255" cy="112" rx="7" ry="8" fill="#0f0e18" />
-        <circle cx="225" cy="111" r="3" fill="#8a5cf6" opacity="0.9" />
-        <circle cx="255" cy="111" r="3" fill="#8a5cf6" opacity="0.9" />
+        <ellipse cx="225" cy="112" rx="7" ry="8" fill="#0e0c08" />
+        <ellipse cx="255" cy="112" rx="7" ry="8" fill="#0e0c08" />
+        <circle cx="225" cy="111" r="3" fill="#f59e0b" opacity="0.9" />
+        <circle cx="255" cy="111" r="3" fill="#f59e0b" opacity="0.9" />
         {/* Nose */}
-        <ellipse cx="240" cy="126" rx="5" ry="7" fill="#2a2448" />
+        <ellipse cx="240" cy="126" rx="5" ry="7" fill="#2a1e05" />
         {/* Mouth */}
         <path
           d="M228 137 Q240 145 252 137"
-          stroke="#1e1a35"
+          stroke="#1c1507"
           strokeWidth="2"
           fill="none"
           strokeLinecap="round"
         />
         {/* Neck / shoulders */}
-        <rect x="220" y="180" width="40" height="25" rx="6" fill="#2e2550" />
-        <ellipse cx="240" cy="220" rx="70" ry="30" fill="#231e3d" />
+        <rect x="220" y="180" width="40" height="25" rx="6" fill="#2c1f06" />
+        <ellipse cx="240" cy="220" rx="70" ry="30" fill="#221803" />
 
         {/* Subtle AI artifact texture */}
         <rect
@@ -104,13 +103,12 @@ export default function TruthLensIllustration() {
           y="60"
           width="280"
           height="210"
-          fill="#8a5cf6"
+          fill="#f59e0b"
           opacity="0.03"
           filter="url(#grain)"
         />
 
         {/* ── Grad-CAM heatmap overlays ── */}
-        {/* Primary hotspot — face area */}
         <ellipse
           cx="240"
           cy="120"
@@ -119,7 +117,6 @@ export default function TruthLensIllustration() {
           fill="url(#heatCore)"
           opacity="0.82"
         />
-        {/* Secondary hotspot — eye region */}
         <ellipse
           cx="230"
           cy="108"
@@ -142,7 +139,7 @@ export default function TruthLensIllustration() {
           cy="88"
           rx="24"
           ry="18"
-          fill="#3b82f6"
+          fill="#78350f"
           opacity="0.18"
         />
         <ellipse
@@ -150,7 +147,7 @@ export default function TruthLensIllustration() {
           cy="95"
           rx="20"
           ry="15"
-          fill="#3b82f6"
+          fill="#78350f"
           opacity="0.14"
         />
       </g>
@@ -175,7 +172,7 @@ export default function TruthLensIllustration() {
         />
       </rect>
 
-      {/* ── Corner brackets (analysis UI) ── */}
+      {/* ── Corner brackets ── */}
       {[
         [100, 60, 1, 1],
         [380, 60, -1, 1],
@@ -185,7 +182,7 @@ export default function TruthLensIllustration() {
         <g key={i} transform={`translate(${x},${y}) scale(${sx},${sy})`}>
           <path
             d="M0 18 L0 0 L18 0"
-            stroke="#8a5cf6"
+            stroke="#f59e0b"
             strokeWidth="2.5"
             strokeLinecap="round"
             fill="none"
@@ -196,10 +193,10 @@ export default function TruthLensIllustration() {
       {/* ── Heatmap scale legend ── */}
       <defs>
         <linearGradient id="legendGrad" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="#3b82f6" />
-          <stop offset="40%" stopColor="#ffe000" />
-          <stop offset="70%" stopColor="#ff8c00" />
-          <stop offset="100%" stopColor="#ff3b3b" />
+          <stop offset="0%" stopColor="#44403c" />
+          <stop offset="40%" stopColor="#d97706" />
+          <stop offset="70%" stopColor="#f59e0b" />
+          <stop offset="100%" stopColor="#fbbf24" />
         </linearGradient>
       </defs>
       <rect
@@ -211,13 +208,13 @@ export default function TruthLensIllustration() {
         fill="url(#legendGrad)"
         opacity="0.85"
       />
-      <text x="146" y="304" fill="#6b6b8a" fontSize="9" fontFamily="monospace">
+      <text x="146" y="304" fill="#a16207" fontSize="9" fontFamily="monospace">
         LOW
       </text>
       <text
         x="308"
         y="304"
-        fill="#6b6b8a"
+        fill="#a16207"
         fontSize="9"
         fontFamily="monospace"
         textAnchor="end"
@@ -227,7 +224,7 @@ export default function TruthLensIllustration() {
       <text
         x="240"
         y="304"
-        fill="#6b6b8a"
+        fill="#a16207"
         fontSize="9"
         fontFamily="monospace"
         textAnchor="middle"
@@ -242,19 +239,19 @@ export default function TruthLensIllustration() {
         width="184"
         height="38"
         rx="8"
-        fill="#ff3b3b"
+        fill="#f59e0b"
         fillOpacity="0.12"
-        stroke="#ff3b3b"
+        stroke="#f59e0b"
         strokeOpacity="0.4"
         strokeWidth="1"
       />
-      <circle cx="172" cy="339" r="6" fill="#ff3b3b" fillOpacity="0.9" />
+      <circle cx="172" cy="339" r="6" fill="#f59e0b" fillOpacity="0.9" />
       {/* Pulse ring */}
       <circle
         cx="172"
         cy="339"
         r="10"
-        stroke="#ff3b3b"
+        stroke="#f59e0b"
         strokeOpacity="0.4"
         strokeWidth="1.5"
         fill="none"
@@ -275,7 +272,7 @@ export default function TruthLensIllustration() {
       <text
         x="186"
         y="335"
-        fill="#ff6b6b"
+        fill="#fbbf24"
         fontSize="11"
         fontWeight="600"
         fontFamily="monospace"
@@ -285,7 +282,7 @@ export default function TruthLensIllustration() {
       <text
         x="186"
         y="350"
-        fill="#ff3b3b"
+        fill="#d97706"
         fontSize="10"
         fontFamily="monospace"
         opacity="0.75"
@@ -293,7 +290,7 @@ export default function TruthLensIllustration() {
         confidence: 97.4%
       </text>
 
-      {/* ── Grid lines (subtle) ── */}
+      {/* ── Grid lines ── */}
       {[130, 160, 190, 220, 250, 310, 340, 370].map((x) => (
         <line
           key={`v${x}`}
@@ -301,7 +298,7 @@ export default function TruthLensIllustration() {
           y1="60"
           x2={x}
           y2="270"
-          stroke="#8a5cf6"
+          stroke="#f59e0b"
           strokeOpacity="0.05"
           strokeWidth="1"
         />
@@ -313,7 +310,7 @@ export default function TruthLensIllustration() {
           y1={y}
           x2="380"
           y2={y}
-          stroke="#8a5cf6"
+          stroke="#f59e0b"
           strokeOpacity="0.05"
           strokeWidth="1"
         />

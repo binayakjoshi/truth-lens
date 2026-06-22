@@ -15,8 +15,6 @@ import {
   Typography,
 } from "@mui/material";
 
-import ThemeToggle from "@/components/ui/theme-toggle";
-import LogoutModal from "@/components/users/logout-modal";
 import { type User } from "@/context/user-context";
 
 interface HomePageClientProps {
@@ -34,57 +32,6 @@ export default function HomePageClient({ user }: HomePageClientProps) {
         flexDirection: "column",
       }}
     >
-      <Box
-        component="header"
-        sx={{
-          py: 2,
-          px: { xs: 3, md: 6 },
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          borderBottom: "1px solid",
-          borderColor: "divider",
-          bgcolor: "background.paper",
-        }}
-      >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          <Box
-            sx={{
-              width: 24,
-              height: 24,
-              borderRadius: 1,
-              bgcolor: "primary.main",
-            }}
-          />
-          <Typography
-            variant="h6"
-            sx={{ fontWeight: 600, letterSpacing: "-0.02em" }}
-          >
-            TruthLens
-          </Typography>
-        </Box>
-
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          <ThemeToggle />
-          {user ? (
-            <LogoutModal />
-          ) : (
-            <>
-              <Link href="/login" style={{ textDecoration: "none" }}>
-                <Button color="inherit" sx={{ fontWeight: 500 }}>
-                  Log in
-                </Button>
-              </Link>
-              <Link href="/signup" style={{ textDecoration: "none" }}>
-                <Button variant="contained" color="primary" disableElevation>
-                  Get Started
-                </Button>
-              </Link>
-            </>
-          )}
-        </Box>
-      </Box>
-
       <Container maxWidth="lg" sx={{ pt: 10, pb: 6, flex: 1 }}>
         {!user ? (
           <Box sx={{ textAlign: "center", maxWidth: 800, mx: "auto", mt: 8 }}>
@@ -118,7 +65,7 @@ export default function HomePageClient({ user }: HomePageClientProps) {
               spacing={2}
               sx={{ justifyContent: "center" }}
             >
-              <Link href="/signup" style={{ textDecoration: "none" }}>
+              <Link href="/analysis" style={{ textDecoration: "none" }}>
                 <Button
                   variant="contained"
                   size="large"

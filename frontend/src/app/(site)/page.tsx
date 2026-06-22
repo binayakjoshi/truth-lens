@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 
-import HomePageClient from "@/components/home-page-client";
+import HomePageClient from "@/components/home/home-page-client";
 import { type User } from "@/context/user-context";
 
 export default async function Home() {

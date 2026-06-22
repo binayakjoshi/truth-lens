@@ -4,10 +4,10 @@ import { type ThemeMode } from "@/lib/theme-cookie";
 
 const sharedTokens = {
   primary: {
-    main: "#8a5cf6",
-    light: "#c084fc",
-    dark: "#7c3aed",
-    contrastText: "#ffffff",
+    main: "#f59e0b",
+    light: "#fbbf24",
+    dark: "#d97706",
+    contrastText: "#1c1507",
   },
   error: { main: "#f87171" },
   shape: { borderRadius: 10 },
@@ -26,11 +26,11 @@ const palettes: Record<
 > = {
   dark: {
     mode: "dark",
-    background: { default: "#0c0c0e", paper: "#111114" },
+    background: { default: "#0e0c08", paper: "#141008" },
     text: {
-      primary: "#f5f0e8",
-      secondary: "rgba(245,240,232,0.45)",
-      disabled: "rgba(245,240,232,0.25)",
+      primary: "#fdf8f0",
+      secondary: "rgba(253,248,240,0.45)",
+      disabled: "rgba(253,248,240,0.25)",
     },
     divider: "rgba(255,255,255,0.08)",
     inputBg: "rgba(255,255,255,0.03)",
@@ -38,11 +38,11 @@ const palettes: Record<
   },
   light: {
     mode: "light",
-    background: { default: "#f8f7f4", paper: "#ffffff" },
+    background: { default: "#fdfaf4", paper: "#ffffff" },
     text: {
-      primary: "#1a1a1e",
-      secondary: "rgba(26,26,30,0.55)",
-      disabled: "rgba(26,26,30,0.35)",
+      primary: "#1c1507",
+      secondary: "rgba(28,21,7,0.55)",
+      disabled: "rgba(28,21,7,0.35)",
     },
     divider: "rgba(0,0,0,0.08)",
     inputBg: "rgba(0,0,0,0.02)",
@@ -87,7 +87,7 @@ export function createAppTheme(mode: ThemeMode) {
             "& .MuiInputLabel-root": {
               color: theme.palette.text.secondary,
               fontFamily: "var(--font-roboto), sans-serif",
-              "&.Mui-focused": { color: theme.palette.primary.light },
+              "&.Mui-focused": { color: theme.palette.primary.main },
             },
             "& .MuiFormHelperText-root": {
               color: theme.palette.error.main,
@@ -112,11 +112,12 @@ export function createAppTheme(mode: ThemeMode) {
           {
             props: { variant: "contained", color: "primary" },
             style: ({ theme }: { theme: Theme }) => ({
-              background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.light})`,
-              boxShadow: "0 4px 24px rgba(138,92,246,0.35)",
+              background: `linear-gradient(135deg, ${theme.palette.primary.dark}, ${theme.palette.primary.main})`,
+              color: sharedTokens.primary.contrastText,
+              boxShadow: "0 4px 24px rgba(245,158,11,0.35)",
               "&:hover": {
-                background: `linear-gradient(135deg, ${theme.palette.primary.dark}, ${theme.palette.primary.main})`,
-                boxShadow: "0 6px 30px rgba(138,92,246,0.5)",
+                background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.light})`,
+                boxShadow: "0 6px 30px rgba(245,158,11,0.5)",
               },
               "&.Mui-disabled": {
                 background: tokens.disabledButtonBg,
@@ -129,7 +130,7 @@ export function createAppTheme(mode: ThemeMode) {
       MuiLink: {
         styleOverrides: {
           root: ({ theme }: { theme: Theme }) => ({
-            color: theme.palette.primary.light,
+            color: theme.palette.primary.main,
             fontFamily: "var(--font-roboto), sans-serif",
           }),
         },
