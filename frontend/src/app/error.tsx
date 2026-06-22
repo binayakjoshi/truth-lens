@@ -2,11 +2,12 @@
 
 import { useEffect } from "react";
 
+import { useRouter } from "next/navigation";
+
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import ReportProblemOutlinedIcon from "@mui/icons-material/ReportProblemOutlined";
 import { Box, Button, Dialog, Typography } from "@mui/material";
-import { useRouter } from "next/navigation";
 
 export default function Error({
   error,

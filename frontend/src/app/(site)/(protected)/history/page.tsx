@@ -1,6 +1,6 @@
 import { Box, Typography, Container, Paper } from "@mui/material";
 
-export default async function HistoryPage() {
+export default function HistoryPage() {
   return (
     <Container maxWidth="lg" sx={{ py: 8 }}>
       <Box sx={{ mb: 4 }}>

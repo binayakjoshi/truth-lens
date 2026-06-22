@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import {
   Box,
   Container,
@@ -10,7 +12,7 @@ import {
   Stack,
   CircularProgress,
 } from "@mui/material";
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+
 import ImageUpload from "@/components/custom-elements/image-upload";
 import { useForm } from "@/hooks/use-form";
 
@@ -27,15 +29,11 @@ const AnalysisPage = () => {
     false,
   );
 
-  const handleSubmit = async (event: React.FormEvent) => {
+  const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     if (!formState.isValid) return;
 
     setIsSubmitting(true);
-    try {
-    } finally {
-      setIsSubmitting(false);
-    }
   };
 
   return (

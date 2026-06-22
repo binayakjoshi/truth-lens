@@ -1,5 +1,6 @@
-import { Box, Button, Typography } from "@mui/material";
 import Link from "next/link";
+
+import { Box, Button, Typography } from "@mui/material";
 
 export default function NotFound() {
   return (

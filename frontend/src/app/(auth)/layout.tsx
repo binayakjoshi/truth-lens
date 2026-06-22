@@ -41,12 +41,22 @@ export default function AuthLayout({
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
           <Box
             sx={{
-              width: 32,
-              height: 32,
-              borderRadius: 1.5,
-              bgcolor: "primary.main",
+              width: 40,
+              height: 40,
+              borderRadius: "50%", // circular
+              overflow: "hidden", // clips the image to the circle
+              flexShrink: 0,
+              position: "relative",
             }}
-          />
+          >
+            <Image
+              alt="logo"
+              src="/icon.png"
+              fill // fills the parent Box
+              style={{ objectFit: "cover" }}
+              sizes="40px"
+            />
+          </Box>
           <Typography
             variant="h6"
             sx={{ fontWeight: 700, letterSpacing: "-0.01em" }}

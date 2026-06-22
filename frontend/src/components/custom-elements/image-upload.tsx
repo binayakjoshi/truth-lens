@@ -1,12 +1,14 @@
 "use client";
 
 import type React from "react";
-import Image from "next/image";
 import { useRef, useState, useEffect } from "react";
+
+import Image from "next/image";
+
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 
 type ImageUploadProps = {
   id: string;
@@ -32,14 +34,6 @@ const ImageUpload = ({
     errorText,
   );
   const filePickerRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (initialValue) {
-      setPreviewUrl(initialValue);
-      setIsValid(true);
-      setCurrentError(undefined);
-    }
-  }, [initialValue]);
 
   useEffect(() => {
     if (!file) return;

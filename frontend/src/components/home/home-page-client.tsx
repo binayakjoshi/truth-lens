@@ -65,7 +65,7 @@ export default function HomePageClient({ user }: HomePageClientProps) {
               spacing={2}
               sx={{ justifyContent: "center" }}
             >
-              <Link href="/signup" style={{ textDecoration: "none" }}>
+              <Link href="/analysis" style={{ textDecoration: "none" }}>
                 <Button
                   variant="contained"
                   size="large"

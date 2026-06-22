@@ -1,11 +1,16 @@
-import { Box, Button, Typography } from "@mui/material";
+import Image from "next/image";
 import Link from "next/link";
+
+import { Box, Button, Typography } from "@mui/material";
+
+import { fetchCurrentUser } from "@/lib/user";
+
 import ThemeToggle from "../ui/theme-toggle";
 import LogoutModal from "../users/logout-modal";
-import { fetchCurrentUser } from "@/lib/user";
 
 const NavBar = async () => {
   const user = await fetchCurrentUser();
+  console.log(user);
   return (
     <Box
       component="header"
@@ -23,12 +28,22 @@ const NavBar = async () => {
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
         <Box
           sx={{
-            width: 24,
-            height: 24,
-            borderRadius: 1,
-            bgcolor: "primary.main",
+            width: 40,
+            height: 40,
+            borderRadius: "50%", // circular
+            overflow: "hidden", // clips the image to the circle
+            flexShrink: 0,
+            position: "relative",
           }}
-        />
+        >
+          <Image
+            alt="logo"
+            src="/icon.png"
+            fill // fills the parent Box
+            style={{ objectFit: "cover" }}
+            sizes="40px"
+          />
+        </Box>
         <Typography
           variant="h6"
           sx={{ fontWeight: 600, letterSpacing: "-0.02em" }}
