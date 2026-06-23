@@ -4,6 +4,7 @@ import { User } from 'src/users/entities/user.entity';
 import { DataSource, LoggerOptions } from 'typeorm';
 
 import { CustomNamingStrategy } from './strategy';
+import { AnonymousUsage } from 'src/analysis/entities/anonymous-usage.entity';
 
 config();
 
@@ -26,5 +27,5 @@ export const dataSource = new DataSource({
   migrations: ['dist/src/database/migrations/**/*.js'],
   migrationsRun: false,
   namingStrategy: new CustomNamingStrategy(),
-  entities: [User, OtpRecord],
+  entities: [User, OtpRecord, AnonymousUsage],
 });
