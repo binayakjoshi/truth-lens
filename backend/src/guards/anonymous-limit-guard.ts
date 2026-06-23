@@ -6,8 +6,8 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 
-import { ensureVisitorId } from '../utils/vistor';
 import { AnalysisService } from '../analysis/services/analysis.service';
+import { ensureVisitorId } from '../utils/vistor';
 
 @Injectable()
 export class AnonymousLimitGuard implements CanActivate {
