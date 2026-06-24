@@ -30,8 +30,13 @@ export default function AuthLayout({
           p: 6,
           position: "relative",
           overflow: "hidden",
-          background:
-            "radial-gradient(ellipse at 30% 60%, #2a1f3d 0%, transparent 70%)",
+          background: `
+            radial-gradient(
+              ellipse at 30% 60%,
+              rgba(var(--mui-palette-primary-mainChannel) / 0.12) 0%,
+              transparent 70%
+            )
+          `,
           bgcolor: "background.default",
           borderRight: "1px solid",
           borderColor: "divider",
@@ -43,8 +48,8 @@ export default function AuthLayout({
             sx={{
               width: 40,
               height: 40,
-              borderRadius: "50%", // circular
-              overflow: "hidden", // clips the image to the circle
+              borderRadius: "50%",
+              overflow: "hidden",
               flexShrink: 0,
               position: "relative",
             }}
@@ -52,11 +57,12 @@ export default function AuthLayout({
             <Image
               alt="logo"
               src="/icon.png"
-              fill // fills the parent Box
+              fill
               style={{ objectFit: "cover" }}
               sizes="40px"
             />
           </Box>
+
           <Typography
             variant="h6"
             sx={{ fontWeight: 700, letterSpacing: "-0.01em" }}
@@ -84,16 +90,19 @@ export default function AuthLayout({
               overflow: "hidden",
               border: "1px solid",
               borderColor: "divider",
-              boxShadow: "0 20px 60px rgba(138,92,246,0.15)",
+              boxShadow: `
+                0 20px 60px 
+                rgba(var(--mui-palette-primary-mainChannel) / 0.2)
+              `,
             }}
           >
             <Image
-              src="/images/img.png"
-              alt="Deepfake detection dashboard with Grad-CAM explainability"
+              src="/img.png"
+              alt="Deepfake detection dashboard"
               width={1365}
               height={1024}
               priority
-              style={{ width: "100%", height: "auto", display: "block" }}
+              style={{ width: "100%", height: "auto" }}
             />
           </Box>
         </Box>
@@ -108,10 +117,13 @@ export default function AuthLayout({
             <br />
             the artificial.
           </Typography>
+
           <Typography
             variant="body2"
-            color="text.secondary"
-            sx={{ maxWidth: 300 }}
+            sx={{
+              color: "text.secondary",
+              maxWidth: 300,
+            }}
           >
             Deepfake face detection with Grad-CAM explainability.
           </Typography>
@@ -126,15 +138,20 @@ export default function AuthLayout({
             width: 380,
             height: 380,
             borderRadius: "50%",
-            background:
-              "radial-gradient(circle, rgba(138,92,246,0.15) 0%, transparent 70%)",
+            background: `
+              radial-gradient(
+                circle,
+                rgba(var(--mui-palette-primary-mainChannel) / 0.15) 0%,
+                transparent 70%
+              )
+            `,
             filter: "blur(50px)",
             pointerEvents: "none",
           }}
         />
       </Box>
 
-      {/* ── Right panel — form slot ── */}
+      {/* ── Right panel ── */}
       <Box
         sx={{
           width: { xs: "100%", md: 480 },
@@ -157,6 +174,7 @@ export default function AuthLayout({
         >
           <ThemeToggle />
         </Box>
+
         {/* Mobile brand */}
         <Box
           sx={{
@@ -174,6 +192,7 @@ export default function AuthLayout({
               bgcolor: "primary.main",
             }}
           />
+
           <Typography variant="h6" sx={{ fontWeight: 700 }}>
             TruthLens
           </Typography>

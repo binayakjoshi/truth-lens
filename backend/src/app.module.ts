@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { dataSource } from 'config/db.config';
 import { PostgresConnectionCredentialsOptions } from 'typeorm/driver/postgres/PostgresConnectionCredentialsOptions.js';
 
+import { AnalysisModule } from './analysis/analysis.module';
 import { AuthModule } from './auth/auth.module';
 import { EmailModule } from './email/email.module';
 import { UsersModule } from './users/users.module';
@@ -24,6 +25,7 @@ import { UsersModule } from './users/users.module';
     UsersModule,
     AuthModule,
     EmailModule,
+    AnalysisModule,
   ],
 })
 export class AppModule {}
