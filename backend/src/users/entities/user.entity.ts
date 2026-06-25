@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 
 import { OtpRecord } from './otp-record.entity';
+import { AnalysisHistory } from 'src/analysis/entities/analysis-history.entity';
 
 @Entity()
 export class User {
@@ -33,7 +34,7 @@ export class User {
   @Column({ default: false })
   isVerified: boolean;
 
-  @Column({ nullable: true }) //need to migrate
+  @Column({ nullable: true })
   password: string;
 
   @Column({
@@ -51,5 +52,8 @@ export class User {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @OneToMany(() => OtpRecord, (otp) => otp.user) otpRecord: OtpRecord;
+  @OneToMany(() => OtpRecord, (otp) => otp.user) otpRecords: OtpRecord[];
+
+  @OneToMany(() => AnalysisHistory, (ah) => ah.user)
+  analysisHistories: AnalysisHistory[];
 }
