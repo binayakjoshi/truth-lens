@@ -24,10 +24,10 @@ def clahe_equalize(
     grid_size: tuple[int, int] = (8, 8),
 ) -> np.ndarray:
     lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
-    l, a, b = cv2.split(lab)
+    l_channel, a, b = cv2.split(lab)
     clahe = cv2.createCLAHE(clipLimit=clip_limit, tileGridSize=grid_size)
-    l = clahe.apply(l)
-    return cv2.cvtColor(cv2.merge([l, a, b]), cv2.COLOR_LAB2BGR)
+    l_channel = clahe.apply(l_channel)
+    return cv2.cvtColor(cv2.merge([l_channel, a, b]), cv2.COLOR_LAB2BGR)
 
 
 if __name__ == "__main__":

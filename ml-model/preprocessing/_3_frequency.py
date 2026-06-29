@@ -23,13 +23,13 @@ def high_pass_boost(
     image: np.ndarray,
     strength: float = 0.5,
 ) -> np.ndarray:
-    kernel = np.array([[-1, -1, -1],
-                       [-1,  8, -1],
-                       [-1, -1, -1]], dtype=np.float32) / 9.0
+    kernel = np.array([[-1, -1, -1], [-1, 8, -1], [-1, -1, -1]], dtype=np.float32) / 9.0
     high_freq = cv2.filter2D(image.astype(np.float32), -1, kernel)
-    return cv2.addWeighted(
-        image.astype(np.float32), 1.0, high_freq, strength, 0
-    ).clip(0, 255).astype(np.uint8)
+    return (
+        cv2.addWeighted(image.astype(np.float32), 1.0, high_freq, strength, 0)
+        .clip(0, 255)
+        .astype(np.uint8)
+    )
 
 
 if __name__ == "__main__":

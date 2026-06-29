@@ -107,7 +107,7 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=10):
     best_acc = 0.0
 
     for epoch in range(num_epochs):
-        print(f"\nEpoch {epoch+1}/{num_epochs}")
+        print(f"\nEpoch {epoch + 1}/{num_epochs}")
         print("-" * 10)
 
         for phase in ["train", "valid"]:
