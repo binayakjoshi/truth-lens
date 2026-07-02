@@ -11,6 +11,7 @@ from PIL import Image
 from torchvision import transforms
 
 from truthlens.model.classifier import TruthLensClassifier
+from truthlens.preprocessing.pipeline import run_pipeline
 
 # 1. Initialize FastAPI app
 app = FastAPI(
@@ -30,15 +31,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 2. Model Loading Logic
-device = torch.device("cpu")
-model = TruthLensClassifier()
+# 2. Device & Model Loading
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(f"🚀 Inference device: {device}")
+
+model = TruthLensClassifier().to(device)
 
 try:
     weights_path = "models/truthlens_efficientnet_b0.pth"
     model.load_state_dict(torch.load(weights_path, map_location=device))
     model.eval()
-    print("✅ TruthLens production model weights loaded successfully onto CPU.")
+    print(f"✅ TruthLens model weights loaded onto {device}.")
 except Exception as e:
     print(
         f"⚠️ Model weight file missing or incompatible: {e}. Running with uninitialized weights."
@@ -65,7 +68,7 @@ def process_inference_with_gradcam(input_tensor):
     # Enable gradients explicitly to build the computation graph for backpropagation
     with torch.set_grad_enabled(True):
         output = model(input_tensor)
-        probabilities = F.softmax(output, dim=1).detach().numpy()[0]
+        probabilities = F.softmax(output, dim=1).detach().cpu().numpy()[0]
         predicted_class_idx = int(np.argmax(probabilities))
 
         # Target score calculation based on highest scoring prediction (0=Fake, 1=Real)
@@ -85,7 +88,7 @@ def process_inference_with_gradcam(input_tensor):
 
     # Compute the mean channel-wise activation to generate a 2D intensity profile map
     heatmap = torch.mean(activations, dim=1).squeeze()
-    heatmap = np.maximum(heatmap.detach().numpy(), 0)  # Apply ReLU equivalents
+    heatmap = np.maximum(heatmap.detach().cpu().numpy(), 0)  # Apply ReLU equivalents
 
     # Normalize mapping array to 0.0 - 1.0 bounds
     if np.max(heatmap) != 0:
@@ -109,8 +112,15 @@ async def predict_image(file: UploadFile = File(...)):
         orig_image = Image.open(io.BytesIO(contents)).convert("RGB")
         w, h = orig_image.size
 
-        # Transform structural image configurations into normalized 224x224 tensors
-        input_tensor = preprocess(orig_image).unsqueeze(0)
+        # Advanced preprocessing (USM → CLAHE → High-Pass)
+        img_np = np.array(orig_image)
+        img_bgr = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
+        enhanced = run_pipeline(img_bgr)
+        enhanced_rgb = cv2.cvtColor(enhanced, cv2.COLOR_BGR2RGB)
+        enhanced_pil = Image.fromarray(enhanced_rgb)
+
+        # Transform enhanced image to normalized 224x224 tensor on device
+        input_tensor = preprocess(enhanced_pil).unsqueeze(0).to(device)
 
         # Process single-pass model execution pipeline with Grad-CAM computation
         predicted_class_idx, probabilities, heatmap = process_inference_with_gradcam(
