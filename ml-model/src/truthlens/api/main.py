@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
 from torchvision import transforms
 
-from models.classifier import TruthLensClassifier
+from truthlens.model.classifier import TruthLensClassifier
 
 # 1. Initialize FastAPI app
 app = FastAPI(

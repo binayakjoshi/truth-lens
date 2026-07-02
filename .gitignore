@@ -80,7 +80,7 @@ ml-model/.ipynb_checkpoints/
 # Build artifacts
 ml-model/build/
 ml-model/dist/
-ml-model/*.egg-info/
+ml-model/**/*.egg-info/
 ml-model/.eggs/
 ml-model/pyvenv.cfg/
 

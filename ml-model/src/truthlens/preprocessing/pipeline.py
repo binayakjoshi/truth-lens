@@ -10,9 +10,9 @@ can call run_pipeline(image_np) before resize + normalize.
 import cv2
 import numpy as np
 
-from preprocessing._1_sharpen import unsharp_mask
-from preprocessing._2_contrast import clahe_equalize
-from preprocessing._3_frequency import high_pass_boost
+from truthlens.preprocessing.contrast import clahe_equalize
+from truthlens.preprocessing.frequency import high_pass_boost
+from truthlens.preprocessing.sharpen import unsharp_mask
 
 
 def run_pipeline(image: np.ndarray) -> np.ndarray:

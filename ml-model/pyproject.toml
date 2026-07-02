@@ -19,9 +19,20 @@ dependencies = [
     "tqdm==4.68.1",
 ]
 
+[build-system]
+requires = ["setuptools>=75.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.package-dir]
+"" = "src"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
 [dependency-groups]
 dev = [
     "ruff>=0.0.270",
+    "pytest>=8.0",
 ]
 
 [tool.ruff]
