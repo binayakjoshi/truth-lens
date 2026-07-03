@@ -84,15 +84,16 @@ ml-model/**/*.egg-info/
 ml-model/.eggs/
 ml-model/pyvenv.cfg/
 
-# Optional ML artifacts (uncomment if needed)
-ml-model/models/data
-ml-model/models/data/*
-ml-model/models/FaceForensics++_C23
-# ml-model/checkpoints/
-# ml-model/*.pt
-# ml-model/*.pth
-# ml-model/*.onnx
-# ml-model/*.pkl
+# Large ML artifacts (weights, datasets, checkpoints)
+ml-model/**/*.pth
+ml-model/**/*.pt
+ml-model/**/*.onnx
+ml-model/**/*.pkl
+ml-model/weights/
+ml-model/datasets/
+ml-model/checkpoints/
+ml-model/models/data/
+ml-model/models/FaceForensics++_C23/
 
 # ==========================================
 # Package managers (global)
