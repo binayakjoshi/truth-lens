@@ -11,6 +11,11 @@ import {
   Button,
   Stack,
   CircularProgress,
+  Chip,
+  Card,
+  CardContent,
+  CardMedia,
+  Alert,
 } from "@mui/material";
 
 import ImageUpload from "@/components/custom-elements/image-upload";
@@ -18,6 +23,8 @@ import { useForm } from "@/hooks/use-form";
 
 const AnalysisPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [result, setResult] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
   const [formState, inputHandler] = useForm(
     {
       image: {
@@ -29,12 +36,38 @@ const AnalysisPage = () => {
     false,
   );
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!formState.isValid) return;
 
     setIsSubmitting(true);
+    setResult(null);
+    setError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", formState.inputs.image.value as Blob);
+
+      const res = await fetch("/api/analysis", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error ?? "Analysis failed");
+      }
+
+      setResult(data);
+    } catch (err: any) {
+      setError(err.message ?? "Something went wrong");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  const isFake = result?.prediction === "AI-Generated";
 
   return (
     <Box
@@ -58,7 +91,9 @@ const AnalysisPage = () => {
         </Stack>
         <Paper
           component="form"
-          onSubmit={handleSubmit}
+          onSubmit={(e) => {
+            handleSubmit(e);
+          }}
           noValidate
           elevation={0}
           sx={{
@@ -89,6 +124,73 @@ const AnalysisPage = () => {
             {isSubmitting ? "Analyzing..." : "Analyze Image"}
           </Button>
         </Paper>
+
+        {error && (
+          <Alert severity="error" sx={{ mt: 3, borderRadius: 2 }}>
+            {error}
+          </Alert>
+        )}
+
+        {result && (
+          <Card
+            elevation={0}
+            sx={{
+              mt: 3,
+              borderRadius: 3,
+              border: "1px solid",
+              borderColor: "divider",
+              overflow: "hidden",
+            }}
+          >
+            {result.heatmap_base64 && (
+              <CardMedia
+                component="img"
+                image={result.heatmap_base64}
+                alt="Grad-CAM heatmap"
+                sx={{ maxHeight: 300, objectFit: "contain", bgcolor: "#000" }}
+              />
+            )}
+            <CardContent>
+              <Stack spacing={1.5}>
+                <Stack
+                  direction="row"
+                  sx={{ justifyContent: "space-between", alignItems: "center" }}
+                >
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Prediction
+                  </Typography>
+                  <Chip
+                    label={result.prediction}
+                    color={isFake ? "error" : "success"}
+                    variant="filled"
+                  />
+                </Stack>
+                <Stack
+                  direction="row"
+                  sx={{ justifyContent: "space-between", alignItems: "center" }}
+                >
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Real confidence
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    {(result.confidence_scores.real * 100).toFixed(1)}%
+                  </Typography>
+                </Stack>
+                <Stack
+                  direction="row"
+                  sx={{ justifyContent: "space-between", alignItems: "center" }}
+                >
+                  <Typography variant="subtitle2" color="text.secondary">
+                    AI confidence
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    {(result.confidence_scores.ai_generated * 100).toFixed(1)}%
+                  </Typography>
+                </Stack>
+              </Stack>
+            </CardContent>
+          </Card>
+        )}
       </Container>
     </Box>
   );

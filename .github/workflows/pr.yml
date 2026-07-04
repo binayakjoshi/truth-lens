@@ -55,3 +55,26 @@ jobs:
       - run: npm run format:check
 
       - run: npm run build
+
+  ml-model:
+    name: ml-model
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ml-model
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+
+      - run: uv sync --group dev
+
+      - run: uv run ruff check .
+
+      - run: uv run ruff format --check .
+
+      - run: uv run pytest
