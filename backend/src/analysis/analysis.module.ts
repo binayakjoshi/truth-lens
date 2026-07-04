@@ -1,4 +1,3 @@
-import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
@@ -7,7 +6,7 @@ import { AnonymousUsage } from './entities/anonymous-usage.entity';
 import { AnalysisService } from './services/analysis.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([AnonymousUsage]), HttpModule],
+  imports: [TypeOrmModule.forFeature([AnonymousUsage])],
   controllers: [AnalysisController],
   providers: [AnalysisService],
   exports: [AnalysisService],

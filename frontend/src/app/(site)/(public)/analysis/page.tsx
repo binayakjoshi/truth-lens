@@ -91,7 +91,7 @@ const AnalysisPage = () => {
         </Stack>
         <Paper
           component="form"
-          onSubmit={handleSubmit}
+          onSubmit={(e) => { handleSubmit(e); }}
           noValidate
           elevation={0}
           sx={{
