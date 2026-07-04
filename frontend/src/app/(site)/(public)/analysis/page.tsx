@@ -46,7 +46,7 @@ const AnalysisPage = () => {
 
     try {
       const formData = new FormData();
-      formData.append("file", formState.inputs.image.value);
+      formData.append("file", formState.inputs.image.value as Blob);
 
       const res = await fetch("/api/analysis", {
         method: "POST",
