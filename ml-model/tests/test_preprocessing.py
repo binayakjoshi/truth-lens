@@ -9,7 +9,8 @@ from truthlens.preprocessing.sharpen import unsharp_mask
 
 @pytest.fixture
 def dummy_image():
-    return np.random.randint(0, 255, (224, 224, 3), dtype=np.uint8)
+    rng = np.random.default_rng(0)
+    return rng.integers(0, 256, (224, 224, 3), dtype=np.uint8)
 
 
 class TestSharpen:
