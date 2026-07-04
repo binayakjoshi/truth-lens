@@ -172,7 +172,7 @@ const AnalysisPage = () => {
                   <Typography variant="subtitle2" color="text.secondary">
                     Real confidence
                   </Typography>
-                  <Typography variant="body2" fontWeight={600}>
+                   <Typography variant="body2" sx={{ fontWeight: 600 }}>
                     {(result.confidence_scores.real * 100).toFixed(1)}%
                   </Typography>
                 </Stack>
@@ -183,7 +183,7 @@ const AnalysisPage = () => {
                   <Typography variant="subtitle2" color="text.secondary">
                     AI confidence
                   </Typography>
-                  <Typography variant="body2" fontWeight={600}>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
                     {(result.confidence_scores.ai_generated * 100).toFixed(1)}%
                   </Typography>
                 </Stack>
