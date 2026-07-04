@@ -1,3 +1,4 @@
+import { AnalysisHistory } from 'src/analysis/entities/analysis-history.entity';
 import {
   Column,
   CreateDateColumn,
@@ -10,7 +11,6 @@ import {
 } from 'typeorm';
 
 import { OtpRecord } from './otp-record.entity';
-import { AnalysisHistory } from 'src/analysis/entities/analysis-history.entity';
 
 @Entity()
 export class User {
