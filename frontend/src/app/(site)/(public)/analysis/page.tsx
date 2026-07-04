@@ -154,8 +154,7 @@ const AnalysisPage = () => {
               <Stack spacing={1.5}>
                 <Stack
                   direction="row"
-                  justifyContent="space-between"
-                  alignItems="center"
+                  sx={{ justifyContent: "space-between", alignItems: "center" }}
                 >
                   <Typography variant="subtitle2" color="text.secondary">
                     Prediction
@@ -168,8 +167,7 @@ const AnalysisPage = () => {
                 </Stack>
                 <Stack
                   direction="row"
-                  justifyContent="space-between"
-                  alignItems="center"
+                  sx={{ justifyContent: "space-between", alignItems: "center" }}
                 >
                   <Typography variant="subtitle2" color="text.secondary">
                     Real confidence
@@ -180,8 +178,7 @@ const AnalysisPage = () => {
                 </Stack>
                 <Stack
                   direction="row"
-                  justifyContent="space-between"
-                  alignItems="center"
+                  sx={{ justifyContent: "space-between", alignItems: "center" }}
                 >
                   <Typography variant="subtitle2" color="text.secondary">
                     AI confidence
