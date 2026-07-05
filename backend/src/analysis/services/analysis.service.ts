@@ -1,6 +1,6 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { createResponse } from 'src/utils/response-handler';
+import { createResponse } from 'src/common/utils/response-handler';
 import { Repository } from 'typeorm';
 
 import { SearchHistoryDto } from '../dtos/search-history.dto';
@@ -16,7 +16,7 @@ export class AnalysisService {
     private readonly analysisHistoryRepo: Repository<AnalysisHistory>,
   ) {}
 
-  async getAnalysisHistory(userId: string, dto: SearchHistoryDto) {
+  async getAnalysisHistories(userId: string, dto: SearchHistoryDto) {
     const { page = '1', limit = '15', sort = 'DESC' } = dto;
 
     const [analysisHistories, total] =
@@ -35,6 +35,24 @@ export class AnalysisService {
       lastPage: Math.ceil(total / Number(limit)),
     });
   }
+
+  async getSingleAnalysisHistory(userId: string, id: string) {
+    const analysis = this.analysisHistoryRepo.findOne({
+      where: {
+        userId,
+        id,
+      },
+    });
+
+    if (!analysis)
+      throw new NotFoundException('Could not find analysis history.');
+    return createResponse(
+      HttpStatus.OK,
+      'Analyis history fetched sucessfully',
+      analysis,
+    );
+  }
+
   async increment(identifier: string): Promise<number> {
     const today = new Date().toISOString().slice(0, 10);
 
