@@ -35,6 +35,13 @@ dev = [
     "pytest>=8.0",
 ]
 
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+
+[tool.uv]
+index-strategy = "unsafe-best-match"
+
 [tool.ruff]
 line-length = 88
 target-version = "py311"
