@@ -127,22 +127,15 @@ async def predict_image(file: UploadFile = File(...)):
             input_tensor
         )
 
-        # --- Generate Overlay Visualization Matrix ---
-        img_np = np.array(orig_image)
+        # --- Generate Raw Heatmap (no overlay — frontend blends with stored original) ---
         heatmap_resized = cv2.resize(heatmap, (w, h))
         heatmap_uint8 = np.uint8(255 * heatmap_resized)
-
-        # Render a thermal color mask map overlay layer over regions of high predictive activation
         color_heatmap = cv2.applyColorMap(heatmap_uint8, cv2.COLORMAP_JET)
         color_heatmap = cv2.cvtColor(color_heatmap, cv2.COLOR_BGR2RGB)
 
-        # Alpha blending layer opacity configurations (40% Heatmap, 60% Original Image)
-        overlayed_img = cv2.addWeighted(color_heatmap, 0.4, img_np, 0.6, 0)
-
-        # Convert processed numpy image array back into a Base64 payload string for frontend rendering
-        pil_overlay = Image.fromarray(overlayed_img)
+        pil_heatmap = Image.fromarray(color_heatmap)
         buffered = io.BytesIO()
-        pil_overlay.save(buffered, format="JPEG")
+        pil_heatmap.save(buffered, format="JPEG")
         base64_heatmap_string = base64.b64encode(buffered.getvalue()).decode("utf-8")
 
         # Map labels based on directory classification setups (Fake=0, Real=1)
