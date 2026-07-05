@@ -10,18 +10,18 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import type { Response, Request } from 'express';
-import { COOKIE_NAMES, COOKIE_OPTIONS } from 'src/common/cookie';
 import { Auth } from 'src/common/decorators/auth.decorator';
 import { Serialize } from 'src/common/decorators/serialize';
-import { GoogleAuthGuard } from 'src/guards/google-auth.guard';
-import { RefreshTokenGuard } from 'src/guards/refresh-token.guard';
-import { CookieInterceptor } from 'src/interceptors/cookie-interceptor';
 import { UserResponseDto } from 'src/users/dtos/user.dto';
 import { User } from 'src/users/entities/user.entity';
 
-import { LoginDto } from '../dtos/login-dto';
+import { COOKIE_NAMES, COOKIE_OPTIONS } from '../constants/cookie';
+import { LoginDto } from '../dtos/login.dto';
 import { ResendOtpDto } from '../dtos/resend-otp.dto';
 import { VerifyOtpDto } from '../dtos/verify-otp.dto';
+import { GoogleAuthGuard } from '../guards/google-auth.guard';
+import { RefreshTokenGuard } from '../guards/refresh-token.guard';
+import { CookieInterceptor } from '../interceptors/cookie-interceptor';
 import { AuthService } from '../services/auth.service';
 @Controller('auth')
 export class AuthController {

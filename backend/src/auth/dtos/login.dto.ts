@@ -6,7 +6,7 @@ import {
   IsString,
   Matches,
 } from 'class-validator';
-import { IsUsernameOrEmail } from 'src/utils/login.validator';
+import { IsUsernameOrEmail } from 'src/common/utils/login.validator';
 
 export class LoginDto {
   @Matches(/^[a-z][a-z0-9_]*$/, {

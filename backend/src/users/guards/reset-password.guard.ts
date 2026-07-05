@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { COOKIE_NAMES } from 'src/common/cookie';
+import { COOKIE_NAMES } from 'src/auth/constants/cookie';
 import { User } from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
 

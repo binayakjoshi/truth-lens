@@ -7,8 +7,8 @@ import { dataSource } from 'config/db.config';
 import cookieParser from 'cookie-parser';
 
 import { AppModule } from './app.module';
-import { AllExceptionsFilter } from './filters/exception.filter';
-import { LoggingInterceptor } from './interceptors/logging.interceptor';
+import { AllExceptionsFilter } from './common/filters/exception.filter';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);

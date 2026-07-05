@@ -6,9 +6,10 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { COOKIE_NAMES, COOKIE_OPTIONS } from 'src/common/cookie';
 import { User } from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
+
+import { COOKIE_NAMES, COOKIE_OPTIONS } from '../constants/cookie';
 
 @Injectable()
 export class RefreshTokenGuard implements CanActivate {

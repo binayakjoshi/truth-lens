@@ -10,7 +10,7 @@ import {
   Req,
 } from '@nestjs/common';
 import { type Response } from 'express';
-import { COOKIE_NAMES } from 'src/common/cookie';
+import { COOKIE_NAMES } from 'src/auth/constants/cookie';
 import { ResetPassword } from 'src/common/decorators/auth.decorator';
 import { Serialize } from 'src/common/decorators/serialize';
 
@@ -24,7 +24,7 @@ import { UsersService } from '../services/users.service';
 class CustomRequest extends Request {
   user: {
     id: string;
-    emai: string;
+    email: string;
   };
 }
 

@@ -7,7 +7,7 @@ import {
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import { COOKIE_NAMES, COOKIE_OPTIONS } from '../common/cookie';
+import { COOKIE_NAMES, COOKIE_OPTIONS } from '../constants/cookie';
 
 @Injectable()
 export class CookieInterceptor implements NestInterceptor {
