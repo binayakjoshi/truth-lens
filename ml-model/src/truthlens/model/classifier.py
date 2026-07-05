@@ -33,7 +33,7 @@ class TruthLensClassifier(nn.Module):
             self.gradients = grad_output[0]
 
         target_layer.register_forward_hook(forward_hook)
-        target_layer.register_backward_hook(backward_hook)
+        target_layer.register_full_backward_hook(backward_hook)
 
     def forward(self, x):
         return self.backbone(x)
