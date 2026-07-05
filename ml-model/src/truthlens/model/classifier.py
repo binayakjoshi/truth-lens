@@ -3,14 +3,20 @@ from torchvision import models
 
 
 class TruthLensClassifier(nn.Module):
-    def __init__(self):
+    def __init__(self, pretrained=False, freeze_backbone=False):
         super(TruthLensClassifier, self).__init__()
-        # 1. Initialize identical architecture to the training step
-        self.backbone = models.efficientnet_b0(weights=None)
+        weights = models.EfficientNet_B0_Weights.DEFAULT if pretrained else None
+        self.backbone = models.efficientnet_b0(weights=weights)
+
+        if freeze_backbone:
+            for param in self.backbone.features.parameters():
+                param.requires_grad = False
+            for param in self.backbone.features[-1].parameters():
+                param.requires_grad = True
+
         num_ftrs = self.backbone.classifier[1].in_features
         self.backbone.classifier[1] = nn.Linear(num_ftrs, 2)
 
-        # Placeholders for Grad-CAM features and gradients
         self.gradients = None
         self.activations = None
 
