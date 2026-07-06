@@ -10,7 +10,6 @@ import LogoutModal from "../users/logout-modal";
 
 const NavBar = async () => {
   const user = await fetchCurrentUser();
-  console.log(user);
   return (
     <Box
       component="header"

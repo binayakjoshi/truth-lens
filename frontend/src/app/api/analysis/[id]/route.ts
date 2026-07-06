@@ -1,0 +1,26 @@
+import { type NextRequest, NextResponse } from "next/server";
+import { createResponse } from "@/lib/create-response";
+import { fetchAndRefresh } from "@/lib/custom-fetch";
+
+interface RouteContext {
+  params: Promise<{ id: string }>;
+}
+
+export async function GET(request: NextRequest, { params }: RouteContext) {
+  try {
+    const { id } = await params;
+    const cookieHeader = request.headers.get("cookie") ?? "";
+    const { res, newCookie } = await fetchAndRefresh(
+      `${process.env.BACKEND_API_URL}/analysis/history/${id}`,
+      {},
+      cookieHeader,
+    );
+    const data = await res.json().catch(() => ({}));
+    return createResponse(res, data, newCookie);
+  } catch (err: any) {
+    return NextResponse.json(
+      { error: err.message ?? "Something went wrong" },
+      { status: 500 },
+    );
+  }
+}

@@ -1,5 +1,6 @@
 "use client";
 
+import { User } from "@/types/type";
 import React, {
   createContext,
   useCallback,
@@ -7,12 +8,6 @@ import React, {
   useEffect,
   useState,
 } from "react";
-
-export type User = {
-  id: string;
-  email: string;
-  username: string;
-};
 
 interface UserContextValue {
   user: User | null;

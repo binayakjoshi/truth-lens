@@ -39,7 +39,7 @@ backend/node_modules/
 backend/dist/
 backend/build/
 backend/coverage/
-
+backend/uploads/
 backend/npm-debug.log*
 backend/yarn-debug.log*
 backend/yarn-error.log*
