@@ -1,5 +1,5 @@
 import { User } from 'src/users/entities/user.entity';
-import { DecimalTransformer } from 'src/utils/transformer';
+import { DecimalTransformer } from 'src/common/utils/transformer';
 import {
   Column,
   CreateDateColumn,

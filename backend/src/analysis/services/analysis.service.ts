@@ -37,7 +37,7 @@ export class AnalysisService {
   }
 
   async getSingleAnalysisHistory(userId: string, id: string) {
-    const analysis = this.analysisHistoryRepo.findOne({
+    const analysis = await this.analysisHistoryRepo.findOne({
       where: {
         userId,
         id,

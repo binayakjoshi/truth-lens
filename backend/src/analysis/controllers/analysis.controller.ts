@@ -28,7 +28,7 @@ export class AnalysisController {
   @Get('/history/:id')
   @Auth()
   async getSingleUserAnalysisHistory(
-    @Param() id: string,
+    @Param('id') id: string,
     @Req() req: ExtendedRequest,
   ) {
     return this.analysisService.getSingleAnalysisHistory(req.user.id, id);

@@ -38,11 +38,10 @@ export class RefreshTokenGuard implements CanActivate {
       const user = await this.userRepo.findOne({
         where: {
           id: decodedData.id,
-          deletedAt: undefined,
         },
       });
 
-      if (!user) {
+      if (!user || user.deletedAt) {
         response.clearCookie(COOKIE_NAMES.ACCESS_TOKEN, COOKIE_OPTIONS.ACCESS);
         response.clearCookie(
           COOKIE_NAMES.REFRESH_TOKEN,
@@ -62,6 +61,7 @@ export class RefreshTokenGuard implements CanActivate {
 
       return true;
     } catch (err) {
+      console.log(err);
       response.clearCookie(COOKIE_NAMES.ACCESS_TOKEN, COOKIE_OPTIONS.ACCESS);
       response.clearCookie(COOKIE_NAMES.REFRESH_TOKEN, COOKIE_OPTIONS.REFRESH);
 
