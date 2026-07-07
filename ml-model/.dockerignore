@@ -19,5 +19,6 @@ htmlcov/
 .gitignore
 .preprocessing/
 models/
+!models/truthlens_efficientnet_b0.pth
 datasets/
 checkpoints/
