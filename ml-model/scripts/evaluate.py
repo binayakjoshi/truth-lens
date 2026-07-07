@@ -1,13 +1,14 @@
-import torch
 import numpy as np
-from torch.utils.data import DataLoader
-from torchvision import transforms
+import torch
 from sklearn.metrics import (
+    accuracy_score,
     classification_report,
     confusion_matrix,
     roc_auc_score,
-    accuracy_score,
 )
+from torch.utils.data import DataLoader
+from torchvision import transforms
+
 from truthlens.model.classifier import TruthLensClassifier
 from truthlens.training.dataset import PreprocessedDataset
 

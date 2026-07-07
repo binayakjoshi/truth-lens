@@ -70,9 +70,7 @@ print("Loaded existing weights, backbone unfrozen for fine-tuning")
 criterion = nn.CrossEntropyLoss(weight=class_weights)
 
 # Lower LR for fine-tuning the whole network
-optimizer = optim.AdamW(
-    filter(lambda p: p.requires_grad, model.parameters()), lr=1e-5
-)
+optimizer = optim.AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=1e-5)
 scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=10)
 
 
