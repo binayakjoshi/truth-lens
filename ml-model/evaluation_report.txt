@@ -1,0 +1,29 @@
+============================================================
+TruthLens Classification Report
+Classes: 0 = AI-Generated (Fake), 1 = Real
+============================================================
+
+Accuracy:  0.8267
+
+                     precision    recall  f1-score   support
+
+AI-Generated (Fake)       0.81      0.87      0.84       961
+               Real       0.85      0.78      0.81       885
+
+           accuracy                           0.83      1846
+          macro avg       0.83      0.82      0.83      1846
+       weighted avg       0.83      0.83      0.83      1846
+
+Confusion Matrix:
+                           Predicted Fake  Predicted Real
+              Actual Fake             837             124
+              Actual Real             196             689
+
+True Negatives:  837  (correctly identified fake)
+False Positives: 124  (real flagged as fake)
+False Negatives: 196  (fake missed as real)
+True Positives:  689  (correctly identified real)
+
+ROC-AUC: 0.9104
+
+Model path: models/truthlens_efficientnet_b0.pth (16MB)
