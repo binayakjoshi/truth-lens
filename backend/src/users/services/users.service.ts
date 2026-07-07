@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
+import { createResponse } from 'src/common/utils/response-handler';
 import { EmailService } from 'src/email/services/email.service';
 import { IsNull, Repository } from 'typeorm';
 
@@ -18,7 +19,6 @@ import { ResetPasswordDto } from '../dtos/reset-password.dto';
 import { UpdateUserDto } from '../dtos/update-user.dto';
 import { OtpRecord } from '../entities/otp-record.entity';
 import { User } from '../entities/user.entity';
-import { createResponse } from 'src/common/utils/response-handler';
 @Injectable()
 export class UsersService {
   constructor(

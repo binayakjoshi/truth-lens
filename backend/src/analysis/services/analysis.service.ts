@@ -17,7 +17,7 @@ export class AnalysisService {
   ) {}
 
   async getAnalysisHistories(userId: string, dto: SearchHistoryDto) {
-    const { page = '1', limit = '15', sort = 'DESC' } = dto;
+    const { page = '1', limit = '10', sort = 'DESC' } = dto;
 
     const [analysisHistories, total] =
       await this.analysisHistoryRepo.findAndCount({

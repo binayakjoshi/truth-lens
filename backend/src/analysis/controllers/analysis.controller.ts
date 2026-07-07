@@ -1,10 +1,10 @@
 import { Controller, Get, Param, Query, Req, UseGuards } from '@nestjs/common';
 import { AnonymousLimitGuard } from 'src/analysis/guards/anonymous-limit-guard';
 import { Auth } from 'src/common/decorators/auth.decorator';
+import { ExtendedRequest } from 'src/common/type';
 
 import { SearchHistoryDto } from '../dtos/search-history.dto';
 import { AnalysisService } from '../services/analysis.service';
-import { ExtendedRequest } from 'src/common/type';
 
 @Controller('analysis')
 export class AnalysisController {
