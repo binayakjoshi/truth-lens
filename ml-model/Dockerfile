@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y libgl1-mesa-glx libglib2.0-0 && rm -rf 
 
 COPY pyproject.toml uv.lock ./
 COPY src/ src/
+COPY models/ models/
 RUN uv sync --frozen --no-dev && rm -rf /root/.cache/*
 
 EXPOSE 8000
