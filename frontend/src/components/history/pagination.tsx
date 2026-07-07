@@ -6,12 +6,14 @@ interface HistoryPaginationProps {
   page: number;
   lastPage: number;
   limit: number;
+  view: "list" | "grid";
 }
 
 export default function HistoryPagination({
   page,
   lastPage,
   limit,
+  view,
 }: HistoryPaginationProps) {
   const hasPrev = page > 1;
   const hasNext = page < lastPage;
@@ -26,7 +28,7 @@ export default function HistoryPagination({
       }}
     >
       <LinkButton
-        href={`/history?page=${page - 1}&limit=${limit}`}
+        href={`/history?page=${page - 1}&limit=${limit}&view=${view}`}
         variant="outlined"
         size="small"
         disabled={!hasPrev}
@@ -39,7 +41,7 @@ export default function HistoryPagination({
       </Typography>
 
       <LinkButton
-        href={`/history?page=${page + 1}&limit=${limit}`}
+        href={`/history?page=${page + 1}&limit=${limit}&view=${view}`}
         variant="outlined"
         size="small"
         disabled={!hasNext}

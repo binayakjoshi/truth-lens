@@ -1,17 +1,22 @@
 import { cookies } from "next/headers";
+
 import { Box, Container, Stack, Typography } from "@mui/material";
+
 import AnalysisHistoryCard from "@/components/history/history-card";
 import HistoryPagination from "@/components/history/pagination";
-import { AnalysisHistoryResponse } from "@/types/type";
+import SortToggle from "@/components/history/sort-toggle";
+import ViewToggle from "@/components/history/view-toggle";
+import { type AnalysisHistoryResponse } from "@/types/type";
 
 async function getAnalysisHistory(
   page: number,
   limit: number,
+  sort: "ASC" | "DESC",
 ): Promise<AnalysisHistoryResponse | null> {
   const cookieStore = await cookies();
   try {
     const res = await fetch(
-      `${process.env.PROXY_API_URL}/api/analysis/?page=${page}&limit=${limit}`,
+      `${process.env.PROXY_API_URL}/api/analysis/?page=${page}&limit=${limit}&sort=${sort}`,
       {
         headers: {
           Cookie: cookieStore.toString(),
@@ -30,14 +35,21 @@ async function getAnalysisHistory(
 }
 
 interface HistoryPageProps {
-  searchParams: Promise<{ page?: string; limit?: string }>;
+  searchParams: Promise<{
+    page?: string;
+    limit?: string;
+    view?: string;
+    sort?: string;
+  }>;
 }
 
 export default async function HistoryPage({ searchParams }: HistoryPageProps) {
   const params = await searchParams;
   const page = Number(params.page) > 0 ? Number(params.page) : 1;
   const limit = Number(params.limit) > 0 ? Number(params.limit) : 9;
-  const history = await getAnalysisHistory(page, limit);
+  const view = params.view === "list" ? "list" : "grid";
+  const sort = params.sort === "ASC" ? "ASC" : "DESC";
+  const history = await getAnalysisHistory(page, limit, sort);
 
   return (
     <Box
@@ -87,20 +99,26 @@ export default async function HistoryPage({ searchParams }: HistoryPageProps) {
               Analysis History
             </Typography>
           </Box>
-          {history && (
-            <Typography
-              variant="body2"
-              sx={{
-                fontFamily: "'Roboto Mono', monospace",
-                color: "text.secondary",
-                fontSize: "0.8rem",
-              }}
-            >
-              {history.analysisHistories.length} of{" "}
-              {history.lastPage * history.limit} results · page {history.page}/
-              {history.lastPage}
-            </Typography>
-          )}
+
+          <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
+            {history && (
+              <Typography
+                variant="body2"
+                sx={{
+                  fontFamily: "'Roboto Mono', monospace",
+                  color: "text.secondary",
+                  fontSize: "0.8rem",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {history.analysisHistories.length} of{" "}
+                {history.lastPage * history.limit} results · page {history.page}
+                /{history.lastPage}
+              </Typography>
+            )}
+            <SortToggle sort={sort} page={page} limit={limit} view={view} />
+            <ViewToggle view={view} page={page} limit={limit} />
+          </Stack>
         </Stack>
 
         {!history || history.analysisHistories.length === 0 ? (
@@ -119,27 +137,36 @@ export default async function HistoryPage({ searchParams }: HistoryPageProps) {
           </Box>
         ) : (
           <>
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: {
-                  xs: "repeat(2, 1fr)",
-                  sm: "repeat(3, 1fr)",
-                  md: "repeat(4, 1fr)",
-                  lg: "repeat(5, 1fr)",
-                },
-                gap: 2,
-              }}
-            >
-              {history.analysisHistories.map((item) => (
-                <AnalysisHistoryCard key={item.id} item={item} />
-              ))}
-            </Box>
+            {view === "grid" ? (
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: {
+                    xs: "repeat(2, 1fr)",
+                    sm: "repeat(3, 1fr)",
+                    md: "repeat(4, 1fr)",
+                    lg: "repeat(5, 1fr)",
+                  },
+                  gap: 2,
+                }}
+              >
+                {history.analysisHistories.map((item) => (
+                  <AnalysisHistoryCard key={item.id} item={item} view="grid" />
+                ))}
+              </Box>
+            ) : (
+              <Stack spacing={1.5}>
+                {history.analysisHistories.map((item) => (
+                  <AnalysisHistoryCard key={item.id} item={item} view="list" />
+                ))}
+              </Stack>
+            )}
             <Box sx={{ mt: 5 }}>
               <HistoryPagination
                 page={history.page}
                 lastPage={history.lastPage}
                 limit={history.limit}
+                view={view}
               />
             </Box>
           </>

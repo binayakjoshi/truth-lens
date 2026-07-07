@@ -1,6 +1,9 @@
 import { cookies } from "next/headers";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import {
   Box,
   Chip,
@@ -10,22 +13,12 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import Image from "next/image";
 
-interface AnalysisHistoryDetail {
-  id: string;
-  classification: "real" | "fake";
-  userId: string;
-  confidence: number;
-  originalImageUrl: string;
-  heatmapImageUrl: string;
-  createdAt: string;
-}
+import { type AnalysisHistory } from "@/types/type";
 
 async function getAnalysisHistoryDetail(
   id: string,
-): Promise<AnalysisHistoryDetail | null> {
+): Promise<AnalysisHistory | null> {
   const cookieStore = await cookies();
   try {
     const res = await fetch(`${process.env.PROXY_API_URL}/api/analysis/${id}`, {
@@ -214,7 +207,9 @@ export default async function HistoryDetailPage({
               sx={{
                 position: "relative",
                 width: "100%",
+                maxWidth: { xs: 280, sm: 320, md: 340 },
                 aspectRatio: "1 / 1",
+                mx: { xs: "auto", md: 0 },
                 border: "1px solid",
                 borderColor: "divider",
                 borderRadius: 2,
@@ -226,12 +221,11 @@ export default async function HistoryDetailPage({
                 src={`${process.env.BACKEND_API_URL}${item.originalImageUrl}`}
                 alt="Original upload"
                 fill
-                sizes="(max-width: 900px) 100vw, 50vw"
+                sizes="(max-width: 900px) 280px, 340px"
                 style={{ objectFit: "contain" }}
               />
             </Box>
           </Grid>
-
           <Grid size={{ xs: 12, md: 6 }}>
             <Typography
               variant="overline"
@@ -244,13 +238,15 @@ export default async function HistoryDetailPage({
                 mb: 1,
               }}
             >
-              Heatmap Overlay
+              Heat Map Overlay
             </Typography>
             <Box
               sx={{
                 position: "relative",
                 width: "100%",
+                maxWidth: { xs: 280, sm: 320, md: 340 },
                 aspectRatio: "1 / 1",
+                mx: { xs: "auto", md: 0 },
                 border: "1px solid",
                 borderColor: "divider",
                 borderRadius: 2,
@@ -260,9 +256,9 @@ export default async function HistoryDetailPage({
             >
               <Image
                 src={`${process.env.BACKEND_API_URL}${item.heatmapImageUrl}`}
-                alt="Heatmap overlay"
+                alt="Heatmap Overlay"
                 fill
-                sizes="(max-width: 900px) 100vw, 50vw"
+                sizes="(max-width: 900px) 280px, 340px"
                 style={{ objectFit: "contain" }}
               />
             </Box>

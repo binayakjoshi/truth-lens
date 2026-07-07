@@ -1,6 +1,5 @@
 "use client";
 
-import { User } from "@/types/type";
 import React, {
   createContext,
   useCallback,
@@ -8,6 +7,8 @@ import React, {
   useEffect,
   useState,
 } from "react";
+
+import { type User } from "@/types/type";
 
 interface UserContextValue {
   user: User | null;

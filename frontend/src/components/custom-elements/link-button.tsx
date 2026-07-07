@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+
 import Button, { type ButtonProps } from "@mui/material/Button";
 
 interface LinkButtonProps extends ButtonProps {

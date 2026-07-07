@@ -1,13 +1,17 @@
 import Image from "next/image";
+
 import { Box, Paper, Typography } from "@mui/material";
-import { AnalysisHistory } from "@/types/type";
+
+import { type AnalysisHistory } from "@/types/type";
 
 interface AnalysisHistoryCardProps {
   item: AnalysisHistory;
+  view?: "grid" | "list";
 }
 
 export default function AnalysisHistoryCard({
   item,
+  view = "grid",
 }: AnalysisHistoryCardProps) {
   const isFake = item.classification === "fake";
   const confidencePercent = (item.confidence * 100).toFixed(1);
@@ -16,7 +20,95 @@ export default function AnalysisHistoryCard({
     timeStyle: "short",
   }).format(new Date(item.createdAt));
   const accent = isFake ? "error.main" : "success.main";
+  if (view === "list") {
+    return (
+      <Paper
+        elevation={0}
+        component="a"
+        href={`/history/${item.id}`}
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 2,
+          textDecoration: "none",
+          color: "inherit",
+          bgcolor: "background.paper",
+          border: "1px solid",
+          borderColor: "divider",
+          borderRadius: 2,
+          p: 1.25,
+          transition: "border-color 150ms ease",
+          "&:hover": { borderColor: accent },
+        }}
+      >
+        <Box
+          sx={{
+            position: "relative",
+            width: 64,
+            height: 64,
+            flexShrink: 0,
+            borderRadius: 1,
+            overflow: "hidden",
+            bgcolor: "action.hover",
+          }}
+        >
+          <Image
+            src={`http://backend:5000${item.originalImageUrl}`}
+            alt={`Analysis ${item.id}`}
+            fill
+            sizes="64px"
+            style={{ objectFit: "cover" }}
+          />
+        </Box>
 
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 0.75,
+            minWidth: 70,
+          }}
+        >
+          <Box
+            sx={{ width: 6, height: 6, borderRadius: "50%", bgcolor: accent }}
+          />
+          <Typography
+            sx={{
+              fontFamily: "'Roboto Mono', monospace",
+              fontSize: "0.7rem",
+              fontWeight: 700,
+              letterSpacing: "0.05em",
+              textTransform: "uppercase",
+            }}
+          >
+            {isFake ? "Fake" : "Real"}
+          </Typography>
+        </Box>
+
+        <Typography
+          sx={{
+            fontFamily: "'Roboto Mono', monospace",
+            fontSize: "0.85rem",
+            fontWeight: 700,
+            minWidth: 60,
+          }}
+        >
+          {confidencePercent}%
+        </Typography>
+
+        <Typography
+          sx={{
+            fontFamily: "'Roboto Mono', monospace",
+            fontSize: "0.75rem",
+            color: "text.secondary",
+            ml: "auto",
+          }}
+        >
+          {formattedDate}
+        </Typography>
+      </Paper>
+    );
+  }
   return (
     <Paper
       elevation={0}
