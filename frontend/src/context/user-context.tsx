@@ -8,11 +8,7 @@ import React, {
   useState,
 } from "react";
 
-export type User = {
-  id: string;
-  email: string;
-  username: string;
-};
+import { type User } from "@/types/type";
 
 interface UserContextValue {
   user: User | null;

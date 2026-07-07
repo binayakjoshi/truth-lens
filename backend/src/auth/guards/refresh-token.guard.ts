@@ -6,9 +6,10 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { COOKIE_NAMES, COOKIE_OPTIONS } from 'src/common/cookie';
 import { User } from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
+
+import { COOKIE_NAMES, COOKIE_OPTIONS } from '../constants/cookie';
 
 @Injectable()
 export class RefreshTokenGuard implements CanActivate {
@@ -37,11 +38,10 @@ export class RefreshTokenGuard implements CanActivate {
       const user = await this.userRepo.findOne({
         where: {
           id: decodedData.id,
-          deletedAt: undefined,
         },
       });
 
-      if (!user) {
+      if (!user || user.deletedAt) {
         response.clearCookie(COOKIE_NAMES.ACCESS_TOKEN, COOKIE_OPTIONS.ACCESS);
         response.clearCookie(
           COOKIE_NAMES.REFRESH_TOKEN,
@@ -61,6 +61,7 @@ export class RefreshTokenGuard implements CanActivate {
 
       return true;
     } catch (err) {
+      console.log(err);
       response.clearCookie(COOKIE_NAMES.ACCESS_TOKEN, COOKIE_OPTIONS.ACCESS);
       response.clearCookie(COOKIE_NAMES.REFRESH_TOKEN, COOKIE_OPTIONS.REFRESH);
 

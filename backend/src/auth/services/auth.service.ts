@@ -10,13 +10,13 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
+import { createResponse } from 'src/common/utils/response-handler';
 import { EmailService } from 'src/email/services/email.service';
 import { OtpRecord } from 'src/users/entities/otp-record.entity';
 import { User } from 'src/users/entities/user.entity';
-import { createResponse } from 'src/utils/response-handler';
 import { IsNull, Repository } from 'typeorm';
 
-import { LoginDto } from '../dtos/login-dto';
+import { LoginDto } from '../dtos/login.dto';
 import { VerifyOtpDto } from '../dtos/verify-otp.dto';
 
 @Injectable()

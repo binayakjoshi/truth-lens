@@ -24,3 +24,25 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+export async function GET(request: NextRequest) {
+  try {
+    const cookieHeader = request.headers.get("cookie") ?? "";
+    const { searchParams } = new URL(request.url);
+    const page = searchParams.get("page") ?? "1";
+    const sort = searchParams.get("sort") ?? "DESC";
+
+    const { res, newCookie } = await fetchAndRefresh(
+      `${process.env.BACKEND_API_URL}/analysis/history?page=${page}&sort=${sort}`,
+      { method: "GET" },
+      cookieHeader,
+    );
+    const data = await res.json().catch(() => ({}));
+    return createResponse(res, data, newCookie);
+  } catch (err: any) {
+    return NextResponse.json(
+      { error: err.message ?? "Something went wrong" },
+      { status: 500 },
+    );
+  }
+}
