@@ -110,3 +110,4 @@ ml-model/models/FaceForensics++_C23/
 .venv/
 venv/
 env/
+!ml-model/models/truthlens_efficientnet_b0.pth
