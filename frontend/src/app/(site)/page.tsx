@@ -6,7 +6,7 @@ import HistoryIcon from "@mui/icons-material/History";
 import { Box, Container, Grid, Paper, Stack, Typography } from "@mui/material";
 
 import LinkButton from "@/components/custom-elements/link-button";
-import { User } from "@/types/type";
+import { type User } from "@/types/type";
 
 async function getUser(): Promise<User | null> {
   const cookieStore = await cookies();
