@@ -1,4 +1,10 @@
-import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpStatus,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { createResponse } from 'src/common/utils/response-handler';
 import { Repository } from 'typeorm';
@@ -6,6 +12,11 @@ import { Repository } from 'typeorm';
 import { SearchHistoryDto } from '../dtos/search-history.dto';
 import { AnalysisHistory } from '../entities/analysis-history.entity';
 import { AnonymousUsage } from '../entities/anonymous-usage.entity';
+import * as fs from 'fs/promises';
+import * as path from 'path';
+import { v4 as uuidv4 } from 'uuid';
+import { ClassificationResult } from 'src/common/enum';
+import { ModelResponse, PredictErrorResponse } from 'src/common/type';
 
 @Injectable()
 export class AnalysisService {
@@ -76,5 +87,92 @@ export class AnalysisService {
     await this.anonymousUsageRepo.save(usage);
 
     return usage.requestCount;
+  }
+
+  async analyzeAndSave(file: Express.Multer.File, userId: string) {
+    const predictResult = await this.callPredictApi(file);
+    const { prediction, confidenceScores, heatmapBase64 } = predictResult.data;
+
+    const UPLOAD_ROOT = path.join(
+      process.cwd(),
+      'uploads',
+      'analysis-histories',
+    );
+    const id = uuidv4();
+    const dir = path.join(UPLOAD_ROOT, id);
+    await fs.mkdir(dir, { recursive: true });
+
+    const originalPath = path.join(dir, 'original.png');
+    const overlayPath = path.join(dir, 'overlay.png');
+
+    await fs.writeFile(originalPath, file.buffer);
+    await fs.writeFile(overlayPath, this.base64ToBuffer(heatmapBase64));
+
+    const originalImageUrl = `uploads/analysis-histories/${id}/original.png`;
+    const heatmapImageUrl = `uploads/analysis-histories/${id}/overlay.png`;
+
+    const classification =
+      prediction === 'Real'
+        ? ClassificationResult.REAL
+        : ClassificationResult.FAKE;
+
+    const confidence =
+      prediction === 'Real'
+        ? confidenceScores.real
+        : confidenceScores.aiGenerated;
+
+    const record = this.analysisHistoryRepo.create({
+      id,
+      userId,
+      classification,
+      confidence,
+      originalImageUrl,
+      heatmapImageUrl,
+    });
+
+    await this.analysisHistoryRepo.save(record);
+
+    return createResponse(HttpStatus.OK, 'prediction', record);
+  }
+  private async callPredictApi(
+    file: Express.Multer.File,
+  ): Promise<ModelResponse> {
+    const form = new FormData();
+    const blob = new Blob([new Uint8Array(file.buffer)], {
+      type: file.mimetype,
+    });
+    form.append('file', blob, file.originalname);
+
+    let response: Response;
+    try {
+      response = await fetch(
+        process.env.PREDICT_API_URL || 'http://ml-model:8000/api/v1/predict',
+        {
+          method: 'POST',
+          body: form,
+        },
+      );
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException(
+        'Failed to reach prediction service',
+      );
+    }
+
+    if (!response.ok) {
+      const errorBody = (await response
+        .json()
+        .catch(() => null)) as PredictErrorResponse | null;
+      throw new BadRequestException(
+        errorBody?.detail ?? 'Prediction service error',
+      );
+    }
+
+    return response.json() as Promise<ModelResponse>;
+  }
+
+  private base64ToBuffer(dataUrl: string): Buffer {
+    const base64Data = dataUrl.replace(/^data:image\/\w+;base64,/, '');
+    return Buffer.from(base64Data, 'base64');
   }
 }
