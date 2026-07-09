@@ -5,6 +5,7 @@ import cv2
 import numpy as np
 import torch
 import torch.nn.functional as F
+from facenet_pytorch import MTCNN
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
@@ -46,6 +47,9 @@ except Exception as e:
     print(
         f"⚠️ Model weight file missing or incompatible: {e}. Running with uninitialized weights."
     )
+
+# Face detector — model was trained on tightly cropped faces
+mtcnn = MTCNN(keep_all=False, device=device)
 
 # 3. Production Inference Preprocessing Transform Pipeline (224x224)
 preprocess = transforms.Compose(
@@ -110,10 +114,22 @@ async def predict_image(file: UploadFile = File(...)):
         # Read incoming binary buffer payload stream
         contents = await file.read()
         orig_image = Image.open(io.BytesIO(contents)).convert("RGB")
-        w, h = orig_image.size
 
-        # Advanced preprocessing (USM → CLAHE → High-Pass)
-        img_np = np.array(orig_image)
+        # Detect and crop face — model was trained on tightly cropped faces
+        boxes, _ = mtcnn.detect(orig_image)
+        if boxes is None or len(boxes) == 0:
+            raise HTTPException(status_code=400, detail="No face detected in image.")
+        box = boxes[0]
+        face = orig_image.crop((int(box[0]), int(box[1]), int(box[2]), int(box[3])))
+        fw, fh = face.size
+
+        # Encode cropped face as base64 for frontend
+        face_buffered = io.BytesIO()
+        face.save(face_buffered, format="JPEG")
+        cropped_face_b64 = base64.b64encode(face_buffered.getvalue()).decode("utf-8")
+
+        # Advanced preprocessing (USM → CLAHE → High-Pass) on cropped face
+        img_np = np.array(face)
         img_bgr = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
         enhanced = run_pipeline(img_bgr)
         enhanced_rgb = cv2.cvtColor(enhanced, cv2.COLOR_BGR2RGB)
@@ -127,8 +143,8 @@ async def predict_image(file: UploadFile = File(...)):
             input_tensor
         )
 
-        # --- Generate Raw Heatmap (no overlay — frontend blends with stored original) ---
-        heatmap_resized = cv2.resize(heatmap, (w, h))
+        # --- Generate Raw Heatmap sized to cropped face ---
+        heatmap_resized = cv2.resize(heatmap, (fw, fh))
         heatmap_uint8 = np.uint8(255 * heatmap_resized)
         color_heatmap = cv2.applyColorMap(heatmap_uint8, cv2.COLORMAP_JET)
         color_heatmap = cv2.cvtColor(color_heatmap, cv2.COLOR_BGR2RGB)
@@ -144,13 +160,16 @@ async def predict_image(file: UploadFile = File(...)):
         return {
             "status": "success",
             "prediction": labels_map[predicted_class_idx],
-            "confidence_scores": {
+            "confidenceScores": {
                 "real": float(probabilities[1]),
-                "ai_generated": float(probabilities[0]),
+                "aiGenerated": float(probabilities[0]),
             },
-            "heatmap_base64": f"data:image/jpeg;base64,{base64_heatmap_string}",
+            "heatmapBase64": f"data:image/jpeg;base64,{base64_heatmap_string}",
+            "croppedFaceBase64": f"data:image/jpeg;base64,{cropped_face_b64}",
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=500,
