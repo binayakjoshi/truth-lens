@@ -14,14 +14,12 @@ from torchvision import transforms
 from truthlens.model.classifier import TruthLensClassifier
 from truthlens.preprocessing.pipeline import run_pipeline
 
-# 1. Initialize FastAPI app
 app = FastAPI(
     title="TruthLens ML Inference Engine",
     description="Microservice for handling EfficientNet-B0 classifications and Grad-CAM generation",
     version="1.0.0",
 )
 
-# Enable CORS for communication from the NestJS backend core service
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -59,6 +57,12 @@ preprocess = transforms.Compose(
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ]
 )
+
+# Heatmap overlay tuning: opacity at peak activation, and the activation
+# floor below which a pixel is treated as ~0 (so low-relevance regions
+# like hair/background aren't tinted at all)
+HEATMAP_MAX_ALPHA = 0.6
+HEATMAP_MIN_ACTIVATION = 0.2
 
 
 # 4. Optimized Combined Inference & Grad-CAM Sub-Routine
@@ -101,6 +105,83 @@ def process_inference_with_gradcam(input_tensor):
     return predicted_class_idx, probabilities, heatmap
 
 
+def get_face_bbox(orig_image: Image.Image) -> tuple[int, int, int, int]:
+    """
+    Runs MTCNN detection on the original PIL image and returns a bounding
+    box (x1, y1, x2, y2) clipped to the image bounds. Raises HTTPException
+    if no face is found or the resulting box is degenerate.
+    """
+    orig_w, orig_h = orig_image.size
+    boxes, _ = mtcnn.detect(orig_image)
+    if boxes is None or len(boxes) == 0:
+        raise HTTPException(status_code=400, detail="No face detected in image.")
+
+    box = boxes[0]
+    # Clip to image bounds — MTCNN can return coords slightly outside the frame
+    # for faces near the edge, which would break array slicing/pasting later.
+    x1 = max(0, int(box[0]))
+    y1 = max(0, int(box[1]))
+    x2 = min(orig_w, int(box[2]))
+    y2 = min(orig_h, int(box[3]))
+
+    if x2 - x1 <= 0 or y2 - y1 <= 0:
+        raise HTTPException(status_code=400, detail="Invalid face bounding box.")
+
+    return x1, y1, x2, y2
+
+
+def build_heatmap_overlay(
+    orig_bgr: np.ndarray,
+    heatmap: np.ndarray,
+    bbox: tuple[int, int, int, int],
+    max_alpha: float = HEATMAP_MAX_ALPHA,
+    min_activation: float = HEATMAP_MIN_ACTIVATION,
+) -> np.ndarray:
+    """
+    Resizes the raw Grad-CAM heatmap to the face crop's size, colorizes it,
+    and blends it into a copy of the full original image using PER-PIXEL
+    alpha proportional to heatmap intensity. Low-activation regions (e.g.
+    hair, background caught inside the box, forehead the model ignored)
+    are left close to the original image instead of being uniformly
+    tinted, and the box edges fade rather than cutting off hard.
+
+    max_alpha: opacity applied at the hottest point of the heatmap
+    min_activation: heatmap values below this are treated as ~0 opacity
+    """
+    x1, y1, x2, y2 = bbox
+    fw, fh = x2 - x1, y2 - y1
+
+    heatmap_resized = cv2.resize(heatmap, (fw, fh), interpolation=cv2.INTER_CUBIC)
+
+    # Soften the crop-box edges: blur the heatmap itself so the transition
+    # from "hot" to "cold" near the boundary isn't a hard rectangular line
+    heatmap_resized = cv2.GaussianBlur(heatmap_resized, (0, 0), sigmaX=max(fw, fh) * 0.01)
+
+    # Suppress low-activation noise so background/skin isn't lightly tinted
+    heatmap_clipped = np.clip(
+        (heatmap_resized - min_activation) / (1 - min_activation), 0, 1
+    )
+
+    heatmap_uint8 = np.uint8(255 * np.clip(heatmap_resized, 0, 1))
+    color_heatmap = cv2.applyColorMap(heatmap_uint8, cv2.COLORMAP_JET).astype(np.float32)  # BGR
+
+    # Per-pixel alpha, shaped (fh, fw, 1) so it broadcasts across BGR channels
+    alpha_map = (heatmap_clipped * max_alpha)[:, :, None]
+
+    overlay = orig_bgr.copy()
+    face_region = overlay[y1:y2, x1:x2].astype(np.float32)
+    blended_region = face_region * (1 - alpha_map) + color_heatmap * alpha_map
+    overlay[y1:y2, x1:x2] = blended_region.astype(np.uint8)
+
+    return overlay
+
+
+def pil_to_base64_jpeg(image: Image.Image) -> str:
+    buffered = io.BytesIO()
+    image.save(buffered, format="JPEG")
+    return base64.b64encode(buffered.getvalue()).decode("utf-8")
+
+
 # 5. Core Analysis Endpoint Routes
 @app.post("/api/v1/predict")
 async def predict_image(file: UploadFile = File(...)):
@@ -114,23 +195,14 @@ async def predict_image(file: UploadFile = File(...)):
         # Read incoming binary buffer payload stream
         contents = await file.read()
         orig_image = Image.open(io.BytesIO(contents)).convert("RGB")
+        orig_bgr = cv2.cvtColor(np.array(orig_image), cv2.COLOR_RGB2BGR)
 
-        # Detect and crop face — model was trained on tightly cropped faces
-        boxes, _ = mtcnn.detect(orig_image)
-        if boxes is None or len(boxes) == 0:
-            raise HTTPException(status_code=400, detail="No face detected in image.")
-        box = boxes[0]
-        face = orig_image.crop((int(box[0]), int(box[1]), int(box[2]), int(box[3])))
-        fw, fh = face.size
-
-        # Encode cropped face as base64 for frontend
-        face_buffered = io.BytesIO()
-        face.save(face_buffered, format="JPEG")
-        cropped_face_b64 = base64.b64encode(face_buffered.getvalue()).decode("utf-8")
+        # Detect face — model was trained on tightly cropped faces
+        x1, y1, x2, y2 = get_face_bbox(orig_image)
+        face = orig_image.crop((x1, y1, x2, y2))
 
         # Advanced preprocessing (USM → CLAHE → High-Pass) on cropped face
-        img_np = np.array(face)
-        img_bgr = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
+        img_bgr = cv2.cvtColor(np.array(face), cv2.COLOR_RGB2BGR)
         enhanced = run_pipeline(img_bgr)
         enhanced_rgb = cv2.cvtColor(enhanced, cv2.COLOR_BGR2RGB)
         enhanced_pil = Image.fromarray(enhanced_rgb)
@@ -143,29 +215,31 @@ async def predict_image(file: UploadFile = File(...)):
             input_tensor
         )
 
-        # --- Generate Raw Heatmap sized to cropped face ---
-        heatmap_resized = cv2.resize(heatmap, (fw, fh))
-        heatmap_uint8 = np.uint8(255 * heatmap_resized)
-        color_heatmap = cv2.applyColorMap(heatmap_uint8, cv2.COLORMAP_JET)
-        color_heatmap = cv2.cvtColor(color_heatmap, cv2.COLOR_BGR2RGB)
+        # --- Build heatmap overlay positioned on the full original image ---
+        overlay_bgr = build_heatmap_overlay(orig_bgr, heatmap, (x1, y1, x2, y2))
+        overlay_rgb = cv2.cvtColor(overlay_bgr, cv2.COLOR_BGR2RGB)
+        pil_overlay = Image.fromarray(overlay_rgb)
 
-        pil_heatmap = Image.fromarray(color_heatmap)
-        buffered = io.BytesIO()
-        pil_heatmap.save(buffered, format="JPEG")
-        base64_heatmap_string = base64.b64encode(buffered.getvalue()).decode("utf-8")
+        heatmap_b64 = pil_to_base64_jpeg(pil_overlay)
+        original_image_b64 = pil_to_base64_jpeg(orig_image)
 
         # Map labels based on directory classification setups (Fake=0, Real=1)
         labels_map = {0: "AI-Generated", 1: "Real"}
 
         return {
-            "status": "success",
-            "prediction": labels_map[predicted_class_idx],
-            "confidenceScores": {
-                "real": float(probabilities[1]),
-                "aiGenerated": float(probabilities[0]),
+            "success": True,
+            "message": "Result returned successfully",
+            "status": 200,
+            "data": {
+                "prediction": labels_map[predicted_class_idx],
+                "confidenceScores": {
+                    "real": float(probabilities[1]),
+                    "aiGenerated": float(probabilities[0]),
+                },
+                "boundingBox": {"x1": x1, "y1": y1, "x2": x2, "y2": y2},
+                "heatmapBase64": f"data:image/jpeg;base64,{heatmap_b64}",
+                "originalImageBase64": f"data:image/jpeg;base64,{original_image_b64}",
             },
-            "heatmapBase64": f"data:image/jpeg;base64,{base64_heatmap_string}",
-            "croppedFaceBase64": f"data:image/jpeg;base64,{cropped_face_b64}",
         }
 
     except HTTPException:

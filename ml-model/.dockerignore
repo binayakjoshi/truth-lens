@@ -2,9 +2,10 @@
 venv/
 env/
 __pycache__/
-**/*.pyc
-**/*.pyo
-**/*.pyd
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
@@ -17,8 +18,10 @@ dist/
 htmlcov/
 .git
 .gitignore
-.preprocessing/
+dataset_scripts/
+scripts/
+tests/
+checkpoints/
+evaluation_report.txt
 models/
 !models/truthlens_efficientnet_b0.pth
-datasets/
-checkpoints/
