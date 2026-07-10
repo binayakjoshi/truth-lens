@@ -111,9 +111,8 @@ export default async function HistoryPage({ searchParams }: HistoryPageProps) {
                   whiteSpace: "nowrap",
                 }}
               >
-                {history.analysisHistories.length} of{" "}
-                {history.lastPage * history.limit} results · page {history.page}
-                /{history.lastPage}
+                {history.analysisHistories.length} of {history.total} results ·
+                page {history.page}/{history.lastPage}
               </Typography>
             )}
             <SortToggle sort={sort} page={page} limit={limit} view={view} />

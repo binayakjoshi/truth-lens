@@ -19,7 +19,7 @@ interface UserContextValue {
   verificationEmail: string | null;
   setVerificationEmail: (email: string) => void;
   fetchUser: () => void;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 const UserContext = createContext<UserContextValue | undefined>(undefined);
@@ -56,22 +56,16 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     })();
   }, []);
 
-  const logout = useCallback(() => {
-    void (async () => {
-      try {
-        setIsLoading(true);
-
-        const res = await fetch("/api/auth/logout", {
-          credentials: "include",
-        });
-
-        if (res.ok) {
-          setUser(null);
-        }
-      } finally {
-        setIsLoading(false);
+  const logout = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const res = await fetch("/api/auth/logout", { credentials: "include" });
+      if (res.ok) {
+        setUser(null);
       }
-    })();
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
   useEffect(() => {

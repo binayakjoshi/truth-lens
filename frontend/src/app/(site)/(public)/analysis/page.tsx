@@ -311,7 +311,7 @@ const AnalysisPage = () => {
                   }}
                 >
                   <Image
-                    src={`http://backend:5000/${result.heatmapImageUrl}`}
+                    src={`${process.env.NEXT_PUBLIC_IMAGE_API_URL}/${result.heatmapImageUrl}`}
                     alt="Heatmap Overlay"
                     fill
                     sizes="(max-width: 900px) 280px, 340px"

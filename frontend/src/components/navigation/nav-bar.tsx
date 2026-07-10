@@ -1,12 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-
 import { Box, Button, Typography } from "@mui/material";
-
 import { fetchCurrentUser } from "@/lib/user";
-
 import ThemeToggle from "../ui/theme-toggle";
-import LogoutModal from "../users/logout-modal";
+import UserMenu from "../users/user-menu";
 
 const NavBar = async () => {
   const user = await fetchCurrentUser();
@@ -24,13 +21,22 @@ const NavBar = async () => {
         bgcolor: "background.paper",
       }}
     >
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+      <Link
+        href="/"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          textDecoration: "none",
+          color: "inherit",
+        }}
+      >
         <Box
           sx={{
             width: 40,
             height: 40,
-            borderRadius: "50%", // circular
-            overflow: "hidden", // clips the image to the circle
+            borderRadius: "50%",
+            overflow: "hidden",
             flexShrink: 0,
             position: "relative",
           }}
@@ -38,7 +44,7 @@ const NavBar = async () => {
           <Image
             alt="logo"
             src="/icon.png"
-            fill // fills the parent Box
+            fill
             style={{ objectFit: "cover" }}
             sizes="40px"
           />
@@ -49,12 +55,11 @@ const NavBar = async () => {
         >
           TruthLens
         </Typography>
-      </Box>
-
+      </Link>
       <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
         <ThemeToggle />
         {user ? (
-          <LogoutModal />
+          <UserMenu firstName={user.firstName} lastName={user.lastName} />
         ) : (
           <>
             <Link href="/login" style={{ textDecoration: "none" }}>

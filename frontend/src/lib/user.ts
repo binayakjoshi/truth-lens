@@ -2,6 +2,8 @@ import { cookies } from "next/headers";
 type User = {
   id: string;
   email: string;
+  firstName: string;
+  lastName: string;
 };
 
 export const fetchCurrentUser = async () => {
@@ -13,7 +15,7 @@ export const fetchCurrentUser = async () => {
       headers: {
         Cookie: cookieStore.toString(),
       },
-      cache: "no-store",
+      next: { revalidate: 0 },
     });
     if (res.ok) {
       const resData = await res.json();

@@ -7,16 +7,20 @@ import { Button } from "@mui/material";
 import AppModal from "@/components/custom-elements/modal";
 import { useUser } from "@/context/user-context";
 import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 
 const LogoutModal = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { logout } = useUser();
   const { error } = useToast();
-  const handleLogout = () => {
+  const router = useRouter();
+  const handleLogout = async () => {
     try {
       setIsLoading(true);
-      logout();
+      await logout();
+      router.push("/");
+      router.refresh();
     } catch {
       error("Failed to log out. Please try again.");
     } finally {
