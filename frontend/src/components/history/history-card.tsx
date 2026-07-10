@@ -166,7 +166,7 @@ export default function AnalysisHistoryCard({
         }}
       >
         <Image
-          src={`http://backend:5000${item.originalImageUrl}`}
+          src={`http://backend:5000/${item.originalImageUrl}`}
           alt={`Analysis ${item.id}`}
           fill
           sizes="(max-width: 600px) 50vw, (max-width: 900px) 33vw, 20vw"
