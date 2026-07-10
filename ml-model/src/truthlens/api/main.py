@@ -8,9 +8,10 @@ import torch.nn.functional as F
 from facenet_pytorch import MTCNN
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from PIL import Image
 from torchvision import transforms
-from fastapi.responses import JSONResponse
+
 from truthlens.model.classifier import TruthLensClassifier
 from truthlens.preprocessing.pipeline import run_pipeline
 

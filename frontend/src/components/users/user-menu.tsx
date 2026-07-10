@@ -122,7 +122,7 @@ const UserMenu = ({ firstName, lastName }: UserMenuProps) => {
         title="Confirm Logout"
         size="sm"
         closeOnBackdrop
-        onConfirm={() => handleLogoutConfirm()}
+        onConfirm={() => void handleLogoutConfirm()}
         confirmLabel="Logout"
         confirmColor="error"
         confirmDisabled={isLoading}
