@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 
+import { useRouter } from "next/navigation";
+
 import { Button } from "@mui/material";
 
 import AppModal from "@/components/custom-elements/modal";
 import { useUser } from "@/context/user-context";
 import { useToast } from "@/hooks/use-toast";
-import { useRouter } from "next/navigation";
 
 const LogoutModal = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -41,7 +42,7 @@ const LogoutModal = () => {
         title="Confirm Logout"
         size="sm"
         closeOnBackdrop
-        onConfirm={handleLogout}
+        onConfirm={() => void handleLogout()}
         confirmLabel="Logout"
         confirmColor="error"
         confirmDisabled={isLoading}

@@ -20,5 +20,8 @@ export interface ModelResponse {
 }
 
 export interface PredictErrorResponse {
-  detail: string;
+  success: false;
+  message: string;
+  status: number;
+  data: null;
 }

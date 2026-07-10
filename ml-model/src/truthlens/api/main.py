@@ -10,7 +10,7 @@ from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
 from torchvision import transforms
-
+from fastapi.responses import JSONResponse
 from truthlens.model.classifier import TruthLensClassifier
 from truthlens.preprocessing.pipeline import run_pipeline
 
@@ -155,7 +155,9 @@ def build_heatmap_overlay(
 
     # Soften the crop-box edges: blur the heatmap itself so the transition
     # from "hot" to "cold" near the boundary isn't a hard rectangular line
-    heatmap_resized = cv2.GaussianBlur(heatmap_resized, (0, 0), sigmaX=max(fw, fh) * 0.01)
+    heatmap_resized = cv2.GaussianBlur(
+        heatmap_resized, (0, 0), sigmaX=max(fw, fh) * 0.01
+    )
 
     # Suppress low-activation noise so background/skin isn't lightly tinted
     heatmap_clipped = np.clip(
@@ -163,7 +165,9 @@ def build_heatmap_overlay(
     )
 
     heatmap_uint8 = np.uint8(255 * np.clip(heatmap_resized, 0, 1))
-    color_heatmap = cv2.applyColorMap(heatmap_uint8, cv2.COLORMAP_JET).astype(np.float32)  # BGR
+    color_heatmap = cv2.applyColorMap(heatmap_uint8, cv2.COLORMAP_JET).astype(
+        np.float32
+    )  # BGR
 
     # Per-pixel alpha, shaped (fh, fw, 1) so it broadcasts across BGR channels
     alpha_map = (heatmap_clipped * max_alpha)[:, :, None]
@@ -182,23 +186,54 @@ def pil_to_base64_jpeg(image: Image.Image) -> str:
     return base64.b64encode(buffered.getvalue()).decode("utf-8")
 
 
+def make_response(success: bool, message: str, status: int, data=None):
+    return JSONResponse(
+        status_code=status,
+        content={
+            "success": success,
+            "message": message,
+            "status": status,
+            "data": data,
+        },
+    )
+
+
 # 5. Core Analysis Endpoint Routes
 @app.post("/api/v1/predict")
 async def predict_image(file: UploadFile = File(...)):
     # Validate payload file formats extension type constraints
     if file.content_type not in ["image/jpeg", "image/png", "image/jpg"]:
-        raise HTTPException(
-            status_code=400, detail="Invalid media asset format. Must be JPEG or PNG."
+        return make_response(
+            success=False,
+            message="Invalid media asset format. Must be JPEG or PNG.",
+            status=400,
         )
 
     try:
         # Read incoming binary buffer payload stream
         contents = await file.read()
-        orig_image = Image.open(io.BytesIO(contents)).convert("RGB")
+
+        try:
+            orig_image = Image.open(io.BytesIO(contents)).convert("RGB")
+        except Exception:
+            return make_response(
+                success=False,
+                message="Could not read image file. The file may be corrupted or not a valid image.",
+                status=400,
+            )
+
         orig_bgr = cv2.cvtColor(np.array(orig_image), cv2.COLOR_RGB2BGR)
 
         # Detect face — model was trained on tightly cropped faces
-        x1, y1, x2, y2 = get_face_bbox(orig_image)
+        try:
+            x1, y1, x2, y2 = get_face_bbox(orig_image)
+        except Exception:
+            return make_response(
+                success=False,
+                message="No face detected in the uploaded image.",
+                status=422,
+            )
+
         face = orig_image.crop((x1, y1, x2, y2))
 
         # Advanced preprocessing (USM → CLAHE → High-Pass) on cropped face
@@ -219,18 +254,17 @@ async def predict_image(file: UploadFile = File(...)):
         overlay_bgr = build_heatmap_overlay(orig_bgr, heatmap, (x1, y1, x2, y2))
         overlay_rgb = cv2.cvtColor(overlay_bgr, cv2.COLOR_BGR2RGB)
         pil_overlay = Image.fromarray(overlay_rgb)
-
         heatmap_b64 = pil_to_base64_jpeg(pil_overlay)
         original_image_b64 = pil_to_base64_jpeg(orig_image)
 
         # Map labels based on directory classification setups (Fake=0, Real=1)
         labels_map = {0: "AI-Generated", 1: "Real"}
 
-        return {
-            "success": True,
-            "message": "Result returned successfully",
-            "status": 200,
-            "data": {
+        return make_response(
+            success=True,
+            message="Result returned successfully",
+            status=200,
+            data={
                 "prediction": labels_map[predicted_class_idx],
                 "confidenceScores": {
                     "real": float(probabilities[1]),
@@ -240,14 +274,13 @@ async def predict_image(file: UploadFile = File(...)):
                 "heatmapBase64": f"data:image/jpeg;base64,{heatmap_b64}",
                 "originalImageBase64": f"data:image/jpeg;base64,{original_image_b64}",
             },
-        }
+        )
 
-    except HTTPException:
-        raise
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Inference execution engine processing fault: {str(e)}",
+        return make_response(
+            success=False,
+            message=f"Inference execution engine processing fault: {str(e)}",
+            status=500,
         )
 
 

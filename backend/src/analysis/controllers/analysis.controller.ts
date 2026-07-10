@@ -12,13 +12,13 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { AnonymousLimitGuard } from 'src/analysis/guards/anonymous-limit-guard';
 import { Auth } from 'src/common/decorators/auth.decorator';
 import { ExtendedRequest } from 'src/common/type';
 
 import { SearchHistoryDto } from '../dtos/search-history.dto';
 import { AnalysisService } from '../services/analysis.service';
-import { FileInterceptor } from '@nestjs/platform-express';
 @Controller('analysis')
 export class AnalysisController {
   constructor(private readonly analysisService: AnalysisService) {}

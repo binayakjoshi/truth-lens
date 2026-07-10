@@ -1,6 +1,10 @@
 "use client";
-import { useState, MouseEvent } from "react";
+import { useState, type MouseEvent } from "react";
+
 import { useRouter } from "next/navigation";
+
+import LogoutIcon from "@mui/icons-material/Logout";
+import PersonIcon from "@mui/icons-material/Person";
 import {
   Avatar,
   Menu,
@@ -10,8 +14,7 @@ import {
   Divider,
   IconButton,
 } from "@mui/material";
-import PersonIcon from "@mui/icons-material/Person";
-import LogoutIcon from "@mui/icons-material/Logout";
+
 import AppModal from "@/components/custom-elements/modal";
 import { useUser } from "@/context/user-context";
 import { useToast } from "@/hooks/use-toast";
@@ -119,7 +122,7 @@ const UserMenu = ({ firstName, lastName }: UserMenuProps) => {
         title="Confirm Logout"
         size="sm"
         closeOnBackdrop
-        onConfirm={handleLogoutConfirm}
+        onConfirm={() => handleLogoutConfirm()}
         confirmLabel="Logout"
         confirmColor="error"
         confirmDisabled={isLoading}

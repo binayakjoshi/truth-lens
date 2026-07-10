@@ -1,7 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
+
 import { Box, Button, Typography } from "@mui/material";
+
 import { fetchCurrentUser } from "@/lib/user";
+
 import ThemeToggle from "../ui/theme-toggle";
 import UserMenu from "../users/user-menu";
 

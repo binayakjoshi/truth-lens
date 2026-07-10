@@ -1,22 +1,24 @@
+import * as fs from 'fs/promises';
+import * as path from 'path';
+
 import {
   BadRequestException,
   HttpStatus,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ClassificationResult } from 'src/common/enum';
+import { ModelResponse, PredictErrorResponse } from 'src/common/type';
 import { createResponse } from 'src/common/utils/response-handler';
 import { Repository } from 'typeorm';
+import { v4 as uuidv4 } from 'uuid';
 
 import { SearchHistoryDto } from '../dtos/search-history.dto';
 import { AnalysisHistory } from '../entities/analysis-history.entity';
 import { AnonymousUsage } from '../entities/anonymous-usage.entity';
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import { v4 as uuidv4 } from 'uuid';
-import { ClassificationResult } from 'src/common/enum';
-import { ModelResponse, PredictErrorResponse } from 'src/common/type';
 
 @Injectable()
 export class AnalysisService {
@@ -134,6 +136,7 @@ export class AnalysisService {
 
     return createResponse(HttpStatus.OK, 'prediction', record);
   }
+
   private async callPredictApi(
     file: Express.Multer.File,
   ): Promise<ModelResponse> {
@@ -159,16 +162,32 @@ export class AnalysisService {
       );
     }
 
-    if (!response.ok) {
-      const errorBody = (await response
-        .json()
-        .catch(() => null)) as PredictErrorResponse | null;
-      throw new BadRequestException(
-        errorBody?.detail ?? 'Prediction service error',
-      );
+    // Python API now always returns {success, message, status, data}
+    // for both success and error cases, so parse the body first and
+    // branch on `success` / HTTP status rather than assuming shape.
+    const body = (await response.json().catch(() => null)) as
+      | ModelResponse
+      | PredictErrorResponse
+      | null;
+
+    if (!response.ok || !body || body.success === false) {
+      const message =
+        (body as PredictErrorResponse | null)?.message ??
+        'Prediction service error';
+
+      // Map the ML service's HTTP status to an appropriate Nest exception
+      // instead of collapsing everything into BadRequestException.
+      switch (response.status) {
+        case 422:
+          throw new UnprocessableEntityException(message);
+        case 400:
+          throw new BadRequestException(message);
+        default:
+          throw new InternalServerErrorException(message);
+      }
     }
 
-    return response.json() as Promise<ModelResponse>;
+    return body;
   }
 
   private base64ToBuffer(dataUrl: string): Buffer {
