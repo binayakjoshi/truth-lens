@@ -21,11 +21,12 @@ import {
 
 import ImageUpload from "@/components/custom-elements/image-upload";
 import { useForm } from "@/hooks/use-form";
+import { useUser } from "@/context/user-context";
 
 interface AnalysisResult {
   id: string;
   classification: "real" | "fake";
-  userId: string;
+  userId?: string; // optional now — anonymous analyses won't have this
   confidence: number;
   originalImageUrl: string;
   heatmapImageUrl: string;
@@ -43,6 +44,7 @@ function formatDate(iso: string): string {
 }
 
 const AnalysisPage = () => {
+  const { user } = useUser();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -69,7 +71,9 @@ const AnalysisPage = () => {
       const formData = new FormData();
       formData.append("file", formState.inputs.image.value as Blob);
 
-      const res = await fetch("/api/analysis", {
+      const endpoint = user ? "/api/analysis" : "/api/analysis/anonymous";
+
+      const res = await fetch(endpoint, {
         method: "POST",
         body: formData,
       });

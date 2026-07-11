@@ -23,10 +23,25 @@ import { AnalysisService } from '../services/analysis.service';
 export class AnalysisController {
   constructor(private readonly analysisService: AnalysisService) {}
 
-  @Get('/')
+  @Post('/anonymous')
   @UseGuards(AnonymousLimitGuard)
-  testLimit() {
-    return 'testing';
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: 10 * 1024 * 1024 },
+    }),
+  )
+  async analyzeImage(
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addFileTypeValidator({ fileType: /(jpg|jpeg|png)$/ })
+        .build({
+          errorHttpStatusCode: HttpStatus.BAD_REQUEST,
+          fileIsRequired: true,
+        }),
+    )
+    file: Express.Multer.File,
+  ) {
+    return this.analysisService.analyzeWithoutSave(file);
   }
 
   @Get('/history')
@@ -54,7 +69,7 @@ export class AnalysisController {
       limits: { fileSize: 10 * 1024 * 1024 },
     }),
   )
-  async analyzeImage(
+  async analyzeImageAndSave(
     @UploadedFile(
       new ParseFilePipeBuilder()
         .addFileTypeValidator({ fileType: /(jpg|jpeg|png)$/ })

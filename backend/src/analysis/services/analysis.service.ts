@@ -137,6 +137,47 @@ export class AnalysisService {
     return createResponse(HttpStatus.OK, 'prediction', record);
   }
 
+  async analyzeWithoutSave(file: Express.Multer.File) {
+    const predictResult = await this.callPredictApi(file);
+    const { prediction, confidenceScores, heatmapBase64 } = predictResult.data;
+
+    const UPLOAD_ROOT = path.join(
+      process.cwd(),
+      'uploads',
+      'analysis-histories',
+    );
+    const id = uuidv4();
+    const dir = path.join(UPLOAD_ROOT, id);
+    await fs.mkdir(dir, { recursive: true });
+
+    const originalPath = path.join(dir, 'original.png');
+    const overlayPath = path.join(dir, 'overlay.png');
+    await fs.writeFile(originalPath, file.buffer);
+    await fs.writeFile(overlayPath, this.base64ToBuffer(heatmapBase64));
+
+    const originalImageUrl = `uploads/analysis-histories/${id}/original.png`;
+    const heatmapImageUrl = `uploads/analysis-histories/${id}/overlay.png`;
+
+    const classification =
+      prediction === 'Real'
+        ? ClassificationResult.REAL
+        : ClassificationResult.FAKE;
+    const confidence =
+      prediction === 'Real'
+        ? confidenceScores.real
+        : confidenceScores.aiGenerated;
+
+    const result = {
+      id,
+      classification,
+      confidence,
+      originalImageUrl,
+      heatmapImageUrl,
+    };
+
+    return createResponse(HttpStatus.OK, 'prediction', result);
+  }
+
   private async callPredictApi(
     file: Express.Multer.File,
   ): Promise<ModelResponse> {
