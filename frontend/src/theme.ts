@@ -171,6 +171,6 @@ export function createAppTheme(mode: ThemeMode) {
   });
 }
 
-const theme = createAppTheme("dark");
+const theme = createAppTheme("light");
 
 export default theme;

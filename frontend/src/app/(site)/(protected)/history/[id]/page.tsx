@@ -218,7 +218,7 @@ export default async function HistoryDetailPage({
               }}
             >
               <Image
-                src={`${process.env.BACKEND_API_URL}${item.originalImageUrl}`}
+                src={`${process.env.BACKEND_API_URL}/${item.originalImageUrl}`}
                 alt="Original upload"
                 fill
                 sizes="(max-width: 900px) 280px, 340px"
@@ -255,7 +255,7 @@ export default async function HistoryDetailPage({
               }}
             >
               <Image
-                src={`${process.env.BACKEND_API_URL}${item.heatmapImageUrl}`}
+                src={`${process.env.BACKEND_API_URL}/${item.heatmapImageUrl}`}
                 alt="Heatmap Overlay"
                 fill
                 sizes="(max-width: 900px) 280px, 340px"

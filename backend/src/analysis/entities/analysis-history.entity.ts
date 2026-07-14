@@ -1,3 +1,4 @@
+import { ClassificationResult } from 'src/common/enum';
 import { DecimalTransformer } from 'src/common/utils/transformer';
 import { User } from 'src/users/entities/user.entity';
 import {
@@ -10,10 +11,6 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-enum ClassificationResult {
-  REAL = 'real',
-  FAKE = 'fake',
-}
 @Entity()
 @Index(['userId', 'createdAt'])
 export class AnalysisHistory {

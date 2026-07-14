@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import { useRouter } from "next/navigation";
+
 import { Button } from "@mui/material";
 
 import AppModal from "@/components/custom-elements/modal";
@@ -13,10 +15,13 @@ const LogoutModal = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { logout } = useUser();
   const { error } = useToast();
-  const handleLogout = () => {
+  const router = useRouter();
+  const handleLogout = async () => {
     try {
       setIsLoading(true);
-      logout();
+      await logout();
+      router.push("/");
+      router.refresh();
     } catch {
       error("Failed to log out. Please try again.");
     } finally {
@@ -37,7 +42,7 @@ const LogoutModal = () => {
         title="Confirm Logout"
         size="sm"
         closeOnBackdrop
-        onConfirm={handleLogout}
+        onConfirm={() => void handleLogout()}
         confirmLabel="Logout"
         confirmColor="error"
         confirmDisabled={isLoading}
