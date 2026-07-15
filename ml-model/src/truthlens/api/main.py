@@ -84,6 +84,7 @@ async def block_postman(request, call_next):
         )
     return await call_next(request)
 
+
 # 2. Device & Model Loading
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Inference device: {device}")
@@ -366,7 +367,9 @@ async def predict_image(
 async def bulk_upload(
     files: Annotated[
         list[UploadFile],
-        File(description="Up to 15 JPEG/PNG images (max 5 MB each). Hold Ctrl to select multiple."),
+        File(
+            description="Up to 15 JPEG/PNG images (max 5 MB each). Hold Ctrl to select multiple."
+        ),
     ],
 ):
     """
@@ -394,7 +397,7 @@ async def bulk_upload(
     for index, file in enumerate(files):
         entry: dict = {
             "index": index,
-            #"filename": file.filename,
+            # "filename": file.filename,
             "success": False,
             "message": None,
         }
@@ -420,7 +423,7 @@ async def bulk_upload(
             continue
 
         entry["success"] = True
-        #entry["message"] = "Result returned successfully"
+        # entry["message"] = "Result returned successfully"
         entry.update(result["data"])
         succeeded += 1
         results.append(entry)
