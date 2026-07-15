@@ -63,16 +63,30 @@ app.openapi = custom_openapi
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "*"
-    ],  # Adjust this to your explicit NestJS service URL in production
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+
+@app.middleware("http")
+async def block_postman(request, call_next):
+    # CORS is browser-only — Postman ignores it. NestJS has no Origin header,
+    # so Origin checks would also kill backend -> ML calls. Block Postman's UA instead.
+    user_agent = request.headers.get("user-agent", "").lower()
+    if "postman" in user_agent:
+        return JSONResponse(
+            status_code=403,
+            content={"detail": "Access denied."},
+        )
+    return await call_next(request)
+
 # 2. Device & Model Loading
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print(f"🚀 Inference device: {device}")
+print(f"Inference device: {device}")
 
 model = TruthLensClassifier().to(device)
 
@@ -80,10 +94,10 @@ try:
     weights_path = "models/truthlens_efficientnet_b0.pth"
     model.load_state_dict(torch.load(weights_path, map_location=device))
     model.eval()
-    print(f"✅ TruthLens model weights loaded onto {device}.")
+    print(f"TruthLens model weights loaded onto {device}.")
 except Exception as e:
     print(
-        f"⚠️ Model weight file missing or incompatible: {e}. Running with uninitialized weights."
+        f"Model weight file missing or incompatible: {e}. Running with uninitialized weights."
     )
 
 # Face detector — model was trained on tightly cropped faces
@@ -226,14 +240,14 @@ def pil_to_base64_jpeg(image: Image.Image) -> str:
     return base64.b64encode(buffered.getvalue()).decode("utf-8")
 
 
-def make_response(success: bool, message: str, status: int, data=None):
+def make_response(success: bool, message: str, status: int, **fields):
     return JSONResponse(
         status_code=status,
         content={
             "success": success,
             "message": message,
             "status": status,
-            "data": data,
+            **fields,
         },
     )
 
@@ -344,7 +358,7 @@ async def predict_image(
         success=True,
         message="Result returned successfully",
         status=200,
-        data=result["data"],
+        **result["data"],
     )
 
 
@@ -378,12 +392,11 @@ async def bulk_upload(
     failed = 0
 
     for index, file in enumerate(files):
-        entry = {
+        entry: dict = {
             "index": index,
-            "filename": file.filename,
+            #"filename": file.filename,
             "success": False,
             "message": None,
-            "data": None,
         }
 
         if file.content_type not in ALLOWED_CONTENT_TYPES:
@@ -407,8 +420,8 @@ async def bulk_upload(
             continue
 
         entry["success"] = True
-        entry["message"] = "Result returned successfully"
-        entry["data"] = result["data"]
+        #entry["message"] = "Result returned successfully"
+        entry.update(result["data"])
         succeeded += 1
         results.append(entry)
 
@@ -416,12 +429,10 @@ async def bulk_upload(
         success=True,
         message="Bulk analysis completed",
         status=200,
-        data={
-            "total": len(results),
-            "succeeded": succeeded,
-            "failed": failed,
-            "results": results,
-        },
+        total=len(results),
+        succeeded=succeeded,
+        failed=failed,
+        results=results,
     )
 
 
