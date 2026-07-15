@@ -1,18 +1,25 @@
 import copy
-import os
 import time
+from pathlib import Path
 
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 from torchvision import transforms
-
 from truthlens.model.classifier import TruthLensClassifier
+
 from truthlens.training.dataset import PreprocessedDataset
 
+WEIGHTS_PATH = (
+    Path(__file__).resolve().parents[2]
+    / "inference"
+    / "models"
+    / "truthlens_efficientnet_b0.pth"
+)
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print(f"Training on: {device}")
+print(f"Fine-tuning on: {device}")
 
 data_transforms = {
     "train": transforms.Compose(
@@ -51,6 +58,25 @@ dataloaders = {
 }
 dataset_sizes = {x: len(datasets[x]) for x in ["train", "valid"]}
 print(f"Loaded: {dataset_sizes} images")
+
+# Class weights — emphasize Real class (weak point at 0.78 recall)
+n_fake = dataset_sizes["train"] // 2
+n_real = dataset_sizes["train"] - n_fake
+weight_real = 1.5
+weight_fake = 1.0
+class_weights = torch.tensor([weight_fake, weight_real]).to(device)
+print(f"Class weights: Fake={weight_fake}, Real={weight_real}")
+
+# Load model — freeze_backbone=False so all layers are trainable for fine-tuning
+model = TruthLensClassifier(pretrained=False, freeze_backbone=False).to(device)
+model.load_state_dict(torch.load(WEIGHTS_PATH, map_location=device))
+print("Loaded existing weights, backbone unfrozen for fine-tuning")
+
+criterion = nn.CrossEntropyLoss(weight=class_weights)
+
+# Lower LR for fine-tuning the whole network
+optimizer = optim.AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=1e-5)
+scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=10)
 
 
 def train_model(model, criterion, optimizer, scheduler, num_epochs=10):
@@ -101,17 +127,8 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=10):
     return model
 
 
-if __name__ == "__main__":
-    model = TruthLensClassifier(pretrained=True, freeze_backbone=True).to(device)
-    criterion = nn.CrossEntropyLoss()
-    optimizer = optim.AdamW(
-        filter(lambda p: p.requires_grad, model.parameters()), lr=1e-4
-    )
-    scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=10)
+model = train_model(model, criterion, optimizer, scheduler, num_epochs=10)
 
-    model = train_model(model, criterion, optimizer, scheduler, num_epochs=10)
-
-    os.makedirs("models", exist_ok=True)
-    save_path = "models/truthlens_efficientnet_b0.pth"
-    torch.save(model.state_dict(), save_path)
-    print(f"Saved: {save_path}")
+WEIGHTS_PATH.parent.mkdir(parents=True, exist_ok=True)
+torch.save(model.state_dict(), WEIGHTS_PATH)
+print(f"Saved: {WEIGHTS_PATH}")

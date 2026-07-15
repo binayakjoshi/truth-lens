@@ -34,14 +34,17 @@ services:
   ml-model:
     build:
       context: ./ml-model
+      dockerfile: inference/Dockerfile
       target: development
     container_name: ml-model
+    working_dir: /workspace/inference
     volumes:
-      - ./ml-model:/app
-      - ml_venv:/app/.venv
+      - ./ml-model/inference:/workspace/inference
+      - ./ml-model/preprocessing:/workspace/preprocessing
+      - ml_venv:/workspace/inference/.venv
     ports:
       - "8000:8000"
-    command: uv run uvicorn truthlens.api.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir src
+    command: uv run uvicorn truthlens.api.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir src --reload-dir /workspace/preprocessing/src
 
   db:
     image: postgres:15-alpine

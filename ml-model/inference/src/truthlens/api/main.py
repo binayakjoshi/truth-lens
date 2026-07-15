@@ -13,7 +13,6 @@ from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse
 from PIL import Image
 from torchvision import transforms
-
 from truthlens.model.classifier import TruthLensClassifier
 from truthlens.preprocessing.pipeline import run_pipeline
 
