@@ -33,8 +33,10 @@ services:
 
   ml-model:
     build:
-      context: ./ml-model
-      dockerfile: inference/Dockerfile
+      context: ./ml-model/inference
+      additional_contexts:
+        preprocessing: ./ml-model/preprocessing
+      dockerfile: Dockerfile
       target: development
     container_name: ml-model
     working_dir: /workspace/inference

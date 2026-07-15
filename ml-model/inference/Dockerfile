@@ -6,17 +6,17 @@ WORKDIR /workspace
 
 RUN apt-get update && apt-get install -y libgl1-mesa-glx libglib2.0-0 && rm -rf /var/lib/apt/lists/*
 
-# Shared preprocessing package (path dependency from inference/pyproject.toml)
-COPY preprocessing/pyproject.toml preprocessing/uv.lock preprocessing/
-COPY preprocessing/src/ preprocessing/src/
+# Shared preprocessing package (Compose additional context: preprocessing)
+COPY --from=preprocessing pyproject.toml uv.lock /workspace/preprocessing/
+COPY --from=preprocessing src/ /workspace/preprocessing/src/
 
-# Inference service — src must exist before editable install
-COPY inference/pyproject.toml inference/uv.lock inference/
-COPY inference/src/ inference/src/
+# Inference service — context is ml-model/inference
+COPY pyproject.toml uv.lock /workspace/inference/
+COPY src/ /workspace/inference/src/
 WORKDIR /workspace/inference
 RUN uv sync --frozen --no-dev && rm -rf /root/.cache/*
 
-COPY inference/models/ models/
+COPY models/ models/
 
 EXPOSE 8000
 
