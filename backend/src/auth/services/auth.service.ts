@@ -18,6 +18,7 @@ import { IsNull, Repository } from 'typeorm';
 
 import { LoginDto } from '../dtos/login.dto';
 import { VerifyOtpDto } from '../dtos/verify-otp.dto';
+import { OtpService } from 'src/otp/services/otp.service';
 
 @Injectable()
 export class AuthService {
@@ -28,25 +29,24 @@ export class AuthService {
     private readonly otpRecordRepo: Repository<OtpRecord>,
     private readonly jwtService: JwtService,
     private readonly emailService: EmailService,
+    private readonly otpService: OtpService,
   ) {}
 
   async login(loginDto: LoginDto) {
     const { username, email, password } = loginDto;
 
-    if (!username && !email) {
+    if (!username && !email)
       throw new ConflictException('Username or email must be provided');
-    }
 
     let user: User | null = null;
 
     if (username) {
       user = await this.userRepo.findOne({ where: { username } });
 
-      if (!user) {
+      if (!user)
         throw new NotFoundException(
           'Could not find user with the provided username',
         );
-      }
     } else if (email) {
       user = await this.userRepo.findOne({ where: { email } });
 
@@ -63,32 +63,20 @@ export class AuthService {
       );
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
-    if (!isPasswordValid) {
+    if (!isPasswordValid)
       throw new UnauthorizedException('Invalid credentials. Please try again.');
-    }
 
     if (!user.isVerified) {
-      const otpCode = this.generateOtp();
-      const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+      const { code, expiresAt } = await this.otpService.createOtp(user.id);
 
-      const otpRecord = this.otpRecordRepo.create({
-        user,
-        userId: user.id,
-        expiresAt,
-        code: otpCode,
-      });
-      await this.otpRecordRepo.save(otpRecord);
       this.emailService
-        .sendOtpEmail(user.email, user.firstName, otpCode)
+        .sendOtpEmail(user.email, user.firstName, code)
         .catch(() => {});
 
       return createResponse(
         HttpStatus.OK,
         `A 6-digit verification code has been sent to ${user.email}`,
-        {
-          email: user.email,
-          expiresAt: otpRecord.expiresAt,
-        },
+        { email: user.email, expiresAt },
       );
     }
 
@@ -213,6 +201,7 @@ export class AuthService {
 
   async verifyOtp(dto: VerifyOtpDto) {
     const { email, code } = dto;
+
     const user = await this.userRepo.findOne({ where: { email } });
     if (!user) {
       throw new NotFoundException(
@@ -223,31 +212,27 @@ export class AuthService {
       throw new ConflictException('User is already verified');
     }
 
-    const otpRecord = await this.otpRecordRepo.findOne({
-      where: { userId: user.id, code, isUsed: false },
-      order: { createdAt: 'DESC' }, // always pick the latest
-    });
+    const result = await this.otpService.verifyOtp(user.id, code);
 
-    if (!otpRecord) {
-      throw new UnauthorizedException('Invalid OTP code. Please try again.');
-    }
-    if (otpRecord.expiresAt < new Date()) {
+    if (result === 'notFound') {
       throw new UnauthorizedException(
         'OTP code has expired. Please request for a new one.',
       );
     }
+    if (result === 'invalid') {
+      throw new UnauthorizedException('Invalid OTP code. Please try again.');
+    }
 
-    await this.otpRecordRepo.manager.transaction(async (manager) => {
-      await manager.update(OtpRecord, { id: otpRecord.id }, { isUsed: true });
-      await manager.update(User, { id: user.id }, { isVerified: true });
-    });
+    await this.userRepo.update({ id: user.id }, { isVerified: true });
 
     if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET is not defined');
+
     const userData = {
       id: user.id,
       username: user.username,
       email: user.email,
     };
+
     const accessToken = this.jwtService.sign(userData, {
       secret: process.env.JWT_SECRET,
       expiresIn: '15m',

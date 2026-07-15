@@ -16,7 +16,6 @@ import { IsNull, Repository } from 'typeorm';
 import { CreateUserDto } from '../dtos/create-user.dto';
 import { ForgotPasswordDto } from '../dtos/forgot-password.dto';
 import { ResetPasswordDto } from '../dtos/reset-password.dto';
-import { UpdateUserDto } from '../dtos/update-user.dto';
 import { OtpRecord } from '../entities/otp-record.entity';
 import { User } from '../entities/user.entity';
 @Injectable()
@@ -125,16 +124,5 @@ export class UsersService {
   }
   private generateOtp(): string {
     return String(randomInt(0, 1_000_000)).padStart(6, '0');
-  }
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
-
-  update(id: number, _updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} user`;
   }
 }

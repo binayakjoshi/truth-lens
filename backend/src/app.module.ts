@@ -9,6 +9,8 @@ import { AnalysisModule } from './analysis/analysis.module';
 import { AuthModule } from './auth/auth.module';
 import { EmailModule } from './email/email.module';
 import { UsersModule } from './users/users.module';
+import { RedisModule } from './redis/redis.module';
+import { OtpModule } from './otp/otp.module';
 @Module({
   imports: [
     TypeOrmModule.forRoot({
@@ -26,6 +28,8 @@ import { UsersModule } from './users/users.module';
     AuthModule,
     EmailModule,
     AnalysisModule,
+    RedisModule,
+    OtpModule,
   ],
 })
 export class AppModule {}

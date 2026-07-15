@@ -29,6 +29,9 @@ services:
       - ./backend/.env
     depends_on:
       - db
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
     command: npm run start:dev
 
   ml-model:
@@ -58,8 +61,22 @@ services:
       timeout: 5s
       retries: 10
 
+  redis:
+    image: redis:8-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 volumes:
   db_data:
+  redis_data:
   frontend_node_modules:
   backend_node_modules:
   ml_venv:

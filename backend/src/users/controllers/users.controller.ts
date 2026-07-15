@@ -1,24 +1,11 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Res,
-  Req,
-} from '@nestjs/common';
+import { Controller, Post, Body, Res, Req } from '@nestjs/common';
 import { type Response } from 'express';
 import { COOKIE_NAMES } from 'src/auth/constants/cookie';
 import { ResetPassword } from 'src/common/decorators/auth.decorator';
-import { Serialize } from 'src/common/decorators/serialize';
 
 import { CreateUserDto } from '../dtos/create-user.dto';
 import { ForgotPasswordDto } from '../dtos/forgot-password.dto';
 import { ResetPasswordDto } from '../dtos/reset-password.dto';
-import { UpdateUserDto } from '../dtos/update-user.dto';
-import { UserResponseDto } from '../dtos/user.dto';
 import { UsersService } from '../services/users.service';
 
 class CustomRequest extends Request {
@@ -58,21 +45,5 @@ export class UsersController {
       status: result.status,
       data: null,
     };
-  }
-
-  @Get(':id')
-  @Serialize(UserResponseDto)
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
   }
 }
