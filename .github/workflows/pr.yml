@@ -57,16 +57,12 @@ jobs:
       - run: npm run build
 
   ml-model:
-    name: ml-model (${{ matrix.package }})
+    name: ml-model
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        package: [preprocessing, inference, training]
 
     defaults:
       run:
-        working-directory: ml-model/${{ matrix.package }}
+        working-directory: ml-model/inference
 
     steps:
       - uses: actions/checkout@v4
