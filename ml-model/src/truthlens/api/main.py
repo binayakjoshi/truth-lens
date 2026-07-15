@@ -1,5 +1,6 @@
 import base64
 import io
+from typing import Annotated
 
 import cv2
 import numpy as np
@@ -8,6 +9,7 @@ import torch.nn.functional as F
 from facenet_pytorch import MTCNN
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse
 from PIL import Image
 from torchvision import transforms
@@ -17,9 +19,46 @@ from truthlens.preprocessing.pipeline import run_pipeline
 
 app = FastAPI(
     title="TruthLens ML Inference Engine",
-    description="Microservice for handling EfficientNet-B0 classifications and Grad-CAM generation",
+    description="Microservice for EfficientNet-B0 classifications and Grad-CAM generation (single + bulk)",
     version="1.0.0",
 )
+
+
+def custom_openapi():
+    """
+    Patch file-upload schemas so Swagger UI shows a real file picker.
+    FastAPI 0.136+ emits OpenAPI 3.1 contentMediaType, which Swagger often
+    renders as a plain text field for array-of-files bodies.
+    """
+    if app.openapi_schema:
+        return app.openapi_schema
+
+    openapi_schema = get_openapi(
+        title=app.title,
+        version=app.version,
+        description=app.description,
+        routes=app.routes,
+    )
+
+    for schema in openapi_schema.get("components", {}).get("schemas", {}).values():
+        for prop in schema.get("properties", {}).values():
+            if prop.get("type") == "string" and prop.get("contentMediaType"):
+                prop["format"] = "binary"
+                prop.pop("contentMediaType", None)
+            items = prop.get("items")
+            if (
+                isinstance(items, dict)
+                and items.get("type") == "string"
+                and items.get("contentMediaType")
+            ):
+                items["format"] = "binary"
+                items.pop("contentMediaType", None)
+
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+
+app.openapi = custom_openapi
 
 app.add_middleware(
     CORSMiddleware,
@@ -199,74 +238,63 @@ def make_response(success: bool, message: str, status: int, data=None):
     )
 
 
-# 5. Core Analysis Endpoint Routes
-@app.post("/api/v1/predict")
-async def predict_image(file: UploadFile = File(...)):
-    # Validate payload file formats extension type constraints
-    if file.content_type not in ["image/jpeg", "image/png", "image/jpg"]:
-        return make_response(
-            success=False,
-            message="Invalid media asset format. Must be JPEG or PNG.",
-            status=400,
-        )
+ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/png", "image/jpg"}
+MAX_BULK_IMAGES = 15
+MAX_IMAGE_BYTES = 5 * 1024 * 1024  # 5 MB
+LABELS_MAP = {0: "AI-Generated", 1: "Real"}
 
+
+def analyze_image_bytes(contents: bytes) -> dict:
+    """
+    Run the full face-detect → preprocess → classify → Grad-CAM pipeline
+    on raw image bytes. Returns either:
+      {"ok": True, "data": {...}}
+      {"ok": False, "message": str, "status": int}
+    """
     try:
-        # Read incoming binary buffer payload stream
-        contents = await file.read()
-
         try:
             orig_image = Image.open(io.BytesIO(contents)).convert("RGB")
         except Exception:
-            return make_response(
-                success=False,
-                message="Could not read image file. The file may be corrupted or not a valid image.",
-                status=400,
-            )
+            return {
+                "ok": False,
+                "message": "Could not read image file. The file may be corrupted or not a valid image.",
+                "status": 400,
+            }
 
         orig_bgr = cv2.cvtColor(np.array(orig_image), cv2.COLOR_RGB2BGR)
 
-        # Detect face — model was trained on tightly cropped faces
         try:
             x1, y1, x2, y2 = get_face_bbox(orig_image)
         except Exception:
-            return make_response(
-                success=False,
-                message="No face detected in the uploaded image.",
-                status=422,
-            )
+            return {
+                "ok": False,
+                "message": "No face detected in the uploaded image.",
+                "status": 422,
+            }
 
         face = orig_image.crop((x1, y1, x2, y2))
 
-        # Advanced preprocessing (USM → CLAHE → High-Pass) on cropped face
         img_bgr = cv2.cvtColor(np.array(face), cv2.COLOR_RGB2BGR)
         enhanced = run_pipeline(img_bgr)
         enhanced_rgb = cv2.cvtColor(enhanced, cv2.COLOR_BGR2RGB)
         enhanced_pil = Image.fromarray(enhanced_rgb)
 
-        # Transform enhanced image to normalized 224x224 tensor on device
         input_tensor = preprocess(enhanced_pil).unsqueeze(0).to(device)
 
-        # Process single-pass model execution pipeline with Grad-CAM computation
         predicted_class_idx, probabilities, heatmap = process_inference_with_gradcam(
             input_tensor
         )
 
-        # --- Build heatmap overlay positioned on the full original image ---
         overlay_bgr = build_heatmap_overlay(orig_bgr, heatmap, (x1, y1, x2, y2))
         overlay_rgb = cv2.cvtColor(overlay_bgr, cv2.COLOR_BGR2RGB)
         pil_overlay = Image.fromarray(overlay_rgb)
         heatmap_b64 = pil_to_base64_jpeg(pil_overlay)
         original_image_b64 = pil_to_base64_jpeg(orig_image)
 
-        # Map labels based on directory classification setups (Fake=0, Real=1)
-        labels_map = {0: "AI-Generated", 1: "Real"}
-
-        return make_response(
-            success=True,
-            message="Result returned successfully",
-            status=200,
-            data={
-                "prediction": labels_map[predicted_class_idx],
+        return {
+            "ok": True,
+            "data": {
+                "prediction": LABELS_MAP[predicted_class_idx],
                 "confidenceScores": {
                     "real": float(probabilities[1]),
                     "aiGenerated": float(probabilities[0]),
@@ -275,14 +303,126 @@ async def predict_image(file: UploadFile = File(...)):
                 "heatmapBase64": f"data:image/jpeg;base64,{heatmap_b64}",
                 "originalImageBase64": f"data:image/jpeg;base64,{original_image_b64}",
             },
-        )
-
+        }
     except Exception as e:
+        return {
+            "ok": False,
+            "message": f"Inference execution engine processing fault: {str(e)}",
+            "status": 500,
+        }
+
+
+# 5. Core Analysis Endpoint Routes
+@app.post("/api/v1/predict")
+async def predict_image(
+    file: Annotated[UploadFile, File(description="JPEG or PNG image (max 5 MB)")],
+):
+    if file.content_type not in ALLOWED_CONTENT_TYPES:
         return make_response(
             success=False,
-            message=f"Inference execution engine processing fault: {str(e)}",
-            status=500,
+            message="Invalid media asset format. Must be JPEG or PNG.",
+            status=400,
         )
+
+    contents = await file.read()
+    if len(contents) > MAX_IMAGE_BYTES:
+        return make_response(
+            success=False,
+            message="Image exceeds the 5 MB size limit.",
+            status=400,
+        )
+
+    result = analyze_image_bytes(contents)
+    if not result["ok"]:
+        return make_response(
+            success=False,
+            message=result["message"],
+            status=result["status"],
+        )
+
+    return make_response(
+        success=True,
+        message="Result returned successfully",
+        status=200,
+        data=result["data"],
+    )
+
+
+@app.post("/api/v1/bulk-upload")
+async def bulk_upload(
+    files: Annotated[
+        list[UploadFile],
+        File(description="Up to 15 JPEG/PNG images (max 5 MB each). Hold Ctrl to select multiple."),
+    ],
+):
+    """
+    Accept multiple images (max 15, each <= 5 MB), run inference on each,
+    and return an array of per-image results.
+    """
+    if not files:
+        return make_response(
+            success=False,
+            message="At least one image is required.",
+            status=400,
+        )
+
+    if len(files) > MAX_BULK_IMAGES:
+        return make_response(
+            success=False,
+            message=f"Too many images. Maximum of {MAX_BULK_IMAGES} allowed per request.",
+            status=400,
+        )
+
+    results = []
+    succeeded = 0
+    failed = 0
+
+    for index, file in enumerate(files):
+        entry = {
+            "index": index,
+            "filename": file.filename,
+            "success": False,
+            "message": None,
+            "data": None,
+        }
+
+        if file.content_type not in ALLOWED_CONTENT_TYPES:
+            entry["message"] = "Invalid media asset format. Must be JPEG or PNG."
+            failed += 1
+            results.append(entry)
+            continue
+
+        contents = await file.read()
+        if len(contents) > MAX_IMAGE_BYTES:
+            entry["message"] = "Image exceeds the 5 MB size limit."
+            failed += 1
+            results.append(entry)
+            continue
+
+        result = analyze_image_bytes(contents)
+        if not result["ok"]:
+            entry["message"] = result["message"]
+            failed += 1
+            results.append(entry)
+            continue
+
+        entry["success"] = True
+        entry["message"] = "Result returned successfully"
+        entry["data"] = result["data"]
+        succeeded += 1
+        results.append(entry)
+
+    return make_response(
+        success=True,
+        message="Bulk analysis completed",
+        status=200,
+        data={
+            "total": len(results),
+            "succeeded": succeeded,
+            "failed": failed,
+            "results": results,
+        },
+    )
 
 
 @app.get("/health")
