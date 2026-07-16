@@ -16,16 +16,14 @@ import { IsNull, Repository } from 'typeorm';
 import { CreateUserDto } from '../dtos/create-user.dto';
 import { ForgotPasswordDto } from '../dtos/forgot-password.dto';
 import { ResetPasswordDto } from '../dtos/reset-password.dto';
-import { OtpRecord } from '../entities/otp-record.entity';
 import { User } from '../entities/user.entity';
+import { OtpService } from 'src/otp/services/otp.service';
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
-
-    @InjectRepository(OtpRecord)
-    private readonly otpRepo: Repository<OtpRecord>,
+    private readonly otpService: OtpService,
     private readonly emailService: EmailService,
   ) {}
   async create(createUserDto: CreateUserDto) {
@@ -81,16 +79,7 @@ export class UsersService {
       throw new UnauthorizedException(
         'Cannot reset password for accounts linked with google.',
       );
-    const code = this.generateOtp();
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
-    const otpRecord = this.otpRepo.create({
-      user,
-      userId: user.id,
-      expiresAt,
-      code,
-    });
-    this.otpRepo.save(otpRecord);
-
+    const { code, expiresAt } = await this.otpService.createOtp(user.id);
     this.emailService
       .sendOtpEmail(user.email, user.firstName, code)
       .catch(() => {});
@@ -100,7 +89,7 @@ export class UsersService {
       `A 6-digit verification code has been sent to ${user.email}`,
       {
         email: user.email,
-        expiresAt: otpRecord.expiresAt,
+        expiresAt,
       },
     );
   }
@@ -121,8 +110,5 @@ export class UsersService {
       HttpStatus.OK,
       'Password updated sucessfully. Please Login with your new password.',
     );
-  }
-  private generateOtp(): string {
-    return String(randomInt(0, 1_000_000)).padStart(6, '0');
   }
 }

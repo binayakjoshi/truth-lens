@@ -3,7 +3,6 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { OtpRecord } from '../entities/otp-record.entity';
 import { User } from '../entities/user.entity';
 
 @Injectable()
@@ -11,30 +10,9 @@ export class UserCleanupService {
   private readonly logger = new Logger(UserCleanupService.name);
 
   constructor(
-    @InjectRepository(OtpRecord)
-    private readonly otpRecordRepo: Repository<OtpRecord>,
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
   ) {}
-
-  @Cron(CronExpression.EVERY_HOUR)
-  async cleanupOtpRecords() {
-    const now = new Date();
-
-    const { affected: usedDeleted } = await this.otpRecordRepo.delete({
-      isUsed: true,
-    });
-
-    const { affected: expiredDeleted } = await this.otpRecordRepo
-      .createQueryBuilder()
-      .delete()
-      .where('expiresAt < :now', { now })
-      .execute();
-
-    this.logger.log(
-      `OTP cleanup — used: ${usedDeleted}, expired unused: ${expiredDeleted}`,
-    );
-  }
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async markUnverifiedUsersAsDeleted() {

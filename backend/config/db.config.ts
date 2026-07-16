@@ -1,7 +1,6 @@
 import { config } from 'dotenv';
 import { AnalysisHistory } from 'src/analysis/entities/analysis-history.entity';
 import { AnonymousUsage } from 'src/analysis/entities/anonymous-usage.entity';
-import { OtpRecord } from 'src/users/entities/otp-record.entity';
 import { User } from 'src/users/entities/user.entity';
 import { DataSource, LoggerOptions } from 'typeorm';
 
@@ -28,5 +27,5 @@ export const dataSource = new DataSource({
   migrations: ['dist/src/database/migrations/**/*.js'],
   migrationsRun: false,
   namingStrategy: new CustomNamingStrategy(),
-  entities: [User, OtpRecord, AnonymousUsage, AnalysisHistory],
+  entities: [User, AnonymousUsage, AnalysisHistory],
 });

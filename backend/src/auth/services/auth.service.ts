@@ -1,5 +1,3 @@
-import { randomInt } from 'crypto';
-
 import {
   ConflictException,
   HttpStatus,
@@ -12,7 +10,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { createResponse } from 'src/common/utils/response-handler';
 import { EmailService } from 'src/email/services/email.service';
-import { OtpRecord } from 'src/users/entities/otp-record.entity';
 import { User } from 'src/users/entities/user.entity';
 import { IsNull, Repository } from 'typeorm';
 
@@ -25,8 +22,6 @@ export class AuthService {
   constructor(
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
-    @InjectRepository(OtpRecord)
-    private readonly otpRecordRepo: Repository<OtpRecord>,
     private readonly jwtService: JwtService,
     private readonly emailService: EmailService,
     private readonly otpService: OtpService,
@@ -165,31 +160,18 @@ export class AuthService {
 
   async resendOtp(email: string) {
     const user = await this.userRepo.findOne({ where: { email } });
-    if (!user) {
+    if (!user)
       throw new NotFoundException(
         'Could not find user with the provided email',
       );
-    }
-    if (user.isVerified) {
+    if (user.isVerified)
       throw new ConflictException('User is already verified');
-    }
 
-    await this.otpRecordRepo.update(
-      { userId: user.id, isUsed: false },
-      { isUsed: true },
-    );
+    await this.otpService.deleteOtp(user.id);
 
-    const otpCode = this.generateOtp();
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
-    const otpRecord = this.otpRecordRepo.create({
-      user,
-      userId: user.id,
-      expiresAt,
-      code: otpCode,
-    });
-    await this.otpRecordRepo.save(otpRecord);
+    const { code, expiresAt } = await this.otpService.createOtp(user.id);
     this.emailService
-      .sendOtpEmail(user.email, user.firstName, otpCode)
+      .sendOtpEmail(user.email, user.firstName, code)
       .catch(() => {});
 
     return createResponse(
@@ -222,8 +204,6 @@ export class AuthService {
     if (result === 'invalid') {
       throw new UnauthorizedException('Invalid OTP code. Please try again.');
     }
-
-    await this.userRepo.update({ id: user.id }, { isVerified: true });
 
     if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET is not defined');
 
@@ -259,24 +239,16 @@ export class AuthService {
         'Could not find user with the provided email',
       );
 
-    const otpRecord = await this.otpRecordRepo.findOne({
-      where: { userId: user.id, code, isUsed: false },
-      order: { createdAt: 'DESC' }, // always pick the latest
-    });
+    const result = await this.otpService.verifyOtp(user.id, code);
 
-    if (!otpRecord)
-      throw new UnauthorizedException('Invalid OTP code. Please try again.');
-    if (otpRecord.expiresAt < new Date())
+    if (result === 'notFound') {
       throw new UnauthorizedException(
         'OTP code has expired. Please request for a new one.',
       );
-
-    await this.otpRecordRepo.manager.transaction(async (manager) => {
-      await manager.update(OtpRecord, { id: otpRecord.id }, { isUsed: true });
-      await manager.update(User, { id: user.id }, { isVerified: true });
-    });
-
-    if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET is not defined');
+    }
+    if (result === 'invalid') {
+      throw new UnauthorizedException('Invalid OTP code. Please try again.');
+    }
     const userData = {
       id: user.id,
       username: user.username,
@@ -376,9 +348,5 @@ export class AuthService {
     }
 
     return username;
-  }
-
-  private generateOtp(): string {
-    return String(randomInt(0, 1_000_000)).padStart(6, '0');
   }
 }
