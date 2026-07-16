@@ -20,7 +20,8 @@ EXPOSE 8000
 
 FROM base AS development
 RUN uv sync --frozen --group dev && rm -rf /root/.cache/*
-CMD ["uv", "run", "uvicorn", "truthlens.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--reload-dir", "src", "--reload-dir", "/usr/src/preprocessing/src"]
+# Absolute reload dirs so both mounts are watched reliably (uv run + Docker bind mounts)
+CMD ["uv", "run", "uvicorn", "truthlens.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--reload-dir", "/usr/src/app/src", "--reload-dir", "/usr/src/preprocessing/src"]
 
 FROM base AS production
 CMD [".venv/bin/uvicorn", "truthlens.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
