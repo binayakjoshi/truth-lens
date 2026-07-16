@@ -62,7 +62,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: ml-model
+        working-directory: ml-model/inference
 
     steps:
       - uses: actions/checkout@v4

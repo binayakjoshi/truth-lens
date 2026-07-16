@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import numpy as np
 import torch
 from sklearn.metrics import (
@@ -8,16 +10,21 @@ from sklearn.metrics import (
 )
 from torch.utils.data import DataLoader
 from torchvision import transforms
-
 from truthlens.model.classifier import TruthLensClassifier
+
 from truthlens.training.dataset import PreprocessedDataset
+
+WEIGHTS_PATH = (
+    Path(__file__).resolve().parents[2]
+    / "inference"
+    / "models"
+    / "truthlens_efficientnet_b0.pth"
+)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 model = TruthLensClassifier().to(device)
-model.load_state_dict(
-    torch.load("models/truthlens_efficientnet_b0.pth", map_location=device)
-)
+model.load_state_dict(torch.load(WEIGHTS_PATH, map_location=device))
 model.eval()
 
 val_transform = transforms.Compose(
@@ -77,4 +84,4 @@ try:
 except Exception:
     print("ROC-AUC: N/A")
 
-print(f"\nModel path: models/truthlens_efficientnet_b0.pth ({16}MB)")
+print(f"\nModel path: {WEIGHTS_PATH} ({16}MB)")

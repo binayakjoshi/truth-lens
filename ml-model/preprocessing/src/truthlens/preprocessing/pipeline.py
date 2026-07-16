@@ -3,8 +3,7 @@ Full preprocessing pipeline — chains Step 1 → 2 → 3 in one call.
 
 USM → CLAHE → High-Pass Boost
 
-This module is importable so the FastAPI inference server (main.py)
-can call run_pipeline(image_np) before resize + normalize.
+Shared by training datasets and the FastAPI inference service.
 """
 
 import cv2

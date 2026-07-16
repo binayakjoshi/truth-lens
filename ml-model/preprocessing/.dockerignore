@@ -1,0 +1,30 @@
+# Additional build context for truthlens-preprocessing (path dep of inference).
+
+.venv/
+venv/
+env/
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+build/
+dist/
+*.egg-info/
+.eggs/
+.coverage
+htmlcov/
+.git
+.gitignore
+.python-version
+
+# Tests and local junk — not needed for the inference image
+tests/
+*.md
+.dockerignore
+
+# Keep: pyproject.toml, uv.lock, src/

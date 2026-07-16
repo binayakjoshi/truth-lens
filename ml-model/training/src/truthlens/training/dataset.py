@@ -3,7 +3,6 @@ import os
 import cv2
 from PIL import Image
 from torch.utils.data import Dataset
-
 from truthlens.preprocessing.pipeline import run_pipeline
 
 
