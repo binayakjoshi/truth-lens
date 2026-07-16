@@ -19,14 +19,12 @@ export class AnonymousLimitGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest();
     const res = context.switchToHttp().getResponse();
-
     const visitorId = ensureVisitorId(req, res);
 
-    const visitorCount = await this.analysisService.increment(
+    const [visitorCount, ipCount] = await this.analysisService.incrementMany([
       `visitor:${visitorId}`,
-    );
-
-    const ipCount = await this.analysisService.increment(`ip:${req.ip}`);
+      `ip:${req.ip}`,
+    ]);
 
     if (visitorCount > this.VISITOR_LIMIT || ipCount > this.IP_LIMIT) {
       throw new HttpException(

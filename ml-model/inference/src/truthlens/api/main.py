@@ -352,13 +352,14 @@ async def predict_image(
             success=False,
             message=result["message"],
             status=result["status"],
+            
         )
 
     return make_response(
         success=True,
         message="Result returned successfully",
         status=200,
-        **result["data"],
+        data=result["data"],
     )
 
 

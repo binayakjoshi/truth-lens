@@ -29,7 +29,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { fetchUser, setOtpExpiration, setVerificationEmail } = useUser();
-  const { success, error } = useToast();
+  const { success, error, info } = useToast();
   const [formState, inputHandler] = useForm(
     {
       email: { value: "", isValid: false, touched: false },
@@ -67,7 +67,7 @@ export default function LoginPage() {
         if (resData.message.includes("verification")) {
           setOtpExpiration(resData.data.otpExpiration);
           setVerificationEmail(resData.data.email);
-          success("Account not verifed. Please verify your email");
+          info("Account not verifed. Please verify your email");
           router.push("/verify-otp");
           return;
         }

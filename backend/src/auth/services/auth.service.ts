@@ -196,14 +196,12 @@ export class AuthService {
 
     const result = await this.otpService.verifyOtp(user.id, code);
 
-    if (result === 'notFound') {
+    if (result === 'notFound')
       throw new UnauthorizedException(
         'OTP code has expired. Please request for a new one.',
       );
-    }
-    if (result === 'invalid') {
+    if (result === 'invalid')
       throw new UnauthorizedException('Invalid OTP code. Please try again.');
-    }
 
     if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET is not defined');
 
@@ -212,7 +210,8 @@ export class AuthService {
       username: user.username,
       email: user.email,
     };
-
+    user.isVerified = true;
+    await this.userRepo.save(user);
     const accessToken = this.jwtService.sign(userData, {
       secret: process.env.JWT_SECRET,
       expiresIn: '15m',
