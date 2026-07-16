@@ -1,0 +1,30 @@
+# Build context is ml-model/inference — only what FastAPI needs at image build time.
+
+.venv/
+venv/
+env/
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+build/
+dist/
+*.egg-info/
+.eggs/
+.coverage
+htmlcov/
+.git
+.gitignore
+.python-version
+
+# Dev tooling / caches — not needed in the image
+tests/
+*.md
+.dockerignore
+
+# Keep: Dockerfile, pyproject.toml, uv.lock, src/, models/ (incl. .pth weights)

@@ -33,15 +33,23 @@ services:
 
   ml-model:
     build:
-      context: ./ml-model
+      context: ./ml-model/inference
+      additional_contexts:
+        preprocessing: ./ml-model/preprocessing
+      dockerfile: Dockerfile
       target: development
     container_name: ml-model
     volumes:
-      - ./ml-model:/app
-      - ml_venv:/app/.venv
+      # Mount only source so the image .venv is not overwritten (no venv volume)
+      - ./ml-model/inference/src:/usr/src/app/src
+      - ./ml-model/preprocessing/src:/usr/src/preprocessing/src
+      - ./ml-model/inference/models:/usr/src/app/models
     ports:
       - "8000:8000"
-    command: uv run uvicorn truthlens.api.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir src
+    environment:
+      # Docker Desktop on Windows often misses inotify events on bind mounts
+      WATCHFILES_FORCE_POLLING: "true"
+    command: uv run uvicorn truthlens.api.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir /usr/src/app/src --reload-dir /usr/src/preprocessing/src
 
   db:
     image: postgres:15-alpine
@@ -62,4 +70,3 @@ volumes:
   db_data:
   frontend_node_modules:
   backend_node_modules:
-  ml_venv:
