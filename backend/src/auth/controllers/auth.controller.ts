@@ -23,6 +23,8 @@ import { GoogleAuthGuard } from '../guards/google-auth.guard';
 import { RefreshTokenGuard } from '../guards/refresh-token.guard';
 import { CookieInterceptor } from '../interceptors/cookie-interceptor';
 import { AuthService } from '../services/auth.service';
+import { RateLimit } from 'src/common/decorators/rate-limit.decorator';
+import { RateLimitGuard } from 'src/common/guards/rate-limit.guard';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -103,6 +105,16 @@ export class AuthController {
   }
 
   @Post('/verify-reset-password')
+  @RateLimit([
+    {
+      keyPrefix: 'otp-verify-email',
+      limit: 10,
+      ttlSeconds: 3600,
+      keyFrom: 'email',
+    },
+    { keyPrefix: 'otp-verify-ip', limit: 20, ttlSeconds: 3600, keyFrom: 'ip' },
+  ])
+  @UseGuards(RateLimitGuard)
   @UseInterceptors(CookieInterceptor)
   async verifyResetOtp(
     @Body() verifyOtpDto: VerifyOtpDto,

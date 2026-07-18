@@ -43,4 +43,11 @@ export class RedisService implements OnModuleDestroy {
   async del(key: string) {
     return this.client.del(key);
   }
+  async incrementWithTTL(key: string, ttlSeconds: number): Promise<number> {
+    const count = await this.client.incr(key);
+    if (count === 1) {
+      await this.client.expire(key, ttlSeconds);
+    }
+    return count;
+  }
 }

@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Res, Req } from '@nestjs/common';
+import { Controller, Post, Body, Res, Req, UseGuards } from '@nestjs/common';
 import { type Response } from 'express';
 import { COOKIE_NAMES } from 'src/auth/constants/cookie';
 import { ResetPassword } from 'src/common/decorators/auth.decorator';
@@ -7,6 +7,8 @@ import { CreateUserDto } from '../dtos/create-user.dto';
 import { ForgotPasswordDto } from '../dtos/forgot-password.dto';
 import { ResetPasswordDto } from '../dtos/reset-password.dto';
 import { UsersService } from '../services/users.service';
+import { RateLimit } from 'src/common/decorators/rate-limit.decorator';
+import { RateLimitGuard } from 'src/common/guards/rate-limit.guard';
 
 class CustomRequest extends Request {
   user: {
@@ -25,7 +27,17 @@ export class UsersController {
     return result;
   }
   @Post('/forgot-password')
-  async forgotPasswrod(@Body() dto: ForgotPasswordDto) {
+  @RateLimit([
+    {
+      keyPrefix: 'otp-req-email',
+      limit: 3,
+      ttlSeconds: 3600,
+      keyFrom: 'email',
+    },
+    { keyPrefix: 'otp-req-ip', limit: 10, ttlSeconds: 3600, keyFrom: 'ip' },
+  ])
+  @UseGuards(RateLimitGuard)
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
     return await this.usersService.forgotPassword(dto);
   }
 

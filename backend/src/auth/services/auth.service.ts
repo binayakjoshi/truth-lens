@@ -16,6 +16,7 @@ import { IsNull, Repository } from 'typeorm';
 import { LoginDto } from '../dtos/login.dto';
 import { VerifyOtpDto } from '../dtos/verify-otp.dto';
 import { OtpService } from 'src/otp/services/otp.service';
+import { RedisService } from 'src/redis/services/redis.service';
 
 @Injectable()
 export class AuthService {
@@ -25,6 +26,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly emailService: EmailService,
     private readonly otpService: OtpService,
+    private readonly redisService: RedisService,
   ) {}
 
   async login(loginDto: LoginDto) {
@@ -230,34 +232,42 @@ export class AuthService {
 
   async verifyResetOtp(dto: VerifyOtpDto) {
     const { email, code } = dto;
+    const lockKey = `otp-attempts:${email.toLowerCase()}`;
+    const attempts = await this.redisService.get(lockKey);
+    if (attempts && Number(attempts) >= 5) {
+      throw new UnauthorizedException(
+        'Too many incorrect attempts. Please request a new code.',
+      );
+    }
+
     const user = await this.userRepo.findOne({
       where: { email, isVerified: true, deletedAt: IsNull() },
     });
-    if (!user)
-      throw new NotFoundException(
-        'Could not find user with the provided email',
-      );
 
-    const result = await this.otpService.verifyOtp(user.id, code);
+    const result = user
+      ? await this.otpService.verifyOtp(user.id, code)
+      : 'invalid';
 
-    if (result === 'notFound') {
+    if (result === 'notFound' || result === 'invalid' || !user) {
+      await this.redisService.incrementWithTTL(lockKey, 900);
       throw new UnauthorizedException(
-        'OTP code has expired. Please request for a new one.',
+        'Invalid or expired OTP code. Please try again.',
       );
     }
-    if (result === 'invalid') {
-      throw new UnauthorizedException('Invalid OTP code. Please try again.');
-    }
+
+    await this.redisService.del(lockKey); // clear lockout on success
+
+    const jti = crypto.randomUUID();
     const userData = {
       id: user.id,
       username: user.username,
       email: user.email,
     };
-
-    const verificationToken = this.jwtService.sign(userData, {
-      secret: process.env.JWT_SECRET,
-      expiresIn: '15m',
-    });
+    const verificationToken = this.jwtService.sign(
+      { ...userData, jti },
+      { secret: process.env.JWT_SECRET, expiresIn: '15m' },
+    );
+    await this.redisService.set(`reset-token:${jti}`, '1', 900);
 
     return createResponse(HttpStatus.OK, 'OTP code verified successfully.', {
       verificationToken,

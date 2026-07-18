@@ -18,14 +18,12 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { SearchHistoryDto } from '../dtos/search-history.dto';
 import { AnalysisHistory } from '../entities/analysis-history.entity';
-import { RedisService } from 'src/redis/services/redis.service';
 
 @Injectable()
 export class AnalysisService {
   constructor(
     @InjectRepository(AnalysisHistory)
     private readonly analysisHistoryRepo: Repository<AnalysisHistory>,
-    private readonly redisService: RedisService,
   ) {}
 
   async getAnalysisHistories(userId: string, dto: SearchHistoryDto) {
@@ -63,48 +61,6 @@ export class AnalysisService {
       'Analyis history fetched sucessfully',
       analysis,
     );
-  }
-
-  async incrementMany(keys: string[]): Promise<number[]> {
-    const client = this.redisService.getClient();
-    const dateSuffix = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-    const fullKeys = keys.map((k) => `usage:${k}:${dateSuffix}`);
-
-    const pipeline = client.pipeline();
-    fullKeys.forEach((k) => pipeline.incr(k));
-    const results = await pipeline.exec();
-
-    if (!results) {
-      throw new Error('Redis pipeline execution failed: no results returned');
-    }
-    const counts = results.map(([err, val]) => {
-      if (err) throw err;
-      return val as number;
-    });
-
-    const secondsUntilMidnight = this.getSecondsUntilMidnight();
-    const ttlPipeline = client.pipeline();
-    let needsExpire = false;
-
-    fullKeys.forEach((k, i) => {
-      if (counts[i] === 1) {
-        ttlPipeline.expire(k, secondsUntilMidnight);
-        needsExpire = true;
-      }
-    });
-
-    if (needsExpire) {
-      await ttlPipeline.exec();
-    }
-
-    return counts;
-  }
-
-  private getSecondsUntilMidnight(): number {
-    const now = new Date();
-    const midnight = new Date(now);
-    midnight.setHours(24, 0, 0, 0);
-    return Math.ceil((midnight.getTime() - now.getTime()) / 1000);
   }
 
   async analyzeAndSave(file: Express.Multer.File, userId: string) {
