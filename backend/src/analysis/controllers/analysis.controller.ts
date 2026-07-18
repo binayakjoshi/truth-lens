@@ -15,6 +15,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Auth } from 'src/common/decorators/auth.decorator';
 import { RateLimit } from 'src/common/decorators/rate-limit.decorator';
+import { RateLimitGuard } from 'src/common/guards/rate-limit.guard';
 import { ExtendedRequest } from 'src/common/type';
 
 import { SearchHistoryDto } from '../dtos/search-history.dto';
@@ -28,12 +29,12 @@ export class AnalysisController {
     { keyPrefix: 'visitor', keyFrom: 'visitorId', limit: 5, ttlSeconds: 86400 },
     {
       keyPrefix: 'ip',
-      keyFrom: 'ip' /* wait, ip */,
+      keyFrom: 'ip',
       limit: 15,
       ttlSeconds: 86400,
     },
   ])
-  @UseGuards(RateLimit)
+  @UseGuards(RateLimitGuard)
   @UseInterceptors(
     FileInterceptor('file', {
       limits: { fileSize: 10 * 1024 * 1024 },

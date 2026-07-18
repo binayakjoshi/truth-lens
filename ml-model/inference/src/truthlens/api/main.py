@@ -352,7 +352,6 @@ async def predict_image(
             success=False,
             message=result["message"],
             status=result["status"],
-            
         )
 
     return make_response(
