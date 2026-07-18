@@ -14,11 +14,11 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Auth } from 'src/common/decorators/auth.decorator';
+import { RateLimit } from 'src/common/decorators/rate-limit.decorator';
 import { ExtendedRequest } from 'src/common/type';
 
 import { SearchHistoryDto } from '../dtos/search-history.dto';
 import { AnalysisService } from '../services/analysis.service';
-import { RateLimit } from 'src/common/decorators/rate-limit.decorator';
 @Controller('analysis')
 export class AnalysisController {
   constructor(private readonly analysisService: AnalysisService) {}

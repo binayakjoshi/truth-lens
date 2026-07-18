@@ -1,4 +1,5 @@
 import { Global, Module } from '@nestjs/common';
+
 import { RedisService } from './services/redis.service';
 
 @Global()

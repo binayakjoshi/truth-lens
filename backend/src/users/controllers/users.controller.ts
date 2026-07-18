@@ -2,13 +2,13 @@ import { Controller, Post, Body, Res, Req, UseGuards } from '@nestjs/common';
 import { type Response } from 'express';
 import { COOKIE_NAMES } from 'src/auth/constants/cookie';
 import { ResetPassword } from 'src/common/decorators/auth.decorator';
+import { RateLimit } from 'src/common/decorators/rate-limit.decorator';
+import { RateLimitGuard } from 'src/common/guards/rate-limit.guard';
 
 import { CreateUserDto } from '../dtos/create-user.dto';
 import { ForgotPasswordDto } from '../dtos/forgot-password.dto';
 import { ResetPasswordDto } from '../dtos/reset-password.dto';
 import { UsersService } from '../services/users.service';
-import { RateLimit } from 'src/common/decorators/rate-limit.decorator';
-import { RateLimitGuard } from 'src/common/guards/rate-limit.guard';
 
 class CustomRequest extends Request {
   user: {

@@ -10,13 +10,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { createResponse } from 'src/common/utils/response-handler';
 import { EmailService } from 'src/email/services/email.service';
+import { OtpService } from 'src/otp/services/otp.service';
+import { RedisService } from 'src/redis/services/redis.service';
 import { User } from 'src/users/entities/user.entity';
 import { IsNull, Repository } from 'typeorm';
 
 import { LoginDto } from '../dtos/login.dto';
 import { VerifyOtpDto } from '../dtos/verify-otp.dto';
-import { OtpService } from 'src/otp/services/otp.service';
-import { RedisService } from 'src/redis/services/redis.service';
 
 @Injectable()
 export class AuthService {

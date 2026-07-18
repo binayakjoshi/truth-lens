@@ -11,7 +11,9 @@ import {
 } from '@nestjs/common';
 import type { Response, Request } from 'express';
 import { Auth } from 'src/common/decorators/auth.decorator';
+import { RateLimit } from 'src/common/decorators/rate-limit.decorator';
 import { Serialize } from 'src/common/decorators/serialize';
+import { RateLimitGuard } from 'src/common/guards/rate-limit.guard';
 import { UserResponseDto } from 'src/users/dtos/user.dto';
 import { User } from 'src/users/entities/user.entity';
 
@@ -23,8 +25,6 @@ import { GoogleAuthGuard } from '../guards/google-auth.guard';
 import { RefreshTokenGuard } from '../guards/refresh-token.guard';
 import { CookieInterceptor } from '../interceptors/cookie-interceptor';
 import { AuthService } from '../services/auth.service';
-import { RateLimit } from 'src/common/decorators/rate-limit.decorator';
-import { RateLimitGuard } from 'src/common/guards/rate-limit.guard';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}

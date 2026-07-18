@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
 import * as crypto from 'crypto';
+
+import { Injectable } from '@nestjs/common';
 import { RedisService } from 'src/redis/services/redis.service';
 
 interface OtpPayload {

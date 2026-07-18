@@ -9,13 +9,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { createResponse } from 'src/common/utils/response-handler';
 import { EmailService } from 'src/email/services/email.service';
+import { OtpService } from 'src/otp/services/otp.service';
 import { IsNull, Repository } from 'typeorm';
 
 import { CreateUserDto } from '../dtos/create-user.dto';
 import { ForgotPasswordDto } from '../dtos/forgot-password.dto';
 import { ResetPasswordDto } from '../dtos/reset-password.dto';
 import { User } from '../entities/user.entity';
-import { OtpService } from 'src/otp/services/otp.service';
 @Injectable()
 export class UsersService {
   constructor(
