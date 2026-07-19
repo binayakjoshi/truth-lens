@@ -11,7 +11,9 @@ import {
 } from '@nestjs/common';
 import type { Response, Request } from 'express';
 import { Auth } from 'src/common/decorators/auth.decorator';
+import { RateLimit } from 'src/common/decorators/rate-limit.decorator';
 import { Serialize } from 'src/common/decorators/serialize';
+import { RateLimitGuard } from 'src/common/guards/rate-limit.guard';
 import { UserResponseDto } from 'src/users/dtos/user.dto';
 import { User } from 'src/users/entities/user.entity';
 
@@ -103,6 +105,16 @@ export class AuthController {
   }
 
   @Post('/verify-reset-password')
+  @RateLimit([
+    {
+      keyPrefix: 'otp-verify-email',
+      limit: 10,
+      ttlSeconds: 3600,
+      keyFrom: 'email',
+    },
+    { keyPrefix: 'otp-verify-ip', limit: 20, ttlSeconds: 3600, keyFrom: 'ip' },
+  ])
+  @UseGuards(RateLimitGuard)
   @UseInterceptors(CookieInterceptor)
   async verifyResetOtp(
     @Body() verifyOtpDto: VerifyOtpDto,

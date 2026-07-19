@@ -358,7 +358,7 @@ async def predict_image(
         success=True,
         message="Result returned successfully",
         status=200,
-        **result["data"],
+        data=result["data"],
     )
 
 

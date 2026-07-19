@@ -18,13 +18,10 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { SearchHistoryDto } from '../dtos/search-history.dto';
 import { AnalysisHistory } from '../entities/analysis-history.entity';
-import { AnonymousUsage } from '../entities/anonymous-usage.entity';
 
 @Injectable()
 export class AnalysisService {
   constructor(
-    @InjectRepository(AnonymousUsage)
-    private readonly anonymousUsageRepo: Repository<AnonymousUsage>,
     @InjectRepository(AnalysisHistory)
     private readonly analysisHistoryRepo: Repository<AnalysisHistory>,
   ) {}
@@ -64,31 +61,6 @@ export class AnalysisService {
       'Analyis history fetched sucessfully',
       analysis,
     );
-  }
-
-  async increment(identifier: string): Promise<number> {
-    const today = new Date().toISOString().slice(0, 10);
-
-    let usage = await this.anonymousUsageRepo.findOne({
-      where: {
-        identifier,
-        usageDate: today,
-      },
-    });
-
-    if (!usage) {
-      usage = this.anonymousUsageRepo.create({
-        identifier,
-        usageDate: today,
-        requestCount: 1,
-      });
-    } else {
-      usage.requestCount += 1;
-    }
-
-    await this.anonymousUsageRepo.save(usage);
-
-    return usage.requestCount;
   }
 
   async analyzeAndSave(file: Express.Multer.File, userId: string) {
@@ -139,6 +111,7 @@ export class AnalysisService {
 
   async analyzeWithoutSave(file: Express.Multer.File) {
     const predictResult = await this.callPredictApi(file);
+
     const { prediction, confidenceScores, heatmapBase64 } = predictResult.data;
 
     const UPLOAD_ROOT = path.join(
@@ -203,21 +176,15 @@ export class AnalysisService {
       );
     }
 
-    // Python API now always returns {success, message, status, data}
-    // for both success and error cases, so parse the body first and
-    // branch on `success` / HTTP status rather than assuming shape.
     const body = (await response.json().catch(() => null)) as
       | ModelResponse
       | PredictErrorResponse
       | null;
-
     if (!response.ok || !body || body.success === false) {
       const message =
         (body as PredictErrorResponse | null)?.message ??
         'Prediction service error';
 
-      // Map the ML service's HTTP status to an appropriate Nest exception
-      // instead of collapsing everything into BadRequestException.
       switch (response.status) {
         case 422:
           throw new UnprocessableEntityException(message);

@@ -8,6 +8,8 @@ import { PostgresConnectionCredentialsOptions } from 'typeorm/driver/postgres/Po
 import { AnalysisModule } from './analysis/analysis.module';
 import { AuthModule } from './auth/auth.module';
 import { EmailModule } from './email/email.module';
+import { OtpModule } from './otp/otp.module';
+import { RedisModule } from './redis/redis.module';
 import { UsersModule } from './users/users.module';
 @Module({
   imports: [
@@ -26,6 +28,8 @@ import { UsersModule } from './users/users.module';
     AuthModule,
     EmailModule,
     AnalysisModule,
+    RedisModule,
+    OtpModule,
   ],
 })
 export class AppModule {}

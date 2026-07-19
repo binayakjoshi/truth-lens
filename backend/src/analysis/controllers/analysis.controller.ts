@@ -13,8 +13,9 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { AnonymousLimitGuard } from 'src/analysis/guards/anonymous-limit-guard';
 import { Auth } from 'src/common/decorators/auth.decorator';
+import { RateLimit } from 'src/common/decorators/rate-limit.decorator';
+import { RateLimitGuard } from 'src/common/guards/rate-limit.guard';
 import { ExtendedRequest } from 'src/common/type';
 
 import { SearchHistoryDto } from '../dtos/search-history.dto';
@@ -24,7 +25,16 @@ export class AnalysisController {
   constructor(private readonly analysisService: AnalysisService) {}
 
   @Post('/anonymous')
-  @UseGuards(AnonymousLimitGuard)
+  @RateLimit([
+    { keyPrefix: 'visitor', keyFrom: 'visitorId', limit: 5, ttlSeconds: 86400 },
+    {
+      keyPrefix: 'ip',
+      keyFrom: 'ip',
+      limit: 15,
+      ttlSeconds: 86400,
+    },
+  ])
+  @UseGuards(RateLimitGuard)
   @UseInterceptors(
     FileInterceptor('file', {
       limits: { fileSize: 10 * 1024 * 1024 },

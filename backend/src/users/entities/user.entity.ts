@@ -10,8 +10,6 @@ import {
   DeleteDateColumn,
 } from 'typeorm';
 
-import { OtpRecord } from './otp-record.entity';
-
 @Entity()
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -51,8 +49,6 @@ export class User {
 
   @UpdateDateColumn()
   updatedAt: Date;
-
-  @OneToMany(() => OtpRecord, (otp) => otp.user) otpRecords: OtpRecord[];
 
   @OneToMany(() => AnalysisHistory, (ah) => ah.user)
   analysisHistories: AnalysisHistory[];
