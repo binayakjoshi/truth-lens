@@ -24,6 +24,13 @@ type MultiImageUploadProps = {
   maxSizeInBytes?: number;
   maxFiles?: number;
   onInput: (id: string, files: File[], isValid: boolean) => void;
+  /**
+   * Bump this value (e.g. a counter incremented on successful submit) to
+   * clear the currently selected files/previews from the picker. The
+   * picker is otherwise uncontrolled, so the parent can't clear it by
+   * resetting its own `files` state alone.
+   */
+  clearTrigger?: number;
 };
 
 const MultiImageUpload = ({
@@ -32,6 +39,7 @@ const MultiImageUpload = ({
   maxSizeInBytes = 5 * 1024 * 1024,
   maxFiles = 15,
   onInput,
+  clearTrigger,
 }: MultiImageUploadProps) => {
   const [selectedFiles, setSelectedFiles] = useState<SelectedFile[]>([]);
   const [currentError, setCurrentError] = useState<string | undefined>();
@@ -44,6 +52,26 @@ const MultiImageUpload = ({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Clear the picker whenever the parent bumps clearTrigger (e.g. after a
+  // successful upload). Skip on initial mount so passing clearTrigger={0}
+  // doesn't wipe anything before the user has picked files.
+  const isFirstRun = useRef(true);
+  useEffect(() => {
+    if (isFirstRun.current) {
+      isFirstRun.current = false;
+      return;
+    }
+    if (clearTrigger === undefined) return;
+
+    setSelectedFiles((prev) => {
+      prev.forEach((f) => URL.revokeObjectURL(f.previewUrl));
+      return [];
+    });
+    setCurrentError(undefined);
+    if (filePickerRef.current) filePickerRef.current.value = "";
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clearTrigger]);
 
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return "0 Bytes";

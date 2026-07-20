@@ -86,6 +86,7 @@ const AnalysisPage = () => {
   const { user } = useUser();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
+  const [uploadKey, setUploadKey] = useState(0); // bump to remount ImageUpload
   const [formState, inputHandler] = useForm(
     {
       image: {
@@ -125,6 +126,9 @@ const AnalysisPage = () => {
         return;
       }
       success("Image analyzed sucessfully.");
+      setResult(body.data);
+      inputHandler("image", undefined, false); // clear form state for the image field
+      setUploadKey((prev) => prev + 1); // force ImageUpload to remount, clearing preview
       setResult(body.data);
     } catch (err: any) {
       error("Could not process image. Please try again.");
@@ -173,7 +177,7 @@ const AnalysisPage = () => {
               borderColor: "divider",
             }}
           >
-            <ImageUpload onInput={inputHandler} id="image" />
+            <ImageUpload key={uploadKey} onInput={inputHandler} id="image" />
 
             <Button
               type="submit"

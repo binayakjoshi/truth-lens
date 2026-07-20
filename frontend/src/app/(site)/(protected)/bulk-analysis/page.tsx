@@ -34,9 +34,8 @@ interface BulkResult {
 }
 
 interface BulkFailure {
-  filename?: string;
-  message?: string;
-  [key: string]: unknown;
+  index: number;
+  message: string;
 }
 
 interface BulkData {
@@ -101,8 +100,11 @@ const BulkAnalysisPage = () => {
   const [isFilesValid, setIsFilesValid] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [data, setData] = useState<BulkData | null>(null);
+  const [submittedFilenames, setSubmittedFilenames] = useState<string[]>([]);
+  const [clearTrigger, setClearTrigger] = useState(0);
 
   const { success, error } = useToast();
+
   const inputHandler = (_id: string, newFiles: File[], isValid: boolean) => {
     setFiles(newFiles);
     setIsFilesValid(isValid);
@@ -115,6 +117,10 @@ const BulkAnalysisPage = () => {
 
     setIsSubmitting(true);
     setData(null);
+
+    // Capture filenames in submission order so failure indices can be
+    // mapped back to a human-readable name after `files` is cleared.
+    const namesForThisSubmission = files.map((file) => file.name);
 
     try {
       const formData = new FormData();
@@ -130,14 +136,28 @@ const BulkAnalysisPage = () => {
       const body = await res.json();
 
       if (!res.ok || !body.success) {
-        error("Could not process image. Please try again later.");
+        error(
+          body?.message || "Could not process images. Please try again later.",
+        );
         return;
       }
-      success("Images analyzed sucessfully.");
+
+      setSubmittedFilenames(namesForThisSubmission);
       setData(body.data as BulkData);
       setFiles([]);
       setIsFilesValid(false);
+      setClearTrigger((prev) => prev + 1);
+
+      const bulkData = body.data as BulkData;
+      if (bulkData.failed > 0) {
+        success(
+          `Analyzed ${bulkData.succeeded} of ${bulkData.total} images. ${bulkData.failed} failed.`,
+        );
+      } else {
+        success("Images analyzed successfully.");
+      }
     } catch (err: any) {
+      error(err?.message || "Network error. Please try again later.");
     } finally {
       setIsSubmitting(false);
     }
@@ -183,6 +203,7 @@ const BulkAnalysisPage = () => {
               id="files"
               maxFiles={MAX_FILES}
               onInput={inputHandler}
+              clearTrigger={clearTrigger}
             />
 
             <Button
@@ -271,177 +292,194 @@ const BulkAnalysisPage = () => {
 
             {data.failures.length > 0 && (
               <Alert severity="warning" sx={{ mb: 4, borderRadius: 2 }}>
-                {data.failures.length} file
-                {data.failures.length === 1 ? "" : "s"} failed to process.
+                <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
+                  {data.failures.length} file
+                  {data.failures.length === 1 ? "" : "s"} failed to process:
+                </Typography>
+                <Stack spacing={0.5}>
+                  {data.failures.map((failure, i) => (
+                    <Typography
+                      key={`${failure.index}-${i}`}
+                      variant="body2"
+                      sx={{ fontFamily: "'Roboto Mono', monospace" }}
+                    >
+                      {submittedFilenames[failure.index] ??
+                        `File #${failure.index + 1}`}
+                      : {failure.message}
+                    </Typography>
+                  ))}
+                </Stack>
               </Alert>
             )}
 
-            <Grid container spacing={3}>
-              {data.results.map((result) => {
-                const {
-                  label,
-                  color,
-                  isUncertain,
-                  confidencePercent,
-                  realPercent,
-                  fakePercent,
-                } = getStatusMeta(result);
+            {data.results.length > 0 && (
+              <Grid container spacing={3}>
+                {data.results.map((result) => {
+                  const {
+                    label,
+                    color,
+                    isUncertain,
+                    confidencePercent,
+                    realPercent,
+                    fakePercent,
+                  } = getStatusMeta(result);
 
-                return (
-                  <Grid size={{ xs: 12, sm: 6, md: 4 }} key={result.id}>
-                    <Paper
-                      elevation={0}
-                      sx={{
-                        p: 2.5,
-                        borderRadius: 3,
-                        border: "1px solid",
-                        borderColor: "divider",
-                        height: "100%",
-                      }}
-                    >
-                      <Stack
-                        direction="row"
+                  return (
+                    <Grid size={{ xs: 12, sm: 6, md: 4 }} key={result.id}>
+                      <Paper
+                        elevation={0}
                         sx={{
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          mb: 2,
+                          p: 2.5,
+                          borderRadius: 3,
+                          border: "1px solid",
+                          borderColor: "divider",
+                          height: "100%",
                         }}
                       >
-                        <Chip
-                          label={label}
-                          size="small"
+                        <Stack
+                          direction="row"
                           sx={{
-                            fontWeight: 700,
-                            fontFamily: "'Roboto Mono', monospace",
-                            letterSpacing: "0.05em",
-                            bgcolor: color,
-                            color: "#fff",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            mb: 2,
                           }}
-                        />
-                        {isUncertain ? (
-                          <Stack direction="row" spacing={1}>
-                            <Typography
-                              variant="caption"
-                              sx={{
-                                fontFamily: "'Roboto Mono', monospace",
-                                fontWeight: 700,
-                                color: "success.main",
-                              }}
-                            >
-                              R {realPercent}%
-                            </Typography>
-                            <Typography
-                              variant="caption"
-                              sx={{
-                                fontFamily: "'Roboto Mono', monospace",
-                                fontWeight: 700,
-                                color: "error.main",
-                              }}
-                            >
-                              F {fakePercent}%
-                            </Typography>
-                          </Stack>
-                        ) : (
-                          <Typography
-                            variant="caption"
+                        >
+                          <Chip
+                            label={label}
+                            size="small"
                             sx={{
+                              fontWeight: 700,
                               fontFamily: "'Roboto Mono', monospace",
-                              color: "text.secondary",
+                              letterSpacing: "0.05em",
+                              bgcolor: color,
+                              color: "#fff",
                             }}
-                          >
-                            {confidencePercent}%
-                          </Typography>
-                        )}
-                      </Stack>
+                          />
+                          {isUncertain ? (
+                            <Stack direction="row" spacing={1}>
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  fontFamily: "'Roboto Mono', monospace",
+                                  fontWeight: 700,
+                                  color: "success.main",
+                                }}
+                              >
+                                R {realPercent}%
+                              </Typography>
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  fontFamily: "'Roboto Mono', monospace",
+                                  fontWeight: 700,
+                                  color: "error.main",
+                                }}
+                              >
+                                F {fakePercent}%
+                              </Typography>
+                            </Stack>
+                          ) : (
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                fontFamily: "'Roboto Mono', monospace",
+                                color: "text.secondary",
+                              }}
+                            >
+                              {confidencePercent}%
+                            </Typography>
+                          )}
+                        </Stack>
 
-                      <Stack direction="row" spacing={1.5}>
-                        <Box sx={{ flex: 1 }}>
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            sx={{ display: "block", mb: 0.5 }}
-                          >
-                            Original
-                          </Typography>
-                          <Box
-                            sx={{
-                              position: "relative",
-                              width: "100%",
-                              aspectRatio: "1 / 1",
-                              border: "1px solid",
-                              borderColor: "divider",
-                              borderRadius: 1.5,
-                              overflow: "hidden",
-                              bgcolor: "background.paper",
-                            }}
-                          >
-                            <Image
-                              src={`http://backend:5000/${result.originalImageUrl}`}
-                              alt="Original upload"
-                              fill
-                              sizes="180px"
-                              style={{ objectFit: "contain" }}
-                            />
+                        <Stack direction="row" spacing={1.5}>
+                          <Box sx={{ flex: 1 }}>
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              sx={{ display: "block", mb: 0.5 }}
+                            >
+                              Original
+                            </Typography>
+                            <Box
+                              sx={{
+                                position: "relative",
+                                width: "100%",
+                                aspectRatio: "1 / 1",
+                                border: "1px solid",
+                                borderColor: "divider",
+                                borderRadius: 1.5,
+                                overflow: "hidden",
+                                bgcolor: "background.paper",
+                              }}
+                            >
+                              <Image
+                                src={`http://backend:5000/${result.originalImageUrl}`}
+                                alt="Original upload"
+                                fill
+                                sizes="180px"
+                                style={{ objectFit: "contain" }}
+                              />
+                            </Box>
                           </Box>
-                        </Box>
-                        <Box sx={{ flex: 1 }}>
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            sx={{ display: "block", mb: 0.5 }}
-                          >
-                            Heat Map
-                          </Typography>
-                          <Box
-                            sx={{
-                              position: "relative",
-                              width: "100%",
-                              aspectRatio: "1 / 1",
-                              border: "1px solid",
-                              borderColor: "divider",
-                              borderRadius: 1.5,
-                              overflow: "hidden",
-                              bgcolor: "background.paper",
-                            }}
-                          >
-                            <Image
-                              src={`${process.env.NEXT_PUBLIC_IMAGE_API_URL}/${result.heatmapImageUrl}`}
-                              alt="Heatmap Overlay"
-                              fill
-                              sizes="180px"
-                              style={{ objectFit: "contain" }}
-                            />
+                          <Box sx={{ flex: 1 }}>
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              sx={{ display: "block", mb: 0.5 }}
+                            >
+                              Heat Map
+                            </Typography>
+                            <Box
+                              sx={{
+                                position: "relative",
+                                width: "100%",
+                                aspectRatio: "1 / 1",
+                                border: "1px solid",
+                                borderColor: "divider",
+                                borderRadius: 1.5,
+                                overflow: "hidden",
+                                bgcolor: "background.paper",
+                              }}
+                            >
+                              <Image
+                                src={`${process.env.NEXT_PUBLIC_IMAGE_API_URL}/${result.heatmapImageUrl}`}
+                                alt="Heatmap Overlay"
+                                fill
+                                sizes="180px"
+                                style={{ objectFit: "contain" }}
+                              />
+                            </Box>
                           </Box>
-                        </Box>
-                      </Stack>
+                        </Stack>
 
-                      <Divider sx={{ my: 2 }} />
+                        <Divider sx={{ my: 2 }} />
 
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          display: "block",
-                          fontFamily: "'Roboto Mono', monospace",
-                          color: "text.secondary",
-                        }}
-                      >
-                        ID: {result.id.slice(0, 8)}
-                      </Typography>
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          display: "block",
-                          fontFamily: "'Roboto Mono', monospace",
-                          color: "text.secondary",
-                        }}
-                      >
-                        {formatDate(result.createdAt)}
-                      </Typography>
-                    </Paper>
-                  </Grid>
-                );
-              })}
-            </Grid>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            display: "block",
+                            fontFamily: "'Roboto Mono', monospace",
+                            color: "text.secondary",
+                          }}
+                        >
+                          ID: {result.id.slice(0, 8)}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            display: "block",
+                            fontFamily: "'Roboto Mono', monospace",
+                            color: "text.secondary",
+                          }}
+                        >
+                          {formatDate(result.createdAt)}
+                        </Typography>
+                      </Paper>
+                    </Grid>
+                  );
+                })}
+              </Grid>
+            )}
           </Box>
         )}
       </Container>
