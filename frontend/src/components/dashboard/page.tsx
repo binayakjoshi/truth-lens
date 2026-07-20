@@ -117,20 +117,11 @@ export default async function Home() {
           <Box>
             {/* Masthead */}
             <Stack
+              direction={{ xs: "column", sm: "row" }}
+              justifyContent="space-between"
+              alignItems={{ xs: "flex-start", sm: "center" }}
               spacing={2}
-              sx={{
-                flexDirection: {
-                  xs: "column",
-                  sm: "row",
-                },
-                alignItems: {
-                  xs: "flex-start",
-                  sm: "center",
-                },
-                mb: 5,
-
-                justifyContent: "space-between",
-              }}
+              sx={{ mb: 5 }}
             >
               <Box>
                 <Typography
@@ -217,10 +208,7 @@ export default async function Home() {
                     >
                       <AddIcon fontSize="small" />
                     </Box>
-                    <Typography
-                      variant="subtitle1"
-                      sx={{ fontWeight: 600, mb: 0.5 }}
-                    >
+                    <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 0.5 }}>
                       New Analysis
                     </Typography>
                     <Typography
@@ -263,10 +251,7 @@ export default async function Home() {
                     >
                       <UploadFileIcon fontSize="small" />
                     </Box>
-                    <Typography
-                      variant="subtitle1"
-                      sx={{ fontWeight: 600, mb: 0.5 }}
-                    >
+                    <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 0.5 }}>
                       Bulk Upload
                     </Typography>
                     <Typography
@@ -276,11 +261,7 @@ export default async function Home() {
                     >
                       Analyze multiple files in a single batch request.
                     </Typography>
-                    <LinkButton
-                      href="/bulk-analysis"
-                      variant="outlined"
-                      fullWidth
-                    >
+                    <LinkButton href="/bulk-analysis" variant="outlined" fullWidth>
                       Upload Batch
                     </LinkButton>
                   </Paper>
@@ -307,10 +288,7 @@ export default async function Home() {
                     >
                       <HistoryIcon fontSize="small" />
                     </Box>
-                    <Typography
-                      variant="subtitle1"
-                      sx={{ fontWeight: 600, mb: 0.5 }}
-                    >
+                    <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 0.5 }}>
                       Full History
                     </Typography>
                     <Typography

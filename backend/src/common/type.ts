@@ -10,7 +10,7 @@ export interface ModelResponse {
   message: string;
   status: number;
   data: {
-    prediction: 'AI-Generated' | 'Real';
+    prediction: 'AI-Generated' | 'Real' | 'Uncertain';
     confidenceScores: {
       real: number;
       aiGenerated: number;
@@ -24,4 +24,34 @@ export interface PredictErrorResponse {
   message: string;
   status: number;
   data: null;
+}
+export interface BulkBoundingBox {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+}
+
+export interface BulkModelResultItem {
+  index: number;
+  success: boolean;
+  message: string | null;
+  prediction: 'Real' | 'AI-Generated' | 'Uncertain';
+  confidenceScores: {
+    real: number;
+    aiGenerated: number;
+  } | null;
+  boundingBox: BulkBoundingBox | null;
+  heatmapBase64: string | null;
+  originalImageBase64?: string | null;
+}
+
+export interface BulkModelResponse {
+  success: boolean;
+  message: string;
+  status: number;
+  total: number;
+  succeeded: number;
+  failed: number;
+  results: BulkModelResultItem[];
 }

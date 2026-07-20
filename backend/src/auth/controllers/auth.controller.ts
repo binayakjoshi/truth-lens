@@ -25,6 +25,7 @@ import { GoogleAuthGuard } from '../guards/google-auth.guard';
 import { RefreshTokenGuard } from '../guards/refresh-token.guard';
 import { CookieInterceptor } from '../interceptors/cookie-interceptor';
 import { AuthService } from '../services/auth.service';
+import { CacheInterceptor } from '@nestjs/cache-manager';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -54,6 +55,7 @@ export class AuthController {
 
   @Get('/me')
   @Auth()
+  @UseInterceptors(CacheInterceptor)
   @Serialize(UserResponseDto)
   async getMe(@Req() req: Request) {
     const accessToken = req.cookies?.['truth-access-token'];
