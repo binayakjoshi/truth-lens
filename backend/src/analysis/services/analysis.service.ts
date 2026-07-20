@@ -71,24 +71,29 @@ export class AnalysisService {
   private resolveClassification(
     prediction: string,
     confidenceScores: { real: number; aiGenerated: number; uncertain?: number },
-  ): { classification: ClassificationResult; confidence: number } {
+  ): {
+    classification: ClassificationResult;
+    realConfidence: number;
+    fakeConfidence: number;
+  } {
     switch (prediction) {
       case 'Real':
         return {
           classification: ClassificationResult.REAL,
-          confidence: confidenceScores.real,
+          realConfidence: confidenceScores.real,
+          fakeConfidence: confidenceScores.aiGenerated,
         };
-      case 'Fake':
+      case 'AI-Generated':
         return {
           classification: ClassificationResult.FAKE,
-          confidence: confidenceScores.aiGenerated,
+          realConfidence: confidenceScores.real,
+          fakeConfidence: confidenceScores.aiGenerated,
         };
       case 'Uncertain':
         return {
           classification: ClassificationResult.UNCERTAIN,
-          confidence:
-            confidenceScores.uncertain ??
-            Math.max(confidenceScores.real, confidenceScores.aiGenerated),
+          realConfidence: confidenceScores.real,
+          fakeConfidence: confidenceScores.aiGenerated,
         };
       default:
         throw new BadRequestException(
@@ -119,16 +124,15 @@ export class AnalysisService {
     const originalImageUrl = `uploads/analysis-histories/${id}/original.png`;
     const heatmapImageUrl = `uploads/analysis-histories/${id}/overlay.png`;
 
-    const { classification, confidence } = this.resolveClassification(
-      prediction,
-      confidenceScores,
-    );
+    const { classification, realConfidence, fakeConfidence } =
+      this.resolveClassification(prediction, confidenceScores);
 
     const record = this.analysisHistoryRepo.create({
       id,
       userId,
       classification,
-      confidence,
+      realConfidence,
+      fakeConfidence,
       originalImageUrl,
       heatmapImageUrl,
     });
@@ -160,19 +164,17 @@ export class AnalysisService {
     const originalImageUrl = `uploads/analysis-histories/${id}/original.png`;
     const heatmapImageUrl = `uploads/analysis-histories/${id}/overlay.png`;
 
-    const { classification, confidence } = this.resolveClassification(
-      prediction,
-      confidenceScores,
-    );
+    const { classification, realConfidence, fakeConfidence } =
+      this.resolveClassification(prediction, confidenceScores);
 
     const result = {
       id,
       classification,
-      confidence,
+      realConfidence,
+      fakeConfidence,
       originalImageUrl,
       heatmapImageUrl,
     };
-
     return createResponse(HttpStatus.OK, 'prediction', result);
   }
 
@@ -227,13 +229,15 @@ export class AnalysisService {
       const heatmapImageUrl = `uploads/analysis-histories/${id}/overlay.png`;
 
       let classification: ClassificationResult;
-      let confidence: number | undefined;
+      let realConfidence: number | undefined;
+      let fakeConfidence: number | undefined;
 
       try {
-        ({ classification, confidence } = this.resolveClassification(
-          item.prediction,
-          item.confidenceScores ?? { real: 0, aiGenerated: 0 },
-        ));
+        ({ classification, realConfidence, fakeConfidence } =
+          this.resolveClassification(
+            item.prediction,
+            item.confidenceScores ?? { real: 0, aiGenerated: 0 },
+          ));
       } catch {
         failures.push({
           index: item.index,
@@ -245,7 +249,8 @@ export class AnalysisService {
       const record = this.analysisHistoryRepo.create({
         userId,
         classification,
-        confidence,
+        realConfidence,
+        fakeConfidence,
         originalImageUrl,
         heatmapImageUrl,
       });

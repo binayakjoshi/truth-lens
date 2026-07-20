@@ -33,11 +33,18 @@ export class AnalysisHistory {
     precision: 5,
     scale: 4,
     transformer: DecimalTransformer,
-    nullable: false,
     default: 0,
   })
-  confidence: number;
+  realConfidence: number;
 
+  @Column({
+    type: 'decimal',
+    precision: 5,
+    scale: 4,
+    transformer: DecimalTransformer,
+    default: 0,
+  })
+  fakeConfidence: number;
   @Column({ type: 'varchar', nullable: false }) originalImageUrl: string;
 
   @Column({ type: 'varchar', nullable: false }) heatmapImageUrl: string;
