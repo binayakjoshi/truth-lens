@@ -22,12 +22,14 @@ import {
 import ImageUpload from "@/components/custom-elements/image-upload";
 import { useUser } from "@/context/user-context";
 import { useForm } from "@/hooks/use-form";
+import { useToast } from "@/hooks/use-toast";
 
 interface AnalysisResult {
   id: string;
-  classification: "real" | "fake";
+  classification: "real" | "fake" | "uncertain";
   userId?: string; // optional now — anonymous analyses won't have this
-  confidence: number;
+  realConfidence: number;
+  fakeConfidence: number;
   originalImageUrl: string;
   heatmapImageUrl: string;
   createdAt: string;
@@ -43,11 +45,47 @@ function formatDate(iso: string): string {
   });
 }
 
+function getStatusMeta(result: AnalysisResult) {
+  const { classification, realConfidence, fakeConfidence } = result;
+  const realPercent = Math.round(realConfidence * 1000) / 10;
+  const fakePercent = Math.round(fakeConfidence * 1000) / 10;
+
+  if (classification === "fake") {
+    return {
+      label: "Fake",
+      color: "error.main" as const,
+      isUncertain: false,
+      confidencePercent: fakePercent,
+      realPercent,
+      fakePercent,
+    };
+  }
+
+  if (classification === "uncertain") {
+    return {
+      label: "Uncertain",
+      color: "warning.main" as const,
+      isUncertain: true,
+      confidencePercent: Math.max(realPercent, fakePercent),
+      realPercent,
+      fakePercent,
+    };
+  }
+
+  return {
+    label: "Real",
+    color: "success.main" as const,
+    isUncertain: false,
+    confidencePercent: realPercent,
+    realPercent,
+    fakePercent,
+  };
+}
+
 const AnalysisPage = () => {
   const { user } = useUser();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [formState, inputHandler] = useForm(
     {
       image: {
@@ -58,15 +96,13 @@ const AnalysisPage = () => {
     },
     false,
   );
-
+  const { success, error } = useToast();
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!formState.isValid) return;
 
     setIsSubmitting(true);
     setResult(null);
-    setError(null);
-
     try {
       const formData = new FormData();
       formData.append("file", formState.inputs.image.value as Blob);
@@ -80,22 +116,24 @@ const AnalysisPage = () => {
 
       const body = await res.json();
 
-      if (!res.ok || !body.success) {
-        throw new Error(body.message ?? "Analysis failed");
+      if (!res.ok) {
+        if (res.status === 422) {
+          error(body.message);
+          return;
+        }
+        error("Could not process image. Please try again later.");
+        return;
       }
-
+      success("Image analyzed sucessfully.");
       setResult(body.data);
     } catch (err: any) {
-      setError(err.message ?? "Something went wrong");
+      error("Could not process image. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const isReal = result?.classification === "real";
-  const confidencePercent = result
-    ? Math.round(result.confidence * 1000) / 10
-    : 0;
+  const statusMeta = result ? getStatusMeta(result) : null;
 
   return (
     <Box
@@ -156,15 +194,9 @@ const AnalysisPage = () => {
               {isSubmitting ? "Analyzing..." : "Analyze Image"}
             </Button>
           </Paper>
-
-          {error && (
-            <Alert severity="error" sx={{ mt: 3, borderRadius: 2 }}>
-              {error}
-            </Alert>
-          )}
         </Container>
 
-        {result && (
+        {result && statusMeta && (
           <Box sx={{ mt: 6 }}>
             <Stack
               spacing={0.5}
@@ -227,25 +259,48 @@ const AnalysisPage = () => {
               sx={{ alignItems: "center", mb: 5 }}
             >
               <Chip
-                label={isReal ? "Real" : "Fake"}
+                label={statusMeta.label}
                 sx={{
                   fontWeight: 700,
                   fontFamily: "'Roboto Mono', monospace",
                   letterSpacing: "0.05em",
-                  bgcolor: isReal ? "success.main" : "error.main",
+                  bgcolor: statusMeta.color,
                   color: "#fff",
                   px: 1,
                 }}
               />
-              <Typography
-                variant="body1"
-                sx={{
-                  fontFamily: "'Roboto Mono', monospace",
-                  color: "text.secondary",
-                }}
-              >
-                Confidence: <strong>{confidencePercent}%</strong>
-              </Typography>
+              {statusMeta.isUncertain ? (
+                <Stack direction="row" spacing={2}>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      fontFamily: "'Roboto Mono', monospace",
+                      color: "success.main",
+                    }}
+                  >
+                    Real: <strong>{statusMeta.realPercent}%</strong>
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      fontFamily: "'Roboto Mono', monospace",
+                      color: "error.main",
+                    }}
+                  >
+                    Fake: <strong>{statusMeta.fakePercent}%</strong>
+                  </Typography>
+                </Stack>
+              ) : (
+                <Typography
+                  variant="body1"
+                  sx={{
+                    fontFamily: "'Roboto Mono', monospace",
+                    color: "text.secondary",
+                  }}
+                >
+                  Confidence: <strong>{statusMeta.confidencePercent}%</strong>
+                </Typography>
+              )}
             </Stack>
 
             <Grid container spacing={3}>

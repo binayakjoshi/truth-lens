@@ -50,6 +50,43 @@ function formatDate(iso: string): string {
   });
 }
 
+function getStatusMeta(item: AnalysisHistory) {
+  const { classification, realConfidence, fakeConfidence } = item;
+  const realPercent = Math.round(realConfidence * 1000) / 10;
+  const fakePercent = Math.round(fakeConfidence * 1000) / 10;
+
+  if (classification === "fake") {
+    return {
+      label: "Fake",
+      color: "error.main" as const,
+      isUncertain: false,
+      confidencePercent: fakePercent,
+      realPercent,
+      fakePercent,
+    };
+  }
+
+  if (classification === "uncertain") {
+    return {
+      label: "Uncertain",
+      color: "warning.main" as const,
+      isUncertain: true,
+      confidencePercent: Math.max(realPercent, fakePercent),
+      realPercent,
+      fakePercent,
+    };
+  }
+
+  return {
+    label: "Real",
+    color: "success.main" as const,
+    isUncertain: false,
+    confidencePercent: realPercent,
+    realPercent,
+    fakePercent,
+  };
+}
+
 interface HistoryDetailPageProps {
   params: Promise<{ id: string }>;
 }
@@ -64,8 +101,14 @@ export default async function HistoryDetailPage({
     notFound();
   }
 
-  const isReal = item.classification === "real";
-  const confidencePercent = Math.round(item.confidence * 1000) / 10;
+  const {
+    label,
+    color,
+    isUncertain,
+    confidencePercent,
+    realPercent,
+    fakePercent,
+  } = getStatusMeta(item);
 
   return (
     <Box
@@ -167,25 +210,48 @@ export default async function HistoryDetailPage({
           sx={{ alignItems: "center", mb: 5 }}
         >
           <Chip
-            label={isReal ? "Real" : "Fake"}
+            label={label}
             sx={{
               fontWeight: 700,
               fontFamily: "'Roboto Mono', monospace",
               letterSpacing: "0.05em",
-              bgcolor: isReal ? "success.main" : "error.main",
+              bgcolor: color,
               color: "#fff",
               px: 1,
             }}
           />
-          <Typography
-            variant="body1"
-            sx={{
-              fontFamily: "'Roboto Mono', monospace",
-              color: "text.secondary",
-            }}
-          >
-            Confidence: <strong>{confidencePercent}%</strong>
-          </Typography>
+          {isUncertain ? (
+            <Stack direction="row" spacing={2}>
+              <Typography
+                variant="body1"
+                sx={{
+                  fontFamily: "'Roboto Mono', monospace",
+                  color: "success.main",
+                }}
+              >
+                Real: <strong>{realPercent}%</strong>
+              </Typography>
+              <Typography
+                variant="body1"
+                sx={{
+                  fontFamily: "'Roboto Mono', monospace",
+                  color: "error.main",
+                }}
+              >
+                Fake: <strong>{fakePercent}%</strong>
+              </Typography>
+            </Stack>
+          ) : (
+            <Typography
+              variant="body1"
+              sx={{
+                fontFamily: "'Roboto Mono', monospace",
+                color: "text.secondary",
+              }}
+            >
+              Confidence: <strong>{confidencePercent}%</strong>
+            </Typography>
+          )}
         </Stack>
 
         <Grid container spacing={3}>

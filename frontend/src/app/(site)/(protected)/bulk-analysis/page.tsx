@@ -20,12 +20,14 @@ import {
 } from "@mui/material";
 
 import MultiImageUpload from "@/components/custom-elements/multi-image-upload";
+import { useToast } from "@/hooks/use-toast";
 
 interface BulkResult {
   id: string;
-  classification: "real" | "fake";
+  classification: "real" | "fake" | "uncertain";
   userId?: string;
-  confidence: number;
+  realConfidence: number;
+  fakeConfidence: number;
   originalImageUrl: string;
   heatmapImageUrl: string;
   createdAt: string;
@@ -45,7 +47,7 @@ interface BulkData {
   failures: BulkFailure[];
 }
 
-const MAX_FILES = 15;
+const MAX_FILES = 10;
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleString("en-US", {
@@ -57,18 +59,54 @@ function formatDate(iso: string): string {
   });
 }
 
+function getStatusMeta(result: BulkResult) {
+  const { classification, realConfidence, fakeConfidence } = result;
+  const realPercent = Math.round(realConfidence * 1000) / 10;
+  const fakePercent = Math.round(fakeConfidence * 1000) / 10;
+
+  if (classification === "fake") {
+    return {
+      label: "Fake",
+      color: "error.main" as const,
+      isUncertain: false,
+      confidencePercent: fakePercent,
+      realPercent,
+      fakePercent,
+    };
+  }
+
+  if (classification === "uncertain") {
+    return {
+      label: "Uncertain",
+      color: "warning.main" as const,
+      isUncertain: true,
+      confidencePercent: Math.max(realPercent, fakePercent),
+      realPercent,
+      fakePercent,
+    };
+  }
+
+  return {
+    label: "Real",
+    color: "success.main" as const,
+    isUncertain: false,
+    confidencePercent: realPercent,
+    realPercent,
+    fakePercent,
+  };
+}
+
 const BulkAnalysisPage = () => {
   const [files, setFiles] = useState<File[]>([]);
   const [isFilesValid, setIsFilesValid] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [data, setData] = useState<BulkData | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
+  const { success, error } = useToast();
   const inputHandler = (_id: string, newFiles: File[], isValid: boolean) => {
     setFiles(newFiles);
     setIsFilesValid(isValid);
     setData(null);
-    setError(null);
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -77,7 +115,6 @@ const BulkAnalysisPage = () => {
 
     setIsSubmitting(true);
     setData(null);
-    setError(null);
 
     try {
       const formData = new FormData();
@@ -93,14 +130,14 @@ const BulkAnalysisPage = () => {
       const body = await res.json();
 
       if (!res.ok || !body.success) {
-        throw new Error(body.message ?? "Bulk analysis failed");
+        error("Could not process image. Please try again later.");
+        return;
       }
-
+      success("Images analyzed sucessfully.");
       setData(body.data as BulkData);
       setFiles([]);
       setIsFilesValid(false);
     } catch (err: any) {
-      setError(err.message ?? "Something went wrong");
     } finally {
       setIsSubmitting(false);
     }
@@ -171,12 +208,6 @@ const BulkAnalysisPage = () => {
                   }`}
             </Button>
           </Paper>
-
-          {error && (
-            <Alert severity="error" sx={{ mt: 3, borderRadius: 2 }}>
-              {error}
-            </Alert>
-          )}
         </Container>
 
         {data && (
@@ -247,9 +278,14 @@ const BulkAnalysisPage = () => {
 
             <Grid container spacing={3}>
               {data.results.map((result) => {
-                const isReal = result.classification === "real";
-                const confidencePercent =
-                  Math.round(result.confidence * 1000) / 10;
+                const {
+                  label,
+                  color,
+                  isUncertain,
+                  confidencePercent,
+                  realPercent,
+                  fakePercent,
+                } = getStatusMeta(result);
 
                 return (
                   <Grid size={{ xs: 12, sm: 6, md: 4 }} key={result.id}>
@@ -272,25 +308,50 @@ const BulkAnalysisPage = () => {
                         }}
                       >
                         <Chip
-                          label={isReal ? "Real" : "Fake"}
+                          label={label}
                           size="small"
                           sx={{
                             fontWeight: 700,
                             fontFamily: "'Roboto Mono', monospace",
                             letterSpacing: "0.05em",
-                            bgcolor: isReal ? "success.main" : "error.main",
+                            bgcolor: color,
                             color: "#fff",
                           }}
                         />
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            fontFamily: "'Roboto Mono', monospace",
-                            color: "text.secondary",
-                          }}
-                        >
-                          {confidencePercent}%
-                        </Typography>
+                        {isUncertain ? (
+                          <Stack direction="row" spacing={1}>
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                fontFamily: "'Roboto Mono', monospace",
+                                fontWeight: 700,
+                                color: "success.main",
+                              }}
+                            >
+                              R {realPercent}%
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                fontFamily: "'Roboto Mono', monospace",
+                                fontWeight: 700,
+                                color: "error.main",
+                              }}
+                            >
+                              F {fakePercent}%
+                            </Typography>
+                          </Stack>
+                        ) : (
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              fontFamily: "'Roboto Mono', monospace",
+                              color: "text.secondary",
+                            }}
+                          >
+                            {confidencePercent}%
+                          </Typography>
+                        )}
                       </Stack>
 
                       <Stack direction="row" spacing={1.5}>

@@ -9,17 +9,60 @@ interface AnalysisHistoryCardProps {
   view?: "grid" | "list";
 }
 
+function getStatusMeta(item: AnalysisHistory) {
+  const { classification, realConfidence, fakeConfidence } = item;
+  const realPercent = (realConfidence * 100).toFixed(1);
+  const fakePercent = (fakeConfidence * 100).toFixed(1);
+
+  if (classification === "fake") {
+    return {
+      label: "Fake",
+      accent: "error.main" as const,
+      isUncertain: false,
+      confidencePercent: fakePercent,
+      realPercent,
+      fakePercent,
+    };
+  }
+
+  if (classification === "uncertain") {
+    return {
+      label: "Uncertain",
+      accent: "warning.main" as const,
+      isUncertain: true,
+      confidencePercent: Math.max(realConfidence, fakeConfidence).toFixed(1),
+      realPercent,
+      fakePercent,
+    };
+  }
+
+  return {
+    label: "Real",
+    accent: "success.main" as const,
+    isUncertain: false,
+    confidencePercent: realPercent,
+    realPercent,
+    fakePercent,
+  };
+}
+
 export default function AnalysisHistoryCard({
   item,
   view = "grid",
 }: AnalysisHistoryCardProps) {
-  const isFake = item.classification === "fake";
-  const confidencePercent = (item.confidence * 100).toFixed(1);
+  const {
+    label,
+    accent,
+    isUncertain,
+    confidencePercent,
+    realPercent,
+    fakePercent,
+  } = getStatusMeta(item);
   const formattedDate = new Intl.DateTimeFormat("en-US", {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(item.createdAt));
-  const accent = isFake ? "error.main" : "success.main";
+
   if (view === "list") {
     return (
       <Paper
@@ -81,20 +124,45 @@ export default function AnalysisHistoryCard({
               textTransform: "uppercase",
             }}
           >
-            {isFake ? "Fake" : "Real"}
+            {label}
           </Typography>
         </Box>
 
-        <Typography
-          sx={{
-            fontFamily: "'Roboto Mono', monospace",
-            fontSize: "0.85rem",
-            fontWeight: 700,
-            minWidth: 60,
-          }}
-        >
-          {confidencePercent}%
-        </Typography>
+        {isUncertain ? (
+          <Box sx={{ display: "flex", gap: 1, minWidth: 130 }}>
+            <Typography
+              sx={{
+                fontFamily: "'Roboto Mono', monospace",
+                fontSize: "0.75rem",
+                fontWeight: 700,
+                color: "success.main",
+              }}
+            >
+              R {realPercent}%
+            </Typography>
+            <Typography
+              sx={{
+                fontFamily: "'Roboto Mono', monospace",
+                fontSize: "0.75rem",
+                fontWeight: 700,
+                color: "error.main",
+              }}
+            >
+              F {fakePercent}%
+            </Typography>
+          </Box>
+        ) : (
+          <Typography
+            sx={{
+              fontFamily: "'Roboto Mono', monospace",
+              fontSize: "0.85rem",
+              fontWeight: 700,
+              minWidth: 60,
+            }}
+          >
+            {confidencePercent}%
+          </Typography>
+        )}
 
         <Typography
           sx={{
@@ -205,38 +273,69 @@ export default function AnalysisHistoryCard({
               textTransform: "uppercase",
             }}
           >
-            {isFake ? "Fake" : "Real"}
+            {label}
           </Typography>
         </Box>
       </Box>
 
       <Box sx={{ px: 1.25, py: 1 }}>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "baseline",
-          }}
-        >
-          <Typography
+        {isUncertain ? (
+          <Box
             sx={{
-              fontFamily: "'Roboto Mono', monospace",
-              fontSize: "0.7rem",
-              color: "text.secondary",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
             }}
           >
-            conf.
-          </Typography>
-          <Typography
+            <Typography
+              sx={{
+                fontFamily: "'Roboto Mono', monospace",
+                fontSize: "0.7rem",
+                fontWeight: 700,
+                color: "success.main",
+              }}
+            >
+              R {realPercent}%
+            </Typography>
+            <Typography
+              sx={{
+                fontFamily: "'Roboto Mono', monospace",
+                fontSize: "0.7rem",
+                fontWeight: 700,
+                color: "error.main",
+              }}
+            >
+              F {fakePercent}%
+            </Typography>
+          </Box>
+        ) : (
+          <Box
             sx={{
-              fontFamily: "'Roboto Mono', monospace",
-              fontSize: "0.8rem",
-              fontWeight: 700,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "baseline",
             }}
           >
-            {confidencePercent}%
-          </Typography>
-        </Box>
+            <Typography
+              sx={{
+                fontFamily: "'Roboto Mono', monospace",
+                fontSize: "0.7rem",
+                color: "text.secondary",
+              }}
+            >
+              conf.
+            </Typography>
+            <Typography
+              sx={{
+                fontFamily: "'Roboto Mono', monospace",
+                fontSize: "0.8rem",
+                fontWeight: 700,
+              }}
+            >
+              {confidencePercent}%
+            </Typography>
+          </Box>
+        )}
         <Typography
           sx={{
             fontFamily: "'Roboto Mono', monospace",
