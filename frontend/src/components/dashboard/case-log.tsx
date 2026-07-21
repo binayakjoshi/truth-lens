@@ -1,10 +1,8 @@
 "use client";
 import NextLink from "next/link";
-
 import { Box, Paper, Stack, Typography } from "@mui/material";
-
 import VerdictBadge from "@/components/dashboard/verdict-badge";
-import { type CaseRecord } from "@/lib/dashboard";
+import { AnalysisHistory } from "@/types/type";
 
 function formatTimestamp(iso: string) {
   try {
@@ -19,7 +17,27 @@ function formatTimestamp(iso: string) {
   }
 }
 
-export default function CaseLog({ cases }: { cases: CaseRecord[] }) {
+function getFilename(url: string) {
+  try {
+    const path = new URL(url).pathname;
+    return path.split("/").pop() || url;
+  } catch {
+    return url.split("/").pop() || url;
+  }
+}
+
+function getConfidence(c: AnalysisHistory) {
+  switch (c.classification) {
+    case "real":
+      return c.realConfidence;
+    case "fake":
+      return c.fakeConfidence;
+    default:
+      return Math.max(c.realConfidence, c.fakeConfidence);
+  }
+}
+
+export default function CaseLog({ cases }: { cases: AnalysisHistory[] }) {
   return (
     <Paper
       elevation={0}
@@ -37,7 +55,6 @@ export default function CaseLog({ cases }: { cases: CaseRecord[] }) {
           px: 3,
           pt: 3,
           pb: 2,
-
           justifyContent: "space-between",
           alignItems: "center",
         }}
@@ -58,7 +75,6 @@ export default function CaseLog({ cases }: { cases: CaseRecord[] }) {
           View all →
         </Typography>
       </Stack>
-
       {cases.length === 0 ? (
         <Box sx={{ px: 3, pb: 4 }}>
           <Typography variant="body2" color="text.secondary">
@@ -84,7 +100,7 @@ export default function CaseLog({ cases }: { cases: CaseRecord[] }) {
               >
                 <Box component="td" sx={{ px: 3, py: 1.75, width: "44%" }}>
                   <Typography variant="body2" sx={{ fontWeight: 600 }} noWrap>
-                    {c.filename}
+                    {getFilename(c.originalImageUrl)}
                   </Typography>
                   <Typography
                     variant="caption"
@@ -97,14 +113,14 @@ export default function CaseLog({ cases }: { cases: CaseRecord[] }) {
                   </Typography>
                 </Box>
                 <Box component="td" sx={{ px: 3, py: 1.75 }}>
-                  <VerdictBadge verdict={c.verdict} />
+                  <VerdictBadge verdict={c.classification} />
                 </Box>
                 <Box component="td" sx={{ px: 3, py: 1.75 }}>
                   <Typography
                     variant="body2"
                     sx={{ fontFamily: "var(--font-mono, monospace)" }}
                   >
-                    {c.confidence}%
+                    {getConfidence(c)}%
                   </Typography>
                 </Box>
                 <Box

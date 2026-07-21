@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 type User = {
   id: string;
   email: string;
+  username: string;
   firstName: string;
   lastName: string;
 };

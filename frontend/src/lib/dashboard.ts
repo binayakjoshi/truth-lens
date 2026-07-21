@@ -1,4 +1,6 @@
-export type Verdict = "authentic" | "uncertain" | "manipulated";
+import { AnalysisHistory } from "@/types/type";
+
+export type Verdict = "real" | "uncertain" | "fake";
 
 export interface DashboardStats {
   totalScans: number;
@@ -6,15 +8,6 @@ export interface DashboardStats {
   authenticCount: number;
   uncertainCount: number;
   avgConfidence: number;
-}
-
-export interface CaseRecord {
-  id: string;
-  filename: string;
-  verdict: Verdict;
-  /** 0-100 likelihood the media is manipulated */
-  confidence: number;
-  createdAt: string;
 }
 
 /**
@@ -49,10 +42,10 @@ export async function getDashboardStats(
 export async function getRecentCases(
   cookieHeader: string,
   limit = 6,
-): Promise<CaseRecord[]> {
+): Promise<AnalysisHistory[]> {
   try {
     const res = await fetch(
-      `${process.env.PROXY_API_URL}/api/dashboard/recent-cases?limit=${limit}`,
+      `${process.env.PROXY_API_URL}/api/analysis?limit=${limit}`,
       {
         headers: { Cookie: cookieHeader },
         cache: "no-store",
@@ -60,14 +53,14 @@ export async function getRecentCases(
     );
     if (!res.ok) return [];
     const body = await res.json();
-    return Array.isArray(body.data) ? (body.data as CaseRecord[]) : [];
+    return Array.isArray(body.data) ? (body.data as AnalysisHistory[]) : [];
   } catch {
     return [];
   }
 }
 
 export function verdictFromConfidence(confidence: number): Verdict {
-  if (confidence < 30) return "authentic";
+  if (confidence < 30) return "real";
   if (confidence < 70) return "uncertain";
-  return "manipulated";
+  return "fake";
 }

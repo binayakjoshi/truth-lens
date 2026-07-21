@@ -3,15 +3,15 @@ import { Box, Typography } from "@mui/material";
 import { type Verdict } from "@/lib/dashboard";
 
 const VERDICT_COPY: Record<Verdict, string> = {
-  authentic: "Authentic",
+  real: "Authentic",
   uncertain: "Uncertain",
-  manipulated: "Manipulated",
+  fake: "Manipulated",
 };
 
 const VERDICT_COLOR: Record<Verdict, "success" | "warning" | "error"> = {
-  authentic: "success",
+  real: "success",
   uncertain: "warning",
-  manipulated: "error",
+  fake: "error",
 };
 
 export default function VerdictBadge({ verdict }: { verdict: Verdict }) {
@@ -28,7 +28,7 @@ export default function VerdictBadge({ verdict }: { verdict: Verdict }) {
         borderRadius: 1,
         border: "1px solid",
         borderColor: `${color}.main`,
-        transform: verdict === "manipulated" ? "rotate(-1.5deg)" : "none",
+        transform: verdict === "fake" ? "rotate(-1.5deg)" : "none",
       }}
     >
       <Typography

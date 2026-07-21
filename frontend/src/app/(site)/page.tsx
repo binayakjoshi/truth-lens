@@ -11,31 +11,13 @@ import ConfidenceMeter from "@/components/dashboard/confidence-meter";
 import LiveStatusBadge from "@/components/dashboard/live-status-badge";
 import StatCard from "@/components/dashboard/stat-card";
 import { getDashboardStats, getRecentCases } from "@/lib/dashboard";
-import { type User } from "@/types/type";
-
-async function getUser(cookieHeader: string): Promise<User | null> {
-  try {
-    const res = await fetch(`${process.env.PROXY_API_URL}/api/auth/me`, {
-      headers: {
-        Cookie: cookieHeader,
-      },
-      cache: "no-store",
-    });
-    if (res.ok) {
-      const resData = await res.json();
-      return resData.data;
-    }
-  } catch {
-    return null;
-  }
-  return null;
-}
+import { fetchCurrentUser } from "@/lib/user";
 
 export default async function Home() {
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.toString();
 
-  const user = await getUser(cookieHeader);
+  const user = await fetchCurrentUser();
 
   const [stats, cases] = user
     ? await Promise.all([
