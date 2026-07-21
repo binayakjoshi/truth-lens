@@ -1,40 +1,61 @@
 "use client";
+import { useState } from "react";
 import NextLink from "next/link";
+import Image from "next/image";
 import { Box, Paper, Stack, Typography } from "@mui/material";
+import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupportedOutlined";
 import VerdictBadge from "@/components/dashboard/verdict-badge";
 import { AnalysisHistory } from "@/types/type";
+import {
+  getManipulationScore,
+  formatTimestamp,
+  resolveAssetUrl,
+} from "@/lib/analysis-utils";
 
-function formatTimestamp(iso: string) {
-  try {
-    return new Date(iso).toLocaleString(undefined, {
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-    });
-  } catch {
-    return iso;
+function Thumbnail({ src, alt }: { src: string | null; alt: string }) {
+  const [failed, setFailed] = useState(false);
+  if (!src || failed) {
+    return (
+      <Box
+        sx={{
+          width: 40,
+          height: 40,
+          borderRadius: 1.5,
+          bgcolor: "action.hover",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "text.disabled",
+          flexShrink: 0,
+        }}
+      >
+        <ImageNotSupportedOutlinedIcon fontSize="small" />
+      </Box>
+    );
   }
-}
-
-function getFilename(url: string) {
-  try {
-    const path = new URL(url).pathname;
-    return path.split("/").pop() || url;
-  } catch {
-    return url.split("/").pop() || url;
-  }
-}
-
-function getConfidence(c: AnalysisHistory) {
-  switch (c.classification) {
-    case "real":
-      return c.realConfidence;
-    case "fake":
-      return c.fakeConfidence;
-    default:
-      return Math.max(c.realConfidence, c.fakeConfidence);
-  }
+  return (
+    <Box
+      sx={{
+        width: 40,
+        height: 40,
+        borderRadius: 1.5,
+        overflow: "hidden",
+        border: "1px solid",
+        borderColor: "divider",
+        flexShrink: 0,
+        position: "relative",
+      }}
+    >
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        sizes="40px"
+        style={{ objectFit: "cover" }}
+        onError={() => setFailed(true)}
+      />
+    </Box>
+  );
 }
 
 export default function CaseLog({ cases }: { cases: AnalysisHistory[] }) {
@@ -98,35 +119,40 @@ export default function CaseLog({ cases }: { cases: AnalysisHistory[] }) {
                   },
                 }}
               >
-                <Box component="td" sx={{ px: 3, py: 1.75, width: "44%" }}>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }} noWrap>
-                    {getFilename(c.originalImageUrl)}
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      color: "text.secondary",
-                      fontFamily: "var(--font-mono, monospace)",
-                    }}
+                <Box component="td" sx={{ px: 3, py: 1.5, width: "44%" }}>
+                  <Stack
+                    direction="row"
+                    spacing={1.5}
+                    sx={{ alignItems: "center" }}
                   >
-                    #{c.id}
-                  </Typography>
+                    <Thumbnail
+                      src={resolveAssetUrl(c.originalImageUrl)}
+                      alt={`Case ${c.id}`}
+                    />
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: "text.secondary",
+                        fontFamily: "var(--font-mono, monospace)",
+                      }}
+                      noWrap
+                    >
+                      #{c.id.slice(0, 8)}
+                    </Typography>
+                  </Stack>
                 </Box>
-                <Box component="td" sx={{ px: 3, py: 1.75 }}>
+                <Box component="td" sx={{ px: 3, py: 1.5 }}>
                   <VerdictBadge verdict={c.classification} />
                 </Box>
-                <Box component="td" sx={{ px: 3, py: 1.75 }}>
+                <Box component="td" sx={{ px: 3, py: 1.5 }}>
                   <Typography
                     variant="body2"
                     sx={{ fontFamily: "var(--font-mono, monospace)" }}
                   >
-                    {getConfidence(c)}%
+                    {getManipulationScore(c)}%
                   </Typography>
                 </Box>
-                <Box
-                  component="td"
-                  sx={{ px: 3, py: 1.75, textAlign: "right" }}
-                >
+                <Box component="td" sx={{ px: 3, py: 1.5, textAlign: "right" }}>
                   <Typography variant="caption" color="text.secondary">
                     {formatTimestamp(c.createdAt)}
                   </Typography>

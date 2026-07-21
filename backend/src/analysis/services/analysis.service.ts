@@ -22,6 +22,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { SearchHistoryDto } from '../dtos/search-history.dto';
 import { AnalysisHistory } from '../entities/analysis-history.entity';
+import { UserStatsService } from 'src/users/services/user-stats.service';
 
 @Injectable()
 export class AnalysisService {
@@ -29,6 +30,7 @@ export class AnalysisService {
   constructor(
     @InjectRepository(AnalysisHistory)
     private readonly analysisHistoryRepo: Repository<AnalysisHistory>,
+    private readonly userStatsService: UserStatsService,
   ) {}
 
   async getAnalysisHistories(userId: string, dto: SearchHistoryDto) {
@@ -102,6 +104,42 @@ export class AnalysisService {
     }
   }
 
+  async analyzeWithoutSave(file: Express.Multer.File) {
+    const predictResult = await this.callPredictApi(file);
+
+    const { prediction, confidenceScores, heatmapBase64 } = predictResult.data;
+
+    const UPLOAD_ROOT = path.join(
+      process.cwd(),
+      'uploads',
+      'analysis-histories',
+    );
+    const id = uuidv4();
+    const dir = path.join(UPLOAD_ROOT, id);
+    await fs.mkdir(dir, { recursive: true });
+
+    const originalPath = path.join(dir, 'original.png');
+    const overlayPath = path.join(dir, 'overlay.png');
+    await fs.writeFile(originalPath, file.buffer);
+    await fs.writeFile(overlayPath, this.base64ToBuffer(heatmapBase64));
+
+    const originalImageUrl = `uploads/analysis-histories/${id}/original.png`;
+    const heatmapImageUrl = `uploads/analysis-histories/${id}/overlay.png`;
+
+    const { classification, realConfidence, fakeConfidence } =
+      this.resolveClassification(prediction, confidenceScores);
+
+    const result = {
+      id,
+      classification,
+      realConfidence,
+      fakeConfidence,
+      originalImageUrl,
+      heatmapImageUrl,
+    };
+    return createResponse(HttpStatus.OK, 'prediction', result);
+  }
+
   async analyzeAndSave(file: Express.Multer.File, userId: string) {
     const predictResult = await this.callPredictApi(file);
     const { prediction, confidenceScores, heatmapBase64 } = predictResult.data;
@@ -139,43 +177,11 @@ export class AnalysisService {
 
     await this.analysisHistoryRepo.save(record);
 
-    return createResponse(HttpStatus.OK, 'prediction', record);
-  }
-
-  async analyzeWithoutSave(file: Express.Multer.File) {
-    const predictResult = await this.callPredictApi(file);
-
-    const { prediction, confidenceScores, heatmapBase64 } = predictResult.data;
-
-    const UPLOAD_ROOT = path.join(
-      process.cwd(),
-      'uploads',
-      'analysis-histories',
-    );
-    const id = uuidv4();
-    const dir = path.join(UPLOAD_ROOT, id);
-    await fs.mkdir(dir, { recursive: true });
-
-    const originalPath = path.join(dir, 'original.png');
-    const overlayPath = path.join(dir, 'overlay.png');
-    await fs.writeFile(originalPath, file.buffer);
-    await fs.writeFile(overlayPath, this.base64ToBuffer(heatmapBase64));
-
-    const originalImageUrl = `uploads/analysis-histories/${id}/original.png`;
-    const heatmapImageUrl = `uploads/analysis-histories/${id}/overlay.png`;
-
-    const { classification, realConfidence, fakeConfidence } =
-      this.resolveClassification(prediction, confidenceScores);
-
-    const result = {
-      id,
+    await this.userStatsService.incrementForAnalysis(userId, {
       classification,
-      realConfidence,
       fakeConfidence,
-      originalImageUrl,
-      heatmapImageUrl,
-    };
-    return createResponse(HttpStatus.OK, 'prediction', result);
+    });
+    return createResponse(HttpStatus.OK, 'prediction', record);
   }
 
   async bulkAnalyzeAndSave(files: Express.Multer.File[], userId: string) {
@@ -261,7 +267,15 @@ export class AnalysisService {
     const savedRecords = records.length
       ? await this.analysisHistoryRepo.save(records)
       : [];
-
+    if (savedRecords.length) {
+      await this.userStatsService.incrementForBulkAnalysis(
+        userId,
+        savedRecords.map((r) => ({
+          classification: r.classification,
+          fakeConfidence: r.fakeConfidence,
+        })),
+      );
+    }
     return createResponse(HttpStatus.OK, 'bulk prediction', {
       total: modelResponse.total,
       succeeded: savedRecords.length,

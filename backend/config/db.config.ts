@@ -4,6 +4,7 @@ import { User } from 'src/users/entities/user.entity';
 import { DataSource, LoggerOptions } from 'typeorm';
 
 import { CustomNamingStrategy } from './strategy';
+import { UserStat } from 'src/users/entities/user-stats.entity';
 
 config();
 
@@ -26,5 +27,5 @@ export const dataSource = new DataSource({
   migrations: ['dist/src/database/migrations/**/*.js'],
   migrationsRun: false,
   namingStrategy: new CustomNamingStrategy(),
-  entities: [User, AnalysisHistory],
+  entities: [User, AnalysisHistory, UserStat],
 });

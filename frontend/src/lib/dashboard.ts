@@ -1,7 +1,5 @@
 import { AnalysisHistory } from "@/types/type";
 
-export type Verdict = "real" | "uncertain" | "fake";
-
 export interface DashboardStats {
   totalScans: number;
   manipulatedCount: number;
@@ -10,15 +8,15 @@ export interface DashboardStats {
   avgConfidence: number;
 }
 
-/**
- * These fetchers assume a backend contract of:
- *   GET /api/dashboard/stats          -> { data: DashboardStats }
- *   GET /api/dashboard/recent-cases   -> { data: CaseRecord[] }
- *
- * Adjust the paths and response shape below to match your actual API —
- * both fail closed (return null / []) so the page never crashes if the
- * endpoint isn't ready yet.
- */
+interface PaginatedAnalysisResponse {
+  data: {
+    total: number;
+    page: number;
+    limit: number;
+    lastPage: number;
+    analysisHistories: AnalysisHistory[];
+  };
+}
 
 export async function getDashboardStats(
   cookieHeader: string,
@@ -26,10 +24,7 @@ export async function getDashboardStats(
   try {
     const res = await fetch(
       `${process.env.PROXY_API_URL}/api/dashboard/stats`,
-      {
-        headers: { Cookie: cookieHeader },
-        cache: "no-store",
-      },
+      { headers: { Cookie: cookieHeader }, cache: "no-store" },
     );
     if (!res.ok) return null;
     const body = await res.json();
@@ -46,21 +41,14 @@ export async function getRecentCases(
   try {
     const res = await fetch(
       `${process.env.PROXY_API_URL}/api/analysis?limit=${limit}`,
-      {
-        headers: { Cookie: cookieHeader },
-        cache: "no-store",
-      },
+      { headers: { Cookie: cookieHeader }, cache: "no-store" },
     );
     if (!res.ok) return [];
-    const body = await res.json();
-    return Array.isArray(body.data) ? (body.data as AnalysisHistory[]) : [];
+    const body: PaginatedAnalysisResponse = await res.json();
+    return Array.isArray(body?.data?.analysisHistories)
+      ? body.data.analysisHistories
+      : [];
   } catch {
     return [];
   }
-}
-
-export function verdictFromConfidence(confidence: number): Verdict {
-  if (confidence < 30) return "real";
-  if (confidence < 70) return "uncertain";
-  return "fake";
 }

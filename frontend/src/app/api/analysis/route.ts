@@ -31,9 +31,10 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const page = searchParams.get("page") ?? "1";
     const sort = searchParams.get("sort") ?? "DESC";
+    const limit = searchParams.get("limit") ?? "10";
 
     const { res, newCookie } = await fetchAndRefresh(
-      `${process.env.BACKEND_API_URL}/analysis/history?page=${page}&sort=${sort}`,
+      `${process.env.BACKEND_API_URL}/analysis/history?page=${page}&sort=${sort}&limit=${limit}`,
       { method: "GET" },
       cookieHeader,
     );

@@ -16,6 +16,7 @@ import { CreateUserDto } from '../dtos/create-user.dto';
 import { ForgotPasswordDto } from '../dtos/forgot-password.dto';
 import { ResetPasswordDto } from '../dtos/reset-password.dto';
 import { User } from '../entities/user.entity';
+import { UserStatsService } from './user-stats.service';
 @Injectable()
 export class UsersService {
   constructor(
@@ -23,6 +24,7 @@ export class UsersService {
     private readonly userRepo: Repository<User>,
     private readonly otpService: OtpService,
     private readonly emailService: EmailService,
+    private readonly userStatService: UserStatsService,
   ) {}
   async create(createUserDto: CreateUserDto) {
     const { username, email, password, firstName, lastName } = createUserDto;
@@ -55,6 +57,8 @@ export class UsersService {
     const savedUser = await this.userRepo.save(user);
 
     const { password: _, ...result } = savedUser;
+
+    await this.userStatService.createForUser(savedUser.id);
 
     return createResponse(
       HttpStatus.CREATED,

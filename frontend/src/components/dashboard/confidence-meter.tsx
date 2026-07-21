@@ -1,16 +1,24 @@
 "use client";
-
 import { Box, Paper, Stack, Typography } from "@mui/material";
+import { AnalysisHistory } from "@/types/type";
+import { getManipulationScore, getFilename } from "@/lib/analysis-utils";
 
-import { type CaseRecord } from "@/lib/dashboard";
-
-function markerColor(confidence: number) {
-  if (confidence < 30) return "var(--authentic-color)";
-  if (confidence < 70) return "var(--uncertain-color)";
-  return "var(--manipulated-color)";
+function markerColor(classification: AnalysisHistory["classification"]) {
+  switch (classification) {
+    case "real":
+      return "var(--authentic-color)";
+    case "fake":
+      return "var(--manipulated-color)";
+    default:
+      return "var(--uncertain-color)";
+  }
 }
 
-export default function ConfidenceMeter({ cases }: { cases: CaseRecord[] }) {
+export default function ConfidenceMeter({
+  cases,
+}: {
+  cases: AnalysisHistory[];
+}) {
   return (
     <Paper
       elevation={0}
@@ -24,12 +32,7 @@ export default function ConfidenceMeter({ cases }: { cases: CaseRecord[] }) {
     >
       <Stack
         direction="row"
-        sx={{
-          mb: 2,
-
-          justifyContent: "space-between",
-          alignItems: "baseline",
-        }}
+        sx={{ mb: 2, justifyContent: "space-between", alignItems: "baseline" }}
       >
         <Typography variant="h6" sx={{ fontWeight: 600 }}>
           Confidence Spectrum
@@ -44,7 +47,6 @@ export default function ConfidenceMeter({ cases }: { cases: CaseRecord[] }) {
           {cases.length} recent scan{cases.length === 1 ? "" : "s"}
         </Typography>
       </Stack>
-
       <Box
         sx={(theme) => ({
           "--authentic-color": theme.palette.success.main,
@@ -54,84 +56,47 @@ export default function ConfidenceMeter({ cases }: { cases: CaseRecord[] }) {
       >
         <Box
           component="svg"
-          viewBox="0 0 100 32"
+          viewBox="0 0 100 24"
           preserveAspectRatio="none"
-          sx={{ width: "100%", height: 96, display: "block" }}
+          sx={{ width: "100%", height: 72, display: "block" }}
         >
-          {/* zone bands */}
-          <rect
-            x={0}
-            y={13}
-            width={30}
-            height={4}
-            fill="var(--authentic-color)"
-            opacity={0.22}
+          <line
+            x1={0}
+            x2={100}
+            y1={12}
+            y2={12}
+            stroke="currentColor"
+            strokeOpacity={0.12}
+            strokeWidth={1}
           />
-          <rect
-            x={30}
-            y={13}
-            width={40}
-            height={4}
-            fill="var(--uncertain-color)"
-            opacity={0.22}
-          />
-          <rect
-            x={70}
-            y={13}
-            width={30}
-            height={4}
-            fill="var(--manipulated-color)"
-            opacity={0.22}
-          />
-
-          {/* case ticks */}
-          {cases.map((c) => (
-            <line
-              key={c.id}
-              x1={c.confidence}
-              x2={c.confidence}
-              y1={4}
-              y2={26}
-              stroke={markerColor(c.confidence)}
-              strokeWidth={0.6}
-              opacity={0.9}
-            >
-              <title>{`${c.filename} — ${c.confidence}%`}</title>
-            </line>
-          ))}
+          {cases.map((c) => {
+            const confidence = getManipulationScore(c);
+            return (
+              <circle
+                key={c.id}
+                cx={confidence}
+                cy={12}
+                r={1.6}
+                fill={markerColor(c.classification)}
+                opacity={0.9}
+              >
+                <title>{`${getFilename(c.originalImageUrl)} — ${confidence}%`}</title>
+              </circle>
+            );
+          })}
         </Box>
       </Box>
-
       <Stack direction="row" sx={{ mt: 1, justifyContent: "space-between" }}>
-        <Typography
-          variant="caption"
-          sx={{
-            color: "success.main",
-            fontFamily: "var(--font-mono, monospace)",
-          }}
-        >
-          0% Authentic
+        <Typography variant="caption" color="text.secondary">
+          0%
         </Typography>
-        <Typography
-          variant="caption"
-          sx={{
-            color: "warning.main",
-            fontFamily: "var(--font-mono, monospace)",
-          }}
-        >
+        <Typography variant="caption" color="text.secondary">
           Uncertain
         </Typography>
-        <Typography
-          variant="caption"
-          sx={{
-            color: "error.main",
-            fontFamily: "var(--font-mono, monospace)",
-          }}
-        >
-          100% Manipulated
+        <Typography variant="caption" color="text.secondary">
+          100%
         </Typography>
       </Stack>
-
       {cases.length === 0 && (
         <Typography variant="body2" sx={{ color: "text.secondary", mt: 2 }}>
           No scans yet — run your first analysis to populate this chart.

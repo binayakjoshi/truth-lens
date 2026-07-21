@@ -8,7 +8,9 @@ import {
   Index,
   OneToMany,
   DeleteDateColumn,
+  OneToOne,
 } from 'typeorm';
+import { UserStat } from './user-stats.entity';
 
 @Entity()
 export class User {
@@ -49,6 +51,9 @@ export class User {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @OneToOne(() => UserStat, (userStat) => userStat.user)
+  userStat: UserStat;
 
   @OneToMany(() => AnalysisHistory, (ah) => ah.user)
   analysisHistories: AnalysisHistory[];

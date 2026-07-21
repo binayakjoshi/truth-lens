@@ -1,5 +1,4 @@
 import { Paper, Typography } from "@mui/material";
-
 import AnimatedCounter from "@/components/dashboard/animated-counter";
 
 type Tone = "default" | "success" | "warning" | "error";
@@ -15,8 +14,7 @@ export default function StatCard({
   suffix?: string;
   tone?: Tone;
 }) {
-  const accentColor = tone === "default" ? "text.primary" : `${tone}.main`;
-
+  const accentColor = tone === "default" ? "divider" : `${tone}.main`;
   return (
     <Paper
       elevation={0}
@@ -49,7 +47,7 @@ export default function StatCard({
           fontWeight: 700,
           letterSpacing: "-0.02em",
           fontFamily: "var(--font-mono, monospace)",
-          color: accentColor,
+          color: "text.primary",
         }}
       >
         <AnimatedCounter value={value} suffix={suffix} />
