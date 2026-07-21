@@ -11,6 +11,7 @@ import {
   formatTimestamp,
   resolveAssetUrl,
 } from "@/lib/analysis-utils";
+import Timestamp from "./timestamp";
 
 function Thumbnail({ src, alt }: { src: string | null; alt: string }) {
   const [failed, setFailed] = useState(false);
@@ -153,9 +154,11 @@ export default function CaseLog({ cases }: { cases: AnalysisHistory[] }) {
                   </Typography>
                 </Box>
                 <Box component="td" sx={{ px: 3, py: 1.5, textAlign: "right" }}>
-                  <Typography variant="caption" color="text.secondary">
-                    {formatTimestamp(c.createdAt)}
-                  </Typography>
+                  <Timestamp
+                    iso={c.createdAt}
+                    variant="caption"
+                    color="text.secondary"
+                  />
                 </Box>
               </Box>
             ))}

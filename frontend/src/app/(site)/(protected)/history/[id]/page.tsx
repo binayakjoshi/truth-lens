@@ -8,13 +8,19 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutlined";
+import ImageOutlinedIcon from "@mui/icons-material/ImageOutlined";
+import GpsFixedIcon from "@mui/icons-material/GpsFixed";
+import FactCheckIcon from "@mui/icons-material/FactCheck";
+import DownloadIcon from "@mui/icons-material/Download";
 import {
   Box,
   Container,
   Divider,
   Grid,
+  Slider,
   Stack,
   Typography,
+  Button,
 } from "@mui/material";
 
 import { type AnalysisHistory } from "@/types/type";
@@ -110,7 +116,7 @@ const RING_R = 66;
 const RING_STROKE = 16;
 const RING_CX = RING_SIZE / 2;
 const RING_CY = RING_SIZE / 2;
-const GAP_DEG = 6; // degrees of empty space at each seam
+const GAP_DEG = 6;
 
 function polarToCartesian(angleDeg: number) {
   const rad = ((angleDeg - 90) * Math.PI) / 180;
@@ -139,10 +145,8 @@ function ConfidenceRing({
   label: string;
 }) {
   const realDeg = (realPercent / 100) * 360;
-
   const realStart = GAP_DEG / 2;
   const realEnd = Math.max(realStart, realDeg - GAP_DEG / 2);
-
   const fakeStart = Math.min(360 - GAP_DEG / 2, realDeg + GAP_DEG / 2);
   const fakeEnd = 360 - GAP_DEG / 2;
 
@@ -153,7 +157,6 @@ function ConfidenceRing({
         height={RING_SIZE}
         viewBox={`0 0 ${RING_SIZE} ${RING_SIZE}`}
       >
-        {/* base track, covers rounding gaps */}
         <circle
           cx={RING_CX}
           cy={RING_CY}
@@ -163,15 +166,13 @@ function ConfidenceRing({
           strokeOpacity={0.12}
           strokeWidth={RING_STROKE}
         />
-        {/* real (green) segment */}
         <path
           d={describeArc(realStart, realEnd)}
           fill="none"
-          stroke="var(--mui-palette-success-main, #2e7d32)"
+          stroke="var(--mui-palette-primary-main, #4338ca)"
           strokeWidth={RING_STROKE}
           strokeLinecap="round"
         />
-        {/* fake (red) segment */}
         <path
           d={describeArc(fakeStart, fakeEnd)}
           fill="none"
@@ -194,7 +195,7 @@ function ConfidenceRing({
         <Typography
           sx={{
             fontWeight: 800,
-            fontSize: "1.6rem",
+            fontSize: "1.8rem",
             lineHeight: 1,
             letterSpacing: "-0.02em",
           }}
@@ -202,20 +203,14 @@ function ConfidenceRing({
           {confidencePercent}
           <Typography
             component="span"
-            sx={{ fontWeight: 800, fontSize: "0.95rem" }}
+            sx={{ fontWeight: 800, fontSize: "1rem" }}
           >
             %
           </Typography>
         </Typography>
         <Typography
           variant="caption"
-          sx={{
-            mt: 0.5,
-            color: "text.secondary",
-            textTransform: "uppercase",
-            letterSpacing: "0.08em",
-            fontSize: "0.62rem",
-          }}
+          sx={{ mt: 0.5, color: "text.secondary", fontSize: "0.75rem" }}
         >
           {label}
         </Typography>
@@ -243,7 +238,6 @@ function VerdictPill({ meta }: { meta: StatusMeta }) {
       <Typography
         sx={{
           fontWeight: 700,
-          fontFamily: "'Roboto Mono', monospace",
           letterSpacing: "0.06em",
           fontSize: "0.8rem",
           textTransform: "uppercase",
@@ -255,64 +249,109 @@ function VerdictPill({ meta }: { meta: StatusMeta }) {
   );
 }
 
-function Panel({
-  eyebrow,
-  caption,
+/** Shared card shell: icon + title on the left, an optional tag/value on the right */
+function ReportCard({
+  icon,
+  title,
+  right,
   children,
 }: {
-  eyebrow: string;
-  caption: string;
+  icon: ReactNode;
+  title: string;
+  right?: ReactNode;
   children: ReactNode;
 }) {
   return (
-    <Stack spacing={1} sx={{ height: "100%" }}>
-      <Typography
-        variant="overline"
+    <Stack
+      sx={{
+        height: "100%",
+        border: "1px solid",
+        borderColor: "divider",
+        borderRadius: 3,
+        bgcolor: "background.paper",
+        overflow: "hidden",
+      }}
+    >
+      <Stack
+        direction="row"
         sx={{
-          fontFamily: "'Roboto Mono', monospace",
-          letterSpacing: "0.1em",
-          color: "text.secondary",
-          fontSize: "0.7rem",
-        }}
-      >
-        {eyebrow}
-      </Typography>
-      <Box
-        sx={{
-          position: "relative",
-          width: "100%",
-          aspectRatio: "1 / 1",
-          border: "1px solid",
-          borderColor: "divider",
-          borderRadius: 3,
-          overflow: "hidden",
-          bgcolor: "background.paper",
-          display: "flex",
           alignItems: "center",
-          justifyContent: "center",
+          justifyContent: "space-between",
+          px: 2.5,
+          py: 1.75,
         }}
       >
-        {children}
-      </Box>
-      <Typography
-        variant="caption"
-        sx={{ color: "text.secondary", fontSize: "0.72rem" }}
-      >
-        {caption}
-      </Typography>
+        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+          <Box sx={{ color: "primary.main", display: "flex" }}>{icon}</Box>
+          <Typography sx={{ fontWeight: 600, fontSize: "0.95rem" }}>
+            {title}
+          </Typography>
+        </Stack>
+        {right}
+      </Stack>
+      <Divider />
+      <Box sx={{ p: 2.5, flex: 1 }}>{children}</Box>
     </Stack>
   );
 }
 
 function ImageFrame({ src, alt }: { src: string; alt: string }) {
   return (
-    <Image
-      src={src}
-      alt={alt}
-      fill
-      sizes="(max-width: 900px) 100vw, 380px"
-      style={{ objectFit: "contain" }}
-    />
+    <Box
+      sx={{
+        position: "relative",
+        width: "100%",
+        aspectRatio: "1 / 1",
+        borderRadius: 2,
+        overflow: "hidden",
+        bgcolor: "action.hover",
+      }}
+    >
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        sizes="(max-width: 900px) 100vw, 380px"
+        style={{ objectFit: "contain" }}
+      />
+    </Box>
+  );
+}
+
+function HashBox({ hash }: { hash: string }) {
+  return (
+    <Box
+      sx={{
+        mt: 2,
+        p: 1.5,
+        border: "1px solid",
+        borderColor: "divider",
+        borderRadius: 2,
+        bgcolor: "action.hover",
+      }}
+    >
+      <Typography
+        variant="caption"
+        sx={{
+          display: "block",
+          color: "text.secondary",
+          mb: 0.5,
+          fontSize: "0.7rem",
+        }}
+      >
+        Source Hash (SHA-256):
+      </Typography>
+      <Typography
+        sx={{
+          fontFamily: "monospace",
+          fontSize: "0.75rem",
+          wordBreak: "break-all",
+          lineHeight: 1.5,
+        }}
+      >
+        {hash}
+      </Typography>
+    </Box>
   );
 }
 
@@ -339,126 +378,125 @@ export default async function HistoryDetailPage({
         minHeight: "100vh",
         bgcolor: "background.default",
         color: "text.primary",
-        display: "flex",
-        flexDirection: "column",
       }}
     >
-      <Container maxWidth="lg" sx={{ pt: 8, pb: 6, flex: 1 }}>
+      <Container maxWidth="lg" sx={{ pt: 6, pb: 6 }}>
         {/* Header */}
         <Stack
-          spacing={0.5}
+          direction={{ xs: "column", sm: "row" }}
+          spacing={2}
           sx={{
+            alignItems: { xs: "flex-start", sm: "center" },
+            justifyContent: "space-between",
             mb: 4,
             pb: 3,
             borderBottom: "1px solid",
             borderColor: "divider",
           }}
         >
-          <Link
-            href="/history"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 4,
-              color: "inherit",
-              textDecoration: "none",
-              width: "fit-content",
-            }}
-          >
-            <Typography
-              variant="body2"
-              sx={{
-                display: "flex",
+          <Box>
+            <Link
+              href="/history"
+              style={{
+                display: "inline-flex",
                 alignItems: "center",
-                gap: 0.5,
-                color: "text.secondary",
-                fontSize: "0.8rem",
-                mb: 1,
-                "&:hover": { color: "text.primary" },
+                gap: 4,
+                color: "inherit",
+                textDecoration: "none",
               }}
             >
-              <ArrowBackIcon sx={{ fontSize: "0.9rem" }} />
-              Back to history
-            </Typography>
-          </Link>
-
-          <Stack
-            direction={{ xs: "column", sm: "row" }}
-            spacing={1}
-            sx={{
-              justifyContent: "space-between",
-              alignItems: { xs: "flex-start", sm: "flex-end" },
-            }}
-          >
-            <Box>
               <Typography
-                variant="overline"
+                variant="body2"
                 sx={{
-                  display: "block",
-                  fontFamily: "'Roboto Mono', monospace",
-                  letterSpacing: "0.12em",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 0.5,
                   color: "text.secondary",
-                  fontSize: "0.7rem",
-                  mb: 0.5,
+                  fontSize: "0.8rem",
+                  mb: 1,
                 }}
               >
-                Detection log · #{item.id.slice(0, 8)}
+                <ArrowBackIcon sx={{ fontSize: "0.9rem" }} />
+                Back to history
               </Typography>
-              <Typography
-                variant="h4"
-                sx={{
-                  fontWeight: 700,
-                  letterSpacing: "-0.02em",
-                  lineHeight: 1.1,
-                }}
-              >
-                Analysis Result
-              </Typography>
-            </Box>
+            </Link>
             <Typography
-              variant="body2"
-              sx={{
-                fontFamily: "'Roboto Mono', monospace",
-                color: "text.secondary",
-                fontSize: "0.8rem",
-              }}
+              variant="h4"
+              sx={{ fontWeight: 700, letterSpacing: "-0.02em" }}
             >
-              {formatDate(item.createdAt)}
+              Forensic Report: #{item.id.slice(0, 8)}
             </Typography>
-          </Stack>
+          </Box>
+          <Button
+            variant="contained"
+            startIcon={<DownloadIcon />}
+            sx={{ borderRadius: 999, textTransform: "none" }}
+          >
+            Export PDF
+          </Button>
         </Stack>
 
-        {/* Verdict + images: one consistent row of matching panels */}
-        <Grid container spacing={3} sx={{ mb: 1 }}>
-          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-            <Panel
-              eyebrow="Original Image"
-              caption="The image as uploaded, unmodified."
-            >
+        {/* Three cards: Input / Reasoning / Verdict */}
+        <Grid container spacing={3}>
+          <Grid size={{ xs: 12, md: 4 }}>
+            <ReportCard icon={<ImageOutlinedIcon />} title="Input">
               <ImageFrame
                 src={`${process.env.BACKEND_API_URL}/${item.originalImageUrl}`}
                 alt="Original upload"
               />
-            </Panel>
+            </ReportCard>
           </Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-            <Panel
-              eyebrow="Heat Map Overlay"
-              caption="Regions the model weighed most heavily."
+
+          <Grid size={{ xs: 12, md: 4 }}>
+            <ReportCard
+              icon={<GpsFixedIcon />}
+              title="Reasoning"
+              right={
+                <Box
+                  sx={{
+                    px: 1.25,
+                    py: 0.4,
+                    borderRadius: 999,
+                    bgcolor: "action.selected",
+                    fontSize: "0.7rem",
+                    fontWeight: 600,
+                  }}
+                >
+                  Grad-CAM
+                </Box>
+              }
             >
               <ImageFrame
                 src={`${process.env.BACKEND_API_URL}/${item.heatmapImageUrl}`}
                 alt="Heatmap overlay"
               />
-            </Panel>
+              <Stack spacing={1} sx={{ mt: 2 }}>
+                <Stack direction="row" sx={{ justifyContent: "space-between" }}>
+                  <Typography
+                    variant="caption"
+                    sx={{ color: "text.secondary" }}
+                  >
+                    Heatmap Opacity
+                  </Typography>
+                  <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                    80%
+                  </Typography>
+                </Stack>
+                <Slider defaultValue={80} size="small" />
+              </Stack>
+            </ReportCard>
           </Grid>
 
-          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-            <Panel
-              eyebrow="Verdict"
-              caption={`Real ${realPercent}% · Fake ${fakePercent}%`}
-            >
-              <Stack spacing={1.5} sx={{ alignItems: "center" }}>
+          <Grid size={{ xs: 12, md: 4 }}>
+            <ReportCard icon={<FactCheckIcon />} title="Verdict">
+              <Stack
+                spacing={2}
+                sx={{
+                  height: "100%",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
                 <ConfidenceRing
                   realPercent={realPercent}
                   fakePercent={fakePercent}
@@ -467,39 +505,9 @@ export default async function HistoryDetailPage({
                 />
                 <VerdictPill meta={meta} />
               </Stack>
-            </Panel>
+            </ReportCard>
           </Grid>
         </Grid>
-
-        <Divider sx={{ mt: 5, mb: 5 }} />
-
-        {/* Metadata */}
-        <Stack spacing={1}>
-          <Typography
-            variant="overline"
-            sx={{
-              fontFamily: "'Roboto Mono', monospace",
-              letterSpacing: "0.1em",
-              color: "text.secondary",
-              fontSize: "0.7rem",
-            }}
-          >
-            Metadata
-          </Typography>
-          <Stack
-            direction="row"
-            spacing={1}
-            sx={{
-              fontFamily: "'Roboto Mono', monospace",
-              fontSize: "0.8rem",
-              color: "text.secondary",
-            }}
-          >
-            <Typography variant="body2" sx={{ fontFamily: "inherit" }}>
-              Analysis ID: {item.id}
-            </Typography>
-          </Stack>
-        </Stack>
       </Container>
     </Box>
   );

@@ -1,7 +1,15 @@
-import { Controller, Post, Body, Res, Req, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Res,
+  Req,
+  UseGuards,
+  Get,
+} from '@nestjs/common';
 import { type Response } from 'express';
 import { COOKIE_NAMES } from 'src/auth/constants/cookie';
-import { ResetPassword } from 'src/common/decorators/auth.decorator';
+import { Auth, ResetPassword } from 'src/common/decorators/auth.decorator';
 import { RateLimit } from 'src/common/decorators/rate-limit.decorator';
 import { RateLimitGuard } from 'src/common/guards/rate-limit.guard';
 
@@ -9,6 +17,8 @@ import { CreateUserDto } from '../dtos/create-user.dto';
 import { ForgotPasswordDto } from '../dtos/forgot-password.dto';
 import { ResetPasswordDto } from '../dtos/reset-password.dto';
 import { UsersService } from '../services/users.service';
+import { ExtendedRequest } from 'src/common/type';
+import { UserStatsService } from '../services/user-stats.service';
 
 class CustomRequest extends Request {
   user: {
@@ -19,7 +29,10 @@ class CustomRequest extends Request {
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly userstatService: UserStatsService,
+  ) {}
 
   @Post('/signup')
   async create(@Body() createUserDto: CreateUserDto) {
@@ -57,5 +70,11 @@ export class UsersController {
       status: result.status,
       data: null,
     };
+  }
+
+  @Get('/stats')
+  @Auth()
+  async getUserStats(@Req() req: ExtendedRequest) {
+    return this.userstatService.getUserStat(req.user.id);
   }
 }

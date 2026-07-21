@@ -14,8 +14,11 @@ export class UserStat {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column()
+  userId: string;
+
   @OneToOne(() => User, { onDelete: 'CASCADE', nullable: false })
-  @JoinColumn()
+  @JoinColumn({ name: 'userId' })
   user: User;
 
   @Column({ type: 'int', default: 0 })

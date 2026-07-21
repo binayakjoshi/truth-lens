@@ -1,11 +1,11 @@
 import { AnalysisHistory } from "@/types/type";
 
 export interface DashboardStats {
-  totalScans: number;
-  manipulatedCount: number;
-  authenticCount: number;
+  totalCount: number;
+  fakeCount: number;
+  realCount: number;
   uncertainCount: number;
-  avgConfidence: number;
+  avgManupulationScore: number;
 }
 
 interface PaginatedAnalysisResponse {
@@ -22,10 +22,10 @@ export async function getDashboardStats(
   cookieHeader: string,
 ): Promise<DashboardStats | null> {
   try {
-    const res = await fetch(
-      `${process.env.PROXY_API_URL}/api/dashboard/stats`,
-      { headers: { Cookie: cookieHeader }, cache: "no-store" },
-    );
+    const res = await fetch(`${process.env.PROXY_API_URL}/api/users/stats`, {
+      headers: { Cookie: cookieHeader },
+      cache: "no-store",
+    });
     if (!res.ok) return null;
     const body = await res.json();
     return body.data as DashboardStats;

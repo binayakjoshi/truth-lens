@@ -7,10 +7,19 @@ import { UsersController } from './controllers/users.controller';
 import { User } from './entities/user.entity';
 import { UserCleanupService } from './services/user-scheduler.service';
 import { UsersService } from './services/users.service';
+import { UserStat } from './entities/user-stats.entity';
+import { UserStatsService } from './services/user-stats.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User])],
+  imports: [TypeOrmModule.forFeature([User, UserStat])],
   controllers: [UsersController],
-  providers: [UsersService, UserCleanupService, EmailService, OtpService],
+  providers: [
+    UsersService,
+    UserCleanupService,
+    EmailService,
+    OtpService,
+    UserStatsService,
+  ],
+  exports: [UserStatsService],
 })
 export class UsersModule {}

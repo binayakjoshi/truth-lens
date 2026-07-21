@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, EntityManager } from 'typeorm';
 import { UserStat } from '../entities/user-stats.entity';
+import { createResponse } from 'src/common/utils/response-handler';
 
 type Classification = 'real' | 'fake' | 'uncertain';
 
@@ -17,6 +18,17 @@ export class UserStatsService {
     private readonly userStatRepo: Repository<UserStat>,
   ) {}
 
+  async getUserStat(userId: string) {
+    const userStat = await this.userStatRepo.findOne({
+      where: {
+        userId,
+      },
+    });
+    if (!userStat)
+      throw new NotFoundException('Coud not find stats for the current user');
+
+    return createResponse(200, 'user stats retrieved sucessfully', userStat);
+  }
   async createForUser(
     userId: string,
     manager?: EntityManager,
