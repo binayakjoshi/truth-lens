@@ -17,7 +17,7 @@ interface PaginatedAnalysisResponse {
     analysisHistories: AnalysisHistory[];
   };
 }
-
+export type Verdict = "real" | "uncertain" | "fake";
 export async function getDashboardStats(
   cookieHeader: string,
 ): Promise<DashboardStats | null> {
