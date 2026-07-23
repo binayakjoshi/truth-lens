@@ -1,17 +1,18 @@
 import { type ReactNode } from "react";
+
 import { cookies } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import SmartToyIcon from "@mui/icons-material/SmartToy";
-import VerifiedIcon from "@mui/icons-material/Verified";
+import DownloadIcon from "@mui/icons-material/Download";
+import FactCheckIcon from "@mui/icons-material/FactCheck";
+import GpsFixedIcon from "@mui/icons-material/GpsFixed";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutlined";
 import ImageOutlinedIcon from "@mui/icons-material/ImageOutlined";
-import GpsFixedIcon from "@mui/icons-material/GpsFixed";
-import FactCheckIcon from "@mui/icons-material/FactCheck";
-import DownloadIcon from "@mui/icons-material/Download";
+import SmartToyIcon from "@mui/icons-material/SmartToy";
+import VerifiedIcon from "@mui/icons-material/Verified";
 import {
   Box,
   Container,
@@ -47,16 +48,6 @@ async function getAnalysisHistoryDetail(
     return null;
   }
   return null;
-}
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 }
 
 type StatusColor = "error.main" | "success.main" | "warning.main";
@@ -314,43 +305,6 @@ function ImageFrame({ src, alt }: { src: string; alt: string }) {
         sizes="(max-width: 900px) 100vw, 380px"
         style={{ objectFit: "contain" }}
       />
-    </Box>
-  );
-}
-
-function HashBox({ hash }: { hash: string }) {
-  return (
-    <Box
-      sx={{
-        mt: 2,
-        p: 1.5,
-        border: "1px solid",
-        borderColor: "divider",
-        borderRadius: 2,
-        bgcolor: "action.hover",
-      }}
-    >
-      <Typography
-        variant="caption"
-        sx={{
-          display: "block",
-          color: "text.secondary",
-          mb: 0.5,
-          fontSize: "0.7rem",
-        }}
-      >
-        Source Hash (SHA-256):
-      </Typography>
-      <Typography
-        sx={{
-          fontFamily: "monospace",
-          fontSize: "0.75rem",
-          wordBreak: "break-all",
-          lineHeight: 1.5,
-        }}
-      >
-        {hash}
-      </Typography>
     </Box>
   );
 }

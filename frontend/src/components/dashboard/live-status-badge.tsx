@@ -11,7 +11,10 @@ export interface ServiceStatus {
 
 const POLL_INTERVAL_MS = 20000;
 
-const STATUS_COLOR: Record<ServiceStatus["status"], "success" | "warning" | "error"> = {
+const STATUS_COLOR: Record<
+  ServiceStatus["status"],
+  "success" | "warning" | "error"
+> = {
   online: "success",
   degraded: "warning",
   offline: "error",
@@ -31,8 +34,10 @@ export default function LiveStatusBadge({
     async function poll() {
       try {
         const res = await fetch("/api/health", { cache: "no-store" });
+
         if (res.ok) {
           const body = await res.json();
+
           if (!cancelled && Array.isArray(body.services)) {
             setServices(body.services);
           }
@@ -40,12 +45,18 @@ export default function LiveStatusBadge({
       } catch {
         // Keep showing the last known status if the health check fails.
       } finally {
-        if (!cancelled) setLastChecked(new Date());
+        if (!cancelled) {
+          setLastChecked(new Date());
+        }
       }
     }
 
-    poll();
-    const interval = setInterval(poll, POLL_INTERVAL_MS);
+    void poll();
+
+    const interval = setInterval(() => {
+      void poll();
+    }, POLL_INTERVAL_MS);
+
     return () => {
       cancelled = true;
       clearInterval(interval);
@@ -59,12 +70,19 @@ export default function LiveStatusBadge({
       title={
         <Stack spacing={0.5} sx={{ py: 0.5 }}>
           {services.map((s) => (
-            <Typography key={s.name} variant="caption" sx={{ display: "block" }}>
+            <Typography
+              key={s.name}
+              variant="caption"
+              sx={{ display: "block" }}
+            >
               {s.name}: {s.status}
             </Typography>
           ))}
           {lastChecked && (
-            <Typography variant="caption" sx={{ display: "block", opacity: 0.7 }}>
+            <Typography
+              variant="caption"
+              sx={{ display: "block", opacity: 0.7 }}
+            >
               Checked {lastChecked.toLocaleTimeString()}
             </Typography>
           )}
@@ -79,7 +97,9 @@ export default function LiveStatusBadge({
               height: 8,
               borderRadius: "50%",
               bgcolor: `${STATUS_COLOR[allOnline ? "online" : "degraded"]}.main`,
-              animation: allOnline ? "dashboard-pulse 2s ease-in-out infinite" : "none",
+              animation: allOnline
+                ? "dashboard-pulse 2s ease-in-out infinite"
+                : "none",
               "@keyframes dashboard-pulse": {
                 "0%, 100%": { opacity: 1 },
                 "50%": { opacity: 0.35 },

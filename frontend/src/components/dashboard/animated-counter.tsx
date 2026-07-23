@@ -20,8 +20,15 @@ export default function AnimatedCounter({
       window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
     if (prefersReducedMotion) {
-      setDisplay(value);
-      return;
+      frameRef.current = requestAnimationFrame(() => {
+        setDisplay(value);
+      });
+
+      return () => {
+        if (frameRef.current !== null) {
+          cancelAnimationFrame(frameRef.current);
+        }
+      };
     }
 
     const start = performance.now();
@@ -29,15 +36,20 @@ export default function AnimatedCounter({
     const tick = (now: number) => {
       const progress = Math.min((now - start) / durationMs, 1);
       const eased = 1 - Math.pow(1 - progress, 3);
+
       setDisplay(Math.round(value * eased));
+
       if (progress < 1) {
         frameRef.current = requestAnimationFrame(tick);
       }
     };
 
     frameRef.current = requestAnimationFrame(tick);
+
     return () => {
-      if (frameRef.current) cancelAnimationFrame(frameRef.current);
+      if (frameRef.current !== null) {
+        cancelAnimationFrame(frameRef.current);
+      }
     };
   }, [value, durationMs]);
 

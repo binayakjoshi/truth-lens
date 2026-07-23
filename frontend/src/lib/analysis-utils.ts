@@ -1,4 +1,4 @@
-import { AnalysisHistory } from "@/types/type";
+import { type AnalysisHistory } from "@/types/type";
 
 const ASSET_BASE_URL = process.env.NEXT_PUBLIC_IMAGE_API_URL ?? "";
 

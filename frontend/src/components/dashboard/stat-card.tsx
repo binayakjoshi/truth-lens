@@ -1,4 +1,5 @@
 import { Paper, Typography } from "@mui/material";
+
 import AnimatedCounter from "@/components/dashboard/animated-counter";
 
 type Tone = "default" | "success" | "warning" | "error";

@@ -16,7 +16,6 @@ import {
   Chip,
   Grid,
   Divider,
-  Alert,
 } from "@mui/material";
 
 import ImageUpload from "@/components/custom-elements/image-upload";
@@ -130,7 +129,7 @@ const AnalysisPage = () => {
       inputHandler("image", undefined, false); // clear form state for the image field
       setUploadKey((prev) => prev + 1); // force ImageUpload to remount, clearing preview
       setResult(body.data);
-    } catch (err: any) {
+    } catch (_err: any) {
       error("Could not process image. Please try again.");
     } finally {
       setIsSubmitting(false);

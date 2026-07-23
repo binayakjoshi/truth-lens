@@ -1,16 +1,16 @@
 "use client";
 import { useState } from "react";
-import NextLink from "next/link";
+
 import Image from "next/image";
-import { Box, Paper, Stack, Typography } from "@mui/material";
+import NextLink from "next/link";
+
 import ImageNotSupportedOutlinedIcon from "@mui/icons-material/ImageNotSupportedOutlined";
+import { Box, Paper, Stack, Typography } from "@mui/material";
+
 import VerdictBadge from "@/components/dashboard/verdict-badge";
-import { AnalysisHistory } from "@/types/type";
-import {
-  getManipulationScore,
-  formatTimestamp,
-  resolveAssetUrl,
-} from "@/lib/analysis-utils";
+import { getManipulationScore, resolveAssetUrl } from "@/lib/analysis-utils";
+import { type AnalysisHistory } from "@/types/type";
+
 import Timestamp from "./timestamp";
 
 function Thumbnail({ src, alt }: { src: string | null; alt: string }) {

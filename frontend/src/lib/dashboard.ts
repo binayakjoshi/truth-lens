@@ -1,4 +1,4 @@
-import { AnalysisHistory } from "@/types/type";
+import { type AnalysisHistory } from "@/types/type";
 
 export interface DashboardStats {
   totalCount: number;

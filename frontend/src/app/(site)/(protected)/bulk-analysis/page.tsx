@@ -111,15 +111,14 @@ const BulkAnalysisPage = () => {
     setData(null);
   };
 
-  const handleSubmit = async (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
     if (!isFilesValid || files.length === 0) return;
 
     setIsSubmitting(true);
     setData(null);
 
-    // Capture filenames in submission order so failure indices can be
-    // mapped back to a human-readable name after `files` is cleared.
     const namesForThisSubmission = files.map((file) => file.name);
 
     try {
@@ -189,7 +188,9 @@ const BulkAnalysisPage = () => {
         <Container maxWidth="sm" disableGutters>
           <Paper
             component="form"
-            onSubmit={handleSubmit}
+            onSubmit={(e) => {
+              void handleSubmit(e);
+            }}
             noValidate
             elevation={0}
             sx={{

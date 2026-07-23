@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Typography, TypographyProps } from "@mui/material";
+import { Typography, type TypographyProps } from "@mui/material";
+
 import { formatTimestamp } from "@/lib/analysis-utils";
 
 type TimestampProps = {
@@ -9,11 +9,7 @@ type TimestampProps = {
 } & TypographyProps;
 
 export default function Timestamp({ iso, ...props }: TimestampProps) {
-  const [text, setText] = useState("—");
-
-  useEffect(() => {
-    setText(formatTimestamp(iso));
-  }, [iso]);
+  const text = formatTimestamp(iso);
 
   return <Typography {...props}>{text}</Typography>;
 }

@@ -57,20 +57,29 @@ const MultiImageUpload = ({
   // successful upload). Skip on initial mount so passing clearTrigger={0}
   // doesn't wipe anything before the user has picked files.
   const isFirstRun = useRef(true);
+
   useEffect(() => {
     if (isFirstRun.current) {
       isFirstRun.current = false;
       return;
     }
+
     if (clearTrigger === undefined) return;
 
-    setSelectedFiles((prev) => {
-      prev.forEach((f) => URL.revokeObjectURL(f.previewUrl));
-      return [];
+    const id = requestAnimationFrame(() => {
+      setSelectedFiles((prev) => {
+        prev.forEach((f) => URL.revokeObjectURL(f.previewUrl));
+        return [];
+      });
+
+      setCurrentError(undefined);
+
+      if (filePickerRef.current) {
+        filePickerRef.current.value = "";
+      }
     });
-    setCurrentError(undefined);
-    if (filePickerRef.current) filePickerRef.current.value = "";
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    return () => cancelAnimationFrame(id);
   }, [clearTrigger]);
 
   const formatFileSize = (bytes: number): string => {

@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+
 import { Box, Paper, Stack, Typography } from "@mui/material";
-import { AnalysisHistory } from "@/types/type";
+
 import { getManipulationScore, getFilename } from "@/lib/analysis-utils";
+import { type AnalysisHistory } from "@/types/type";
 
 function markerColor(classification: AnalysisHistory["classification"]) {
   switch (classification) {
