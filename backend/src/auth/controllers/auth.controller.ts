@@ -1,3 +1,4 @@
+import { CacheInterceptor } from '@nestjs/cache-manager';
 import {
   Body,
   Controller,
@@ -54,6 +55,7 @@ export class AuthController {
 
   @Get('/me')
   @Auth()
+  @UseInterceptors(CacheInterceptor)
   @Serialize(UserResponseDto)
   async getMe(@Req() req: Request) {
     const accessToken = req.cookies?.['truth-access-token'];

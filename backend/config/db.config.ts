@@ -1,5 +1,6 @@
 import { config } from 'dotenv';
 import { AnalysisHistory } from 'src/analysis/entities/analysis-history.entity';
+import { UserStat } from 'src/users/entities/user-stats.entity';
 import { User } from 'src/users/entities/user.entity';
 import { DataSource, LoggerOptions } from 'typeorm';
 
@@ -26,5 +27,5 @@ export const dataSource = new DataSource({
   migrations: ['dist/src/database/migrations/**/*.js'],
   migrationsRun: false,
   namingStrategy: new CustomNamingStrategy(),
-  entities: [User, AnalysisHistory],
+  entities: [User, AnalysisHistory, UserStat],
 });

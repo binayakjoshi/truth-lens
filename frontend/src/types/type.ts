@@ -1,8 +1,9 @@
 export type AnalysisHistory = {
   id: string;
-  classification: "real" | "fake";
+  classification: "real" | "fake" | "uncertain";
   userId: string;
-  confidence: number;
+  realConfidence: number;
+  fakeConfidence: number;
   originalImageUrl: string;
   heatmapImageUrl: string;
   createdAt: string;

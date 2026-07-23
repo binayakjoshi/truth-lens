@@ -1,11 +1,13 @@
 import base64
 import io
+import os
 from typing import Annotated
 
 import cv2
 import numpy as np
 import torch
 import torch.nn.functional as F
+from dotenv import load_dotenv
 from facenet_pytorch import MTCNN
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,6 +17,11 @@ from PIL import Image
 from torchvision import transforms
 from truthlens.model.classifier import TruthLensClassifier
 from truthlens.preprocessing.pipeline import run_pipeline
+
+# Load variables from a local .env file (if present) into os.environ.
+# In production, real env vars set by the platform/orchestrator take
+# precedence — this is purely a local-dev convenience.
+load_dotenv()
 
 app = FastAPI(
     title="TruthLens ML Inference Engine",
@@ -59,12 +66,21 @@ def custom_openapi():
 
 app.openapi = custom_openapi
 
+# CORS origins are environment-driven so dev/staging/prod can each point at
+# their own frontend without touching code. Comma-separated list, e.g.
+#   BACKEND_API_URL="http://localhost:3000,https://app.truthlens.io"
+# Falls back to localhost defaults if the env var isn't set, so local dev
+# still works out of the box.
+_default_cors_origins = "http://localhost:3000,http://127.0.0.1:3000"
+CORS_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get("BACKEND_API_URL", _default_cors_origins).split(",")
+    if origin.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-    ],
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -257,6 +273,18 @@ MAX_BULK_IMAGES = 15
 MAX_IMAGE_BYTES = 5 * 1024 * 1024  # 5 MB
 LABELS_MAP = {0: "AI-Generated", 1: "Real"}
 
+# If the winning class's probability is below this, the model isn't
+# confident enough to commit to a verdict — report "Uncertain" instead.
+# Configurable via env so it can be tuned per-deployment without a redeploy.
+CONFIDENCE_THRESHOLD = float(os.environ.get("CONFIDENCE_THRESHOLD", "0.65"))
+
+# Host/port the service binds to. Defaults keep local dev working as before
+# (127.0.0.1:8000), but production deployments (Docker, ECS, etc.) typically
+# need HOST=0.0.0.0 to accept connections from outside the container, and
+# PORT is often assigned dynamically by the platform.
+HOST = os.environ.get("HOST", "127.0.0.1")
+PORT = int(os.environ.get("PORT", "8000"))
+
 
 def analyze_image_bytes(contents: bytes) -> dict:
     """
@@ -299,6 +327,15 @@ def analyze_image_bytes(contents: bytes) -> dict:
             input_tensor
         )
 
+        # Only commit to a Real / AI-Generated verdict if the model is
+        # confident enough; otherwise flag it as Uncertain. Raw scores are
+        # still returned either way so callers can display the exact split.
+        top_confidence = float(probabilities[predicted_class_idx])
+        if top_confidence < CONFIDENCE_THRESHOLD:
+            prediction_label = "Uncertain"
+        else:
+            prediction_label = LABELS_MAP[predicted_class_idx]
+
         overlay_bgr = build_heatmap_overlay(orig_bgr, heatmap, (x1, y1, x2, y2))
         overlay_rgb = cv2.cvtColor(overlay_bgr, cv2.COLOR_BGR2RGB)
         pil_overlay = Image.fromarray(overlay_rgb)
@@ -308,7 +345,7 @@ def analyze_image_bytes(contents: bytes) -> dict:
         return {
             "ok": True,
             "data": {
-                "prediction": LABELS_MAP[predicted_class_idx],
+                "prediction": prediction_label,
                 "confidenceScores": {
                     "real": float(probabilities[1]),
                     "aiGenerated": float(probabilities[0]),
@@ -441,3 +478,9 @@ async def bulk_upload(
 @app.get("/health")
 def health_check():
     return {"status": "healthy", "service": "truthlens-ml-backend"}
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run("main:app", host=HOST, port=PORT)
