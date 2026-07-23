@@ -1,8 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, EntityManager } from 'typeorm';
-import { UserStat } from '../entities/user-stats.entity';
 import { createResponse } from 'src/common/utils/response-handler';
+import { Repository, EntityManager } from 'typeorm';
+
+import { UserStat } from '../entities/user-stats.entity';
 
 type Classification = 'real' | 'fake' | 'uncertain';
 

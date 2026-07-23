@@ -17,12 +17,12 @@ import {
   PredictErrorResponse,
 } from 'src/common/type';
 import { createResponse } from 'src/common/utils/response-handler';
+import { UserStatsService } from 'src/users/services/user-stats.service';
 import { Repository } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
 import { SearchHistoryDto } from '../dtos/search-history.dto';
 import { AnalysisHistory } from '../entities/analysis-history.entity';
-import { UserStatsService } from 'src/users/services/user-stats.service';
 
 @Injectable()
 export class AnalysisService {
@@ -331,7 +331,7 @@ export class AnalysisService {
       }
     }
 
-    return body as BulkModelResponse;
+    return body;
   }
 
   private async callPredictApi(

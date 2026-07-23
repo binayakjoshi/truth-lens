@@ -10,6 +10,7 @@ import {
   DeleteDateColumn,
   OneToOne,
 } from 'typeorm';
+
 import { UserStat } from './user-stats.entity';
 
 @Entity()

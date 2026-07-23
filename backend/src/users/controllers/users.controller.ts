@@ -12,13 +12,13 @@ import { COOKIE_NAMES } from 'src/auth/constants/cookie';
 import { Auth, ResetPassword } from 'src/common/decorators/auth.decorator';
 import { RateLimit } from 'src/common/decorators/rate-limit.decorator';
 import { RateLimitGuard } from 'src/common/guards/rate-limit.guard';
+import { ExtendedRequest } from 'src/common/type';
 
 import { CreateUserDto } from '../dtos/create-user.dto';
 import { ForgotPasswordDto } from '../dtos/forgot-password.dto';
 import { ResetPasswordDto } from '../dtos/reset-password.dto';
-import { UsersService } from '../services/users.service';
-import { ExtendedRequest } from 'src/common/type';
 import { UserStatsService } from '../services/user-stats.service';
+import { UsersService } from '../services/users.service';
 
 class CustomRequest extends Request {
   user: {

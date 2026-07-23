@@ -12,11 +12,11 @@ import { EmailService } from 'src/email/services/email.service';
 import { OtpService } from 'src/otp/services/otp.service';
 import { IsNull, Repository } from 'typeorm';
 
+import { UserStatsService } from './user-stats.service';
 import { CreateUserDto } from '../dtos/create-user.dto';
 import { ForgotPasswordDto } from '../dtos/forgot-password.dto';
 import { ResetPasswordDto } from '../dtos/reset-password.dto';
 import { User } from '../entities/user.entity';
-import { UserStatsService } from './user-stats.service';
 @Injectable()
 export class UsersService {
   constructor(

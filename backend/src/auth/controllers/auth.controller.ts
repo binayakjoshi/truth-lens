@@ -1,3 +1,4 @@
+import { CacheInterceptor } from '@nestjs/cache-manager';
 import {
   Body,
   Controller,
@@ -25,7 +26,6 @@ import { GoogleAuthGuard } from '../guards/google-auth.guard';
 import { RefreshTokenGuard } from '../guards/refresh-token.guard';
 import { CookieInterceptor } from '../interceptors/cookie-interceptor';
 import { AuthService } from '../services/auth.service';
-import { CacheInterceptor } from '@nestjs/cache-manager';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
