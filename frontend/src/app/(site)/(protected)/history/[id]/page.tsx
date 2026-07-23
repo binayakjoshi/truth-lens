@@ -18,7 +18,6 @@ import {
   Container,
   Divider,
   Grid,
-  Slider,
   Stack,
   Typography,
   Button,

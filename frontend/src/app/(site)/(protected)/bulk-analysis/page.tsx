@@ -21,30 +21,7 @@ import {
 
 import MultiImageUpload from "@/components/custom-elements/multi-image-upload";
 import { useToast } from "@/hooks/use-toast";
-
-interface BulkResult {
-  id: string;
-  classification: "real" | "fake" | "uncertain";
-  userId?: string;
-  realConfidence: number;
-  fakeConfidence: number;
-  originalImageUrl: string;
-  heatmapImageUrl: string;
-  createdAt: string;
-}
-
-interface BulkFailure {
-  index: number;
-  message: string;
-}
-
-interface BulkData {
-  total: number;
-  succeeded: number;
-  failed: number;
-  results: BulkResult[];
-  failures: BulkFailure[];
-}
+import { BulkData, BulkResult } from "@/types/type";
 
 const MAX_FILES = 10;
 

@@ -28,17 +28,7 @@ import ImageUpload from "@/components/custom-elements/image-upload";
 import { useUser } from "@/context/user-context";
 import { useForm } from "@/hooks/use-form";
 import { useToast } from "@/hooks/use-toast";
-
-interface AnalysisResult {
-  id: string;
-  classification: "real" | "fake" | "uncertain";
-  userId?: string; // optional now — anonymous analyses won't have this
-  realConfidence: number;
-  fakeConfidence: number;
-  originalImageUrl: string;
-  heatmapImageUrl: string;
-  createdAt: string;
-}
+import { AnalysisResult } from "@/types/type";
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleString("en-US", {
