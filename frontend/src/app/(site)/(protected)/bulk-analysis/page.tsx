@@ -21,56 +21,10 @@ import {
 
 import MultiImageUpload from "@/components/custom-elements/multi-image-upload";
 import { useToast } from "@/hooks/use-toast";
-import { BulkData, BulkResult } from "@/types/type";
+import { BulkData } from "@/types/type";
+import { formatDate, getStatusMeta } from "@/lib/analysis-report";
 
 const MAX_FILES = 10;
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
-function getStatusMeta(result: BulkResult) {
-  const { classification, realConfidence, fakeConfidence } = result;
-  const realPercent = Math.round(realConfidence * 1000) / 10;
-  const fakePercent = Math.round(fakeConfidence * 1000) / 10;
-
-  if (classification === "fake") {
-    return {
-      label: "Fake",
-      color: "error.main" as const,
-      isUncertain: false,
-      confidencePercent: fakePercent,
-      realPercent,
-      fakePercent,
-    };
-  }
-
-  if (classification === "uncertain") {
-    return {
-      label: "Uncertain",
-      color: "warning.main" as const,
-      isUncertain: true,
-      confidencePercent: Math.max(realPercent, fakePercent),
-      realPercent,
-      fakePercent,
-    };
-  }
-
-  return {
-    label: "Real",
-    color: "success.main" as const,
-    isUncertain: false,
-    confidencePercent: realPercent,
-    realPercent,
-    fakePercent,
-  };
-}
 
 const BulkAnalysisPage = () => {
   const [files, setFiles] = useState<File[]>([]);
