@@ -25,6 +25,7 @@ import {
 } from "@mui/material";
 
 import { type AnalysisHistory } from "@/types/type";
+import HeatmapOverlayCard from "@/components/history/heat-map-verlay-card";
 
 async function getAnalysisHistoryDetail(
   id: string,
@@ -420,24 +421,10 @@ export default async function HistoryDetailPage({
                 </Box>
               }
             >
-              <ImageFrame
-                src={`${process.env.BACKEND_API_URL}/${item.heatmapImageUrl}`}
-                alt="Heatmap overlay"
+              <HeatmapOverlayCard
+                originalSrc={`${process.env.BACKEND_API_URL}/${item.originalImageUrl}`}
+                heatmapSrc={`${process.env.BACKEND_API_URL}/${item.heatmapImageUrl}`}
               />
-              <Stack spacing={1} sx={{ mt: 2 }}>
-                <Stack direction="row" sx={{ justifyContent: "space-between" }}>
-                  <Typography
-                    variant="caption"
-                    sx={{ color: "text.secondary" }}
-                  >
-                    Heatmap Opacity
-                  </Typography>
-                  <Typography variant="caption" sx={{ fontWeight: 600 }}>
-                    80%
-                  </Typography>
-                </Stack>
-                <Slider defaultValue={80} size="small" />
-              </Stack>
             </ReportCard>
           </Grid>
 

@@ -286,6 +286,42 @@ HOST = os.environ.get("HOST", "127.0.0.1")
 PORT = int(os.environ.get("PORT", "8000"))
 
 
+def pil_to_base64_png(pil_img: Image.Image) -> str:
+    buf = io.BytesIO()
+    pil_img.save(buf, format="PNG")
+    return base64.b64encode(buf.getvalue()).decode("utf-8")
+
+
+def build_heatmap_rgba(orig_shape, heatmap, bbox, alpha_scale=200):
+    """
+    Produce an RGBA heatmap image the same H×W as the original image.
+    Transparent everywhere except inside the face bbox, where alpha is
+    proportional to activation strength.
+    """
+    H, W = orig_shape[:2]
+    x1, y1, x2, y2 = bbox
+    bw, bh = x2 - x1, y2 - y1
+
+    # Normalize heatmap to 0-255 and resize to bbox size
+    hm = np.clip(heatmap, 0, 1)
+    hm_resized = cv2.resize(hm, (bw, bh))
+    hm_uint8 = np.uint8(255 * hm_resized)
+
+    # Apply colormap -> BGR
+    colored_bgr = cv2.applyColorMap(hm_uint8, cv2.COLORMAP_JET)
+    colored_rgb = cv2.cvtColor(colored_bgr, cv2.COLOR_BGR2RGB)
+
+    # Alpha channel scaled by activation intensity (not flat opacity)
+    alpha_channel = (hm_resized * alpha_scale).astype(np.uint8)
+
+    # Build full-canvas RGBA, transparent by default
+    canvas = np.zeros((H, W, 4), dtype=np.uint8)
+    canvas[y1:y2, x1:x2, 0:3] = colored_rgb
+    canvas[y1:y2, x1:x2, 3] = alpha_channel
+
+    return Image.fromarray(canvas, mode="RGBA")
+
+
 def analyze_image_bytes(contents: bytes) -> dict:
     """
     Run the full face-detect → preprocess → classify → Grad-CAM pipeline
@@ -336,11 +372,11 @@ def analyze_image_bytes(contents: bytes) -> dict:
         else:
             prediction_label = LABELS_MAP[predicted_class_idx]
 
-        overlay_bgr = build_heatmap_overlay(orig_bgr, heatmap, (x1, y1, x2, y2))
-        overlay_rgb = cv2.cvtColor(overlay_bgr, cv2.COLOR_BGR2RGB)
-        pil_overlay = Image.fromarray(overlay_rgb)
-        heatmap_b64 = pil_to_base64_jpeg(pil_overlay)
-        original_image_b64 = pil_to_base64_jpeg(orig_image)
+        heatmap_rgba = build_heatmap_rgba(orig_bgr.shape, heatmap, (x1, y1, x2, y2))
+        heatmap_b64 = pil_to_base64_png(heatmap_rgba)
+        original_image_b64 = pil_to_base64_jpeg(
+            orig_image
+        )  # unchanged, still opaque JPEG is fine
 
         return {
             "ok": True,
@@ -351,7 +387,7 @@ def analyze_image_bytes(contents: bytes) -> dict:
                     "aiGenerated": float(probabilities[0]),
                 },
                 "boundingBox": {"x1": x1, "y1": y1, "x2": x2, "y2": y2},
-                "heatmapBase64": f"data:image/jpeg;base64,{heatmap_b64}",
+                "heatmapBase64": f"data:image/png;base64,{heatmap_b64}",
                 "originalImageBase64": f"data:image/jpeg;base64,{original_image_b64}",
             },
         }
