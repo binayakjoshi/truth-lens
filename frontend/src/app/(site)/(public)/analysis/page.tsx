@@ -119,7 +119,12 @@ const AnalysisPage = () => {
               borderColor: "divider",
             }}
           >
-            <ImageUpload key={uploadKey} onInput={inputHandler} id="image" />
+            <ImageUpload
+              key={uploadKey}
+              aspectRatio={1}
+              onInput={inputHandler}
+              id="image"
+            />
             <Button
               type="submit"
               variant="contained"
