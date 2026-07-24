@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import Image from "next/image";
+
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import FactCheckIcon from "@mui/icons-material/FactCheck";
 import GpsFixedIcon from "@mui/icons-material/GpsFixed";
@@ -19,17 +20,17 @@ import {
   Slider,
 } from "@mui/material";
 
+import ConfidenceRing from "@/components/analysis/confidence-ring";
+import ImageFrame from "@/components/analysis/image-frame";
+import ReportCard from "@/components/analysis/report-card";
+import ReportTag from "@/components/analysis/report-tag";
+import VerdictPill from "@/components/analysis/verdict-pill";
 import ImageUpload from "@/components/custom-elements/image-upload";
 import { useUser } from "@/context/user-context";
 import { useForm } from "@/hooks/use-form";
 import { useToast } from "@/hooks/use-toast";
-import { AnalysisResult } from "@/types/type";
 import { getStatusMeta, formatDate } from "@/lib/analysis-report";
-import ConfidenceRing from "@/components/analysis/confidence-ring";
-import VerdictPill from "@/components/analysis/verdict-pill";
-import ReportCard from "@/components/analysis/report-card";
-import ReportTag from "@/components/analysis/report-tag";
-import ImageFrame from "@/components/analysis/image-frame";
+import { type AnalysisResult } from "@/types/type";
 
 const AnalysisPage = () => {
   const { user } = useUser();
@@ -77,6 +78,9 @@ const AnalysisPage = () => {
     }
   };
 
+  const onSubmit = (event: React.FormEvent) => {
+    void handleSubmit(event);
+  };
   const meta = result ? getStatusMeta(result) : null;
 
   return (
@@ -105,7 +109,7 @@ const AnalysisPage = () => {
         <Container maxWidth="sm" disableGutters>
           <Paper
             component="form"
-            onSubmit={handleSubmit}
+            onSubmit={onSubmit}
             noValidate
             elevation={0}
             sx={{
@@ -251,9 +255,7 @@ const AnalysisPage = () => {
                     </Stack>
                     <Slider
                       value={heatmapOpacity}
-                      onChange={(_, value) =>
-                        setHeatmapOpacity(value as number)
-                      }
+                      onChange={(_, value) => setHeatmapOpacity(value)}
                       size="small"
                       min={0}
                       max={100}

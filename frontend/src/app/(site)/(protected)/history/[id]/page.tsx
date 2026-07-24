@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -7,16 +8,15 @@ import FactCheckIcon from "@mui/icons-material/FactCheck";
 import GpsFixedIcon from "@mui/icons-material/GpsFixed";
 import ImageOutlinedIcon from "@mui/icons-material/ImageOutlined";
 import { Box, Container, Grid, Stack, Typography, Button } from "@mui/material";
-import Link from "next/link";
 
-import { type AnalysisHistory } from "@/types/type";
-import { getStatusMeta } from "@/lib/analysis-report";
-import HeatmapOverlayCard from "@/components/history/heat-map-verlay-card";
 import ConfidenceRing from "@/components/analysis/confidence-ring";
-import VerdictPill from "@/components/analysis/verdict-pill";
+import ImageFrame from "@/components/analysis/image-frame";
 import ReportCard from "@/components/analysis/report-card";
 import ReportTag from "@/components/analysis/report-tag";
-import ImageFrame from "@/components/analysis/image-frame";
+import VerdictPill from "@/components/analysis/verdict-pill";
+import HeatmapOverlayCard from "@/components/history/heat-map-verlay-card";
+import { getStatusMeta } from "@/lib/analysis-report";
+import { type AnalysisHistory } from "@/types/type";
 
 async function getAnalysisHistoryDetail(
   id: string,

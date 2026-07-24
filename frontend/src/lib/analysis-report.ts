@@ -1,5 +1,5 @@
-import SmartToyIcon from "@mui/icons-material/SmartToy";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutlined";
+import SmartToyIcon from "@mui/icons-material/SmartToy";
 import VerifiedIcon from "@mui/icons-material/Verified";
 
 export type StatusColor = "error.main" | "success.main" | "warning.main";

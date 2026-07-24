@@ -2,7 +2,9 @@
 "use client";
 
 import { useState } from "react";
+
 import Image from "next/image";
+
 import { Box, Stack, Slider, Typography } from "@mui/material";
 
 interface HeatmapOverlayCardProps {
@@ -67,7 +69,7 @@ export default function HeatmapOverlayCard({
         </Stack>
         <Slider
           value={opacity}
-          onChange={(_, value) => setOpacity(value as number)}
+          onChange={(_, value) => setOpacity(value)}
           size="small"
           min={0}
           max={100}

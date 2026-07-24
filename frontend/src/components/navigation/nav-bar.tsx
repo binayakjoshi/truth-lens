@@ -65,8 +65,20 @@ const NavBar = async () => {
           <UserMenu firstName={user.firstName} lastName={user.lastName} />
         ) : (
           <>
-            <Link href="/login" style={{ textDecoration: "none" }}>
+            <Link href="/feature" style={{ textDecoration: "none" }}>
               <Button color="inherit" sx={{ fontWeight: 500 }}>
+                Features
+              </Button>
+            </Link>
+
+            <Link href="/how-it-works" style={{ textDecoration: "none" }}>
+              <Button color="inherit" sx={{ fontWeight: 500 }}>
+                How it works
+              </Button>
+            </Link>
+
+            <Link href="/login" style={{ textDecoration: "none" }}>
+              <Button color="secondary" sx={{ fontWeight: 500 }}>
                 Log in
               </Button>
             </Link>
