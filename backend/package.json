@@ -24,7 +24,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "create": "ts-node ./node_modules/typeorm/cli.js migration:create ./src/database/migrations/$npm_config_name",
-    "migrate": "node node_modules/typeorm/cli.js migration:run -d dist/config/db.config.js",
+    "migrate": "node node_modules/typeorm/cli.js migration:run -d dist/config/db.config.js --transaction each",
     "rollback": "node node_modules/typeorm/cli.js migration:revert -d dist/config/db.config.js"
   },
   "dependencies": {
