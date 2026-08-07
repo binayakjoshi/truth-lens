@@ -143,6 +143,13 @@ const Input: React.FC<CustomInputProps> = (props) => {
 
   const isError = !inputState.isValid && inputState.isTouched;
 
+  const isDateLikeType =
+    props.type === "date" ||
+    props.type === "time" ||
+    props.type === "datetime-local" ||
+    props.type === "month" ||
+    props.type === "week";
+
   if (props.element === "input" || props.element === "textarea") {
     return (
       <TextField
@@ -160,12 +167,23 @@ const Input: React.FC<CustomInputProps> = (props) => {
         required={props.required}
         fullWidth
         slotProps={{
+          inputLabel: isDateLikeType ? { shrink: true } : undefined,
           input: {
             readOnly: props.readOnly,
             autoComplete: props.autocomplete,
             endAdornment: props.endAdornment,
             sx: {
               height: props.height ? `${props.height}px` : "56px",
+              ...(isDateLikeType && {
+                "& input::-webkit-calendar-picker-indicator": {
+                  cursor: props.readOnly ? "default" : "pointer",
+                },
+                "& input[type='date']": {
+                  display: "flex",
+                  alignItems: "center",
+                  height: "100%",
+                },
+              }),
             },
           },
           htmlInput:
@@ -179,7 +197,15 @@ const Input: React.FC<CustomInputProps> = (props) => {
                     "&::-webkit-outer-spin-button": { display: "none" },
                   },
                 }
-              : undefined,
+              : isDateLikeType
+                ? {
+                    sx: {
+                      padding: "0 14px",
+                      height: "100%",
+                      boxSizing: "border-box",
+                    },
+                  }
+                : undefined,
         }}
         sx={props.sx}
         className={props.className}

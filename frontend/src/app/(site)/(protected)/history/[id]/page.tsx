@@ -3,7 +3,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import DownloadIcon from "@mui/icons-material/Download";
 import FactCheckIcon from "@mui/icons-material/FactCheck";
 import GpsFixedIcon from "@mui/icons-material/GpsFixed";
 import ImageOutlinedIcon from "@mui/icons-material/ImageOutlined";
@@ -108,13 +107,6 @@ export default async function HistoryDetailPage({
               Forensic Report: #{item.id.slice(0, 8)}
             </Typography>
           </Box>
-          <Button
-            variant="contained"
-            startIcon={<DownloadIcon />}
-            sx={{ borderRadius: 999, textTransform: "none" }}
-          >
-            Export PDF
-          </Button>
         </Stack>
 
         <Grid container spacing={3}>

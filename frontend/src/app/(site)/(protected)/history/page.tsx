@@ -7,6 +7,7 @@ import HistoryPagination from "@/components/history/pagination";
 import SortToggle from "@/components/history/sort-toggle";
 import ViewToggle from "@/components/history/view-toggle";
 import { type AnalysisHistoryResponse } from "@/types/type";
+import DownloadReportButton from "@/components/history/download-report";
 
 async function getAnalysisHistory(
   page: number,
@@ -101,6 +102,7 @@ export default async function HistoryPage({ searchParams }: HistoryPageProps) {
           </Box>
 
           <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
+            <DownloadReportButton />
             {history && (
               <Typography
                 variant="body2"
