@@ -6,7 +6,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import FactCheckIcon from "@mui/icons-material/FactCheck";
 import GpsFixedIcon from "@mui/icons-material/GpsFixed";
 import ImageOutlinedIcon from "@mui/icons-material/ImageOutlined";
-import { Box, Container, Grid, Stack, Typography, Button } from "@mui/material";
+import { Box, Container, Grid, Stack, Typography } from "@mui/material";
 
 import ConfidenceRing from "@/components/analysis/confidence-ring";
 import ImageFrame from "@/components/analysis/image-frame";

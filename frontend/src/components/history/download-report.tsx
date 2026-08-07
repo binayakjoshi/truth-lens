@@ -1,13 +1,15 @@
 "use client";
 
 import { useState } from "react";
+
 import DownloadIcon from "@mui/icons-material/Download";
 import { Button, CircularProgress, Stack, Typography } from "@mui/material";
-import AppModal from "@/components/custom-elements/modal";
+
 import Input from "@/components/custom-elements/input";
+import AppModal from "@/components/custom-elements/modal";
 import { useForm, type InputState } from "@/hooks/use-form";
-import { VALIDATOR_REQUIRE } from "@/lib/validators";
 import { useToast } from "@/hooks/use-toast";
+import { VALIDATOR_REQUIRE } from "@/lib/validators";
 
 function toISOStringWithTimezone(date: Date): string {
   const pad = (n: number) => String(Math.floor(Math.abs(n))).padStart(2, "0");
@@ -136,7 +138,9 @@ export default function DownloadReportButton() {
         onClose={handleClose}
         title="Download Report"
         size="sm"
-        onConfirm={handleConfirm}
+        onConfirm={() => {
+          void handleConfirm();
+        }}
         confirmLabel={isDownloading ? "Downloading..." : "Download"}
         cancelLabel="Cancel"
         confirmDisabled={isDownloading || !formState.isValid}

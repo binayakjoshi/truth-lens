@@ -2,12 +2,12 @@ import { cookies } from "next/headers";
 
 import { Box, Container, Stack, Typography } from "@mui/material";
 
+import DownloadReportButton from "@/components/history/download-report";
 import AnalysisHistoryCard from "@/components/history/history-card";
 import HistoryPagination from "@/components/history/pagination";
 import SortToggle from "@/components/history/sort-toggle";
 import ViewToggle from "@/components/history/view-toggle";
 import { type AnalysisHistoryResponse } from "@/types/type";
-import DownloadReportButton from "@/components/history/download-report";
 
 async function getAnalysisHistory(
   page: number,
