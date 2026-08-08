@@ -41,7 +41,7 @@ data_transforms = {
     ),
 }
 
-data_dir = "datasets/truthlens_dataset"
+data_dir = "datasets/truthlens_dataset_v2"
 datasets = {
     "train": PreprocessedDataset(
         root_dir=f"{data_dir}/train", transform=data_transforms["train"]

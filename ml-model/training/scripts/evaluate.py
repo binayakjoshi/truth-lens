@@ -36,7 +36,7 @@ val_transform = transforms.Compose(
 )
 
 val_dataset = PreprocessedDataset(
-    root_dir="datasets/truthlens_dataset/valid", transform=val_transform
+    root_dir="datasets/truthlens_dataset_v2/test", transform=val_transform
 )
 val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False, num_workers=2)
 
