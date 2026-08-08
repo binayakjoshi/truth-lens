@@ -110,3 +110,9 @@ ml-model/models/FaceForensics++_C23/
 .venv/
 venv/
 env/
+
+# Local / research artifacts not part of the web app
+db/
+outputs/
+research/
+frontend/tsconfig.tsbuildinfo
