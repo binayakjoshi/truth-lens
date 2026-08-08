@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { createResponse } from 'src/common/utils/response-handler';
 import { Repository, EntityManager } from 'typeorm';
@@ -20,15 +20,44 @@ export class UserStatsService {
   ) {}
 
   async getUserStat(userId: string) {
-    const userStat = await this.userStatRepo.findOne({
+    let userStat = await this.userStatRepo.findOne({
       where: {
         userId,
       },
     });
-    if (!userStat)
-      throw new NotFoundException('Coud not find stats for the current user');
+    if (!userStat) {
+      userStat = await this.createBackfilledForUser(userId);
+    }
 
     return createResponse(200, 'user stats retrieved sucessfully', userStat);
+  }
+
+  private async createBackfilledForUser(userId: string): Promise<UserStat> {
+    const rows: UserStat[] = await this.userStatRepo.query(
+      `
+      INSERT INTO "userStats"
+        ("id", "userId", "totalCount", "fakeCount", "realCount", "uncertainCount", "avgManupulationScore", "createdAt", "updatedAt")
+      SELECT
+        uuid_generate_v4(),
+        a."userId",
+        COUNT(*)::int,
+        COUNT(*) FILTER (WHERE a.classification = 'fake')::int,
+        COUNT(*) FILTER (WHERE a.classification = 'real')::int,
+        COUNT(*) FILTER (WHERE a.classification = 'uncertain')::int,
+        COALESCE(ROUND(AVG(a."fakeConfidence")::numeric, 4), 0),
+        now(),
+        now()
+      FROM "analysisHistories" a
+      WHERE a."userId" = $1
+      GROUP BY a."userId"
+      RETURNING *
+      `,
+      [userId],
+    );
+
+    if (rows.length) return rows[0];
+
+    return this.createForUser(userId);
   }
   async createForUser(
     userId: string,
@@ -71,6 +100,7 @@ export class UserStatsService {
   ): Promise<void> {
     if (!records.length) return;
 
+    const totalDelta = records.length;
     const fakeCount = records.filter((r) => r.classification === 'fake').length;
     const realCount = records.filter((r) => r.classification === 'real').length;
     const uncertainCount = records.filter(
@@ -81,21 +111,15 @@ export class UserStatsService {
       0,
     );
 
-    const repo = manager ? manager.getRepository(UserStat) : this.userStatRepo;
-    await repo
-      .createQueryBuilder()
-      .update(UserStat)
-      .set({
-        totalCount: () => `"totalCount" + ${records.length}`,
-        fakeCount: () => `"fakeCount" + ${fakeCount}`,
-        realCount: () => `"realCount" + ${realCount}`,
-        uncertainCount: () => `"uncertainCount" + ${uncertainCount}`,
-        avgManupulationScore: () =>
-          `ROUND(((COALESCE("avgManupulationScore", 0) * "totalCount") + :sumFakeConfidence) / ("totalCount" + ${records.length}), 4)`,
-      })
-      .where('"userId" = :userId', { userId })
-      .setParameter('sumFakeConfidence', sumFakeConfidence)
-      .execute();
+    await this.applyUpsert(
+      userId,
+      totalDelta,
+      fakeCount,
+      realCount,
+      uncertainCount,
+      sumFakeConfidence,
+      manager,
+    );
   }
 
   private async applyIncrement(
@@ -106,20 +130,57 @@ export class UserStatsService {
     fakeConfidence: number,
     manager?: EntityManager,
   ): Promise<void> {
-    const repo = manager ? manager.getRepository(UserStat) : this.userStatRepo;
-    await repo
-      .createQueryBuilder()
-      .update(UserStat)
-      .set({
-        totalCount: () => '"totalCount" + 1',
-        fakeCount: () => `"fakeCount" + ${fakeDelta}`,
-        realCount: () => `"realCount" + ${realDelta}`,
-        uncertainCount: () => `"uncertainCount" + ${uncertainDelta}`,
-        avgManupulationScore: () =>
-          'ROUND(((COALESCE("avgManupulationScore", 0) * "totalCount") + :fakeConfidence) / ("totalCount" + 1), 4)',
-      })
-      .where('"userId" = :userId', { userId })
-      .setParameter('fakeConfidence', fakeConfidence)
-      .execute();
+    await this.applyUpsert(
+      userId,
+      1,
+      fakeDelta,
+      realDelta,
+      uncertainDelta,
+      fakeConfidence,
+      manager,
+    );
+  }
+
+  private async applyUpsert(
+    userId: string,
+    totalDelta: number,
+    fakeDelta: number,
+    realDelta: number,
+    uncertainDelta: number,
+    sumFakeConfidence: number,
+    manager?: EntityManager,
+  ): Promise<void> {
+    const queryRunner = manager ? manager.queryRunner : undefined;
+    const query = `
+      INSERT INTO "userStats"
+        ("userId", "totalCount", "fakeCount", "realCount", "uncertainCount", "avgManupulationScore", "createdAt", "updatedAt")
+      VALUES ($1, $2, $3, $4, $5, $6, now(), now())
+      ON CONFLICT ("userId") DO UPDATE SET
+        "totalCount" = "userStats"."totalCount" + EXCLUDED."totalCount",
+        "fakeCount" = "userStats"."fakeCount" + EXCLUDED."fakeCount",
+        "realCount" = "userStats"."realCount" + EXCLUDED."realCount",
+        "uncertainCount" = "userStats"."uncertainCount" + EXCLUDED."uncertainCount",
+        "avgManupulationScore" = ROUND(
+          ((COALESCE("userStats"."avgManupulationScore", 0) * "userStats"."totalCount") + EXCLUDED."avgManupulationScore") /
+          ("userStats"."totalCount" + EXCLUDED."totalCount"),
+          4
+        ),
+        "updatedAt" = now()
+    `;
+
+    const params = [
+      userId,
+      totalDelta,
+      fakeDelta,
+      realDelta,
+      uncertainDelta,
+      sumFakeConfidence,
+    ];
+
+    if (queryRunner) {
+      await queryRunner.query(query, params);
+    } else {
+      await this.userStatRepo.query(query, params);
+    }
   }
 }
