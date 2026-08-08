@@ -11,7 +11,7 @@ Usage:
     python split_dataset.py [--dry-run]
 
 The script will:
-1. Load official FF++ split files (train.json, val.json, test.json)
+1. Load official FF++ split files (ffpp_train.json, ffpp_val.json, ffpp_test.json)
 2. Match each frame's video ID to the official split
 3. Move frames to train/valid/test directories
 4. Handle DeepFakeDetection frames separately (video-level split)
@@ -38,7 +38,7 @@ def load_ffpp_splits() -> dict[str, set[tuple[str, str]]]:
     """Load official FF++ split files."""
     splits = {}
     for name in ["train", "val", "test"]:
-        path = FFPP_SPLITS_DIR / f"{name}.json"
+        path = FFPP_SPLITS_DIR / f"ffpp_{name}.json"
         with open(path) as f:
             pairs = [tuple(p) for p in json.load(f)]
         splits[name] = set(pairs)

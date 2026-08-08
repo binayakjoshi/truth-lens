@@ -5,9 +5,9 @@ Each file is a list of `[target, source]` video ID pairs.
 
 | File | Pairs | Videos |
 |------|-------|--------|
-| `train.json` | 360 | 720 |
-| `val.json`   | 70  | 140 |
-| `test.json`  | 70  | 140 |
+| `ffpp_train.json` | 360 | 720 |
+| `ffpp_val.json`   | 70  | 140 |
+| `ffpp_test.json`  | 70  | 140 |
 
 Used by `../scripts/split_dataset.py` to re-split frames at the video
 level (zero video-ID overlap between splits) instead of the original
