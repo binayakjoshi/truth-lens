@@ -12,7 +12,7 @@ export function proxy(req: NextRequest) {
     "/forgot-password",
     "reset-password",
   ];
-  const protectedRoutes = ["/history"];
+  const protectedRoutes = ["/history", "/bulk-analysis"];
   const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
 
   const isProtectedRoute = protectedRoutes.some((route) =>

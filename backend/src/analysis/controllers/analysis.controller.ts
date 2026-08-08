@@ -11,17 +11,20 @@ import {
   Post,
   Query,
   Req,
+  Res,
   UploadedFile,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { type Response } from 'express';
 import { Auth } from 'src/common/decorators/auth.decorator';
 import { RateLimit } from 'src/common/decorators/rate-limit.decorator';
 import { RateLimitGuard } from 'src/common/guards/rate-limit.guard';
 import { ExtendedRequest } from 'src/common/type';
 
+import { ExportHistoryDto } from '../dtos/export-history.dto';
 import { SearchHistoryDto } from '../dtos/search-history.dto';
 import { AnalysisService } from '../services/analysis.service';
 @Controller('analysis')
@@ -58,6 +61,30 @@ export class AnalysisController {
     return this.analysisService.analyzeWithoutSave(file);
   }
 
+  @Get('export')
+  @Auth()
+  async exportAnalysisHistories(
+    @Req() req: ExtendedRequest,
+    @Query() dto: ExportHistoryDto,
+    @Res() res: Response,
+  ) {
+    const userId = req.user.id; // adjust to however you pull userId elsewhere
+
+    const pdfBuffer = await this.analysisService.getAnalysisHistoriesForExport(
+      userId,
+      dto,
+    );
+
+    const filename = `analysis-report-${dto.startDate}-to-${dto.endDate}.pdf`;
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="${filename}"`,
+      'Content-Length': pdfBuffer.length,
+    });
+
+    res.end(pdfBuffer);
+  }
   @Get('/history')
   @Auth()
   async getUserAnalysisHistory(

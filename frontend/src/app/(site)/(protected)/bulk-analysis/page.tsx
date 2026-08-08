@@ -15,85 +15,18 @@ import {
   Divider,
   Grid,
   Paper,
+  Slider,
   Stack,
   Typography,
 } from "@mui/material";
 
 import MultiImageUpload from "@/components/custom-elements/multi-image-upload";
 import { useToast } from "@/hooks/use-toast";
-
-interface BulkResult {
-  id: string;
-  classification: "real" | "fake" | "uncertain";
-  userId?: string;
-  realConfidence: number;
-  fakeConfidence: number;
-  originalImageUrl: string;
-  heatmapImageUrl: string;
-  createdAt: string;
-}
-
-interface BulkFailure {
-  index: number;
-  message: string;
-}
-
-interface BulkData {
-  total: number;
-  succeeded: number;
-  failed: number;
-  results: BulkResult[];
-  failures: BulkFailure[];
-}
+import { formatDate, getStatusMeta } from "@/lib/analysis-report";
+import { type BulkData } from "@/types/type";
 
 const MAX_FILES = 10;
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
-function getStatusMeta(result: BulkResult) {
-  const { classification, realConfidence, fakeConfidence } = result;
-  const realPercent = Math.round(realConfidence * 1000) / 10;
-  const fakePercent = Math.round(fakeConfidence * 1000) / 10;
-
-  if (classification === "fake") {
-    return {
-      label: "Fake",
-      color: "error.main" as const,
-      isUncertain: false,
-      confidencePercent: fakePercent,
-      realPercent,
-      fakePercent,
-    };
-  }
-
-  if (classification === "uncertain") {
-    return {
-      label: "Uncertain",
-      color: "warning.main" as const,
-      isUncertain: true,
-      confidencePercent: Math.max(realPercent, fakePercent),
-      realPercent,
-      fakePercent,
-    };
-  }
-
-  return {
-    label: "Real",
-    color: "success.main" as const,
-    isUncertain: false,
-    confidencePercent: realPercent,
-    realPercent,
-    fakePercent,
-  };
-}
+const DEFAULT_HEATMAP_OPACITY = 80;
 
 const BulkAnalysisPage = () => {
   const [files, setFiles] = useState<File[]>([]);
@@ -102,6 +35,9 @@ const BulkAnalysisPage = () => {
   const [data, setData] = useState<BulkData | null>(null);
   const [submittedFilenames, setSubmittedFilenames] = useState<string[]>([]);
   const [clearTrigger, setClearTrigger] = useState(0);
+  const [heatmapOpacities, setHeatmapOpacities] = useState<
+    Record<string, number>
+  >({});
 
   const { success, error } = useToast();
 
@@ -148,6 +84,14 @@ const BulkAnalysisPage = () => {
       setClearTrigger((prev) => prev + 1);
 
       const bulkData = body.data as BulkData;
+
+      // Reset per-card heatmap opacity for the new batch of results.
+      const initialOpacities: Record<string, number> = {};
+      bulkData.results.forEach((result) => {
+        initialOpacities[result.id] = DEFAULT_HEATMAP_OPACITY;
+      });
+      setHeatmapOpacities(initialOpacities);
+
       if (bulkData.failed > 0) {
         success(
           `Analyzed ${bulkData.succeeded} of ${bulkData.total} images. ${bulkData.failed} failed.`,
@@ -160,6 +104,10 @@ const BulkAnalysisPage = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleOpacityChange = (resultId: string, value: number) => {
+    setHeatmapOpacities((prev) => ({ ...prev, [resultId]: value }));
   };
 
   return (
@@ -325,6 +273,9 @@ const BulkAnalysisPage = () => {
                     fakePercent,
                   } = getStatusMeta(result);
 
+                  const opacity =
+                    heatmapOpacities[result.id] ?? DEFAULT_HEATMAP_OPACITY;
+
                   return (
                     <Grid size={{ xs: 12, sm: 6, md: 4 }} key={result.id}>
                       <Paper
@@ -392,65 +343,78 @@ const BulkAnalysisPage = () => {
                           )}
                         </Stack>
 
-                        <Stack direction="row" spacing={1.5}>
-                          <Box sx={{ flex: 1 }}>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ display: "block", mb: 0.5 }}
+                        >
+                          Original with Heat Map Overlay
+                        </Typography>
+                        <Box
+                          sx={{
+                            position: "relative",
+                            width: "100%",
+                            aspectRatio: "1 / 1",
+                            border: "1px solid",
+                            borderColor: "divider",
+                            borderRadius: 1.5,
+                            overflow: "hidden",
+                            bgcolor: "background.paper",
+                          }}
+                        >
+                          <Image
+                            src={`http://backend:5000/${result.originalImageUrl}`}
+                            alt="Original upload"
+                            fill
+                            sizes="(max-width: 900px) 100vw, 280px"
+                            style={{ objectFit: "contain" }}
+                          />
+                          <Box
+                            sx={{
+                              position: "absolute",
+                              inset: 0,
+                              opacity: opacity / 100,
+                              transition: "opacity 120ms linear",
+                              pointerEvents: "none",
+                            }}
+                          >
+                            <Image
+                              src={`${process.env.NEXT_PUBLIC_IMAGE_API_URL}/${result.heatmapImageUrl}`}
+                              alt="Heatmap overlay"
+                              fill
+                              sizes="(max-width: 900px) 100vw, 280px"
+                              style={{ objectFit: "contain" }}
+                            />
+                          </Box>
+                        </Box>
+
+                        <Stack spacing={1} sx={{ mt: 1.5 }}>
+                          <Stack
+                            direction="row"
+                            sx={{ justifyContent: "space-between" }}
+                          >
                             <Typography
                               variant="caption"
-                              color="text.secondary"
-                              sx={{ display: "block", mb: 0.5 }}
+                              sx={{ color: "text.secondary" }}
                             >
-                              Original
+                              Heatmap Opacity
                             </Typography>
-                            <Box
-                              sx={{
-                                position: "relative",
-                                width: "100%",
-                                aspectRatio: "1 / 1",
-                                border: "1px solid",
-                                borderColor: "divider",
-                                borderRadius: 1.5,
-                                overflow: "hidden",
-                                bgcolor: "background.paper",
-                              }}
-                            >
-                              <Image
-                                src={`http://backend:5000/${result.originalImageUrl}`}
-                                alt="Original upload"
-                                fill
-                                sizes="180px"
-                                style={{ objectFit: "contain" }}
-                              />
-                            </Box>
-                          </Box>
-                          <Box sx={{ flex: 1 }}>
                             <Typography
                               variant="caption"
-                              color="text.secondary"
-                              sx={{ display: "block", mb: 0.5 }}
+                              sx={{ fontWeight: 600 }}
                             >
-                              Heat Map
+                              {opacity}%
                             </Typography>
-                            <Box
-                              sx={{
-                                position: "relative",
-                                width: "100%",
-                                aspectRatio: "1 / 1",
-                                border: "1px solid",
-                                borderColor: "divider",
-                                borderRadius: 1.5,
-                                overflow: "hidden",
-                                bgcolor: "background.paper",
-                              }}
-                            >
-                              <Image
-                                src={`${process.env.NEXT_PUBLIC_IMAGE_API_URL}/${result.heatmapImageUrl}`}
-                                alt="Heatmap Overlay"
-                                fill
-                                sizes="180px"
-                                style={{ objectFit: "contain" }}
-                              />
-                            </Box>
-                          </Box>
+                          </Stack>
+                          <Slider
+                            value={opacity}
+                            onChange={(_, value) =>
+                              handleOpacityChange(result.id, value)
+                            }
+                            size="small"
+                            min={0}
+                            max={100}
+                          />
                         </Stack>
 
                         <Divider sx={{ my: 2 }} />

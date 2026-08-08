@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 
 import { Box, Container, Stack, Typography } from "@mui/material";
 
+import DownloadReportButton from "@/components/history/download-report";
 import AnalysisHistoryCard from "@/components/history/history-card";
 import HistoryPagination from "@/components/history/pagination";
 import SortToggle from "@/components/history/sort-toggle";
@@ -101,6 +102,7 @@ export default async function HistoryPage({ searchParams }: HistoryPageProps) {
           </Box>
 
           <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
+            <DownloadReportButton />
             {history && (
               <Typography
                 variant="body2"
