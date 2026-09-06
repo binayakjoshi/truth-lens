@@ -101,13 +101,6 @@ const UserMenu = ({ firstName, lastName }: UserMenuProps) => {
           },
         }}
       >
-        <MenuItem onClick={handleProfileClick}>
-          <ListItemIcon>
-            <PersonIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Profile</ListItemText>
-        </MenuItem>
-        <Divider />
         <MenuItem onClick={handleLogoutClick}>
           <ListItemIcon>
             <LogoutIcon fontSize="small" color="error" />

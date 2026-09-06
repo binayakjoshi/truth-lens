@@ -1,9 +1,9 @@
+name: truth-lens
 services:
   frontend:
     build:
       context: ./frontend
       target: development
-    container_name: frontend
     volumes:
       - ./frontend:/usr/src/app
       - frontend_node_modules:/usr/src/app/node_modules
@@ -19,7 +19,6 @@ services:
     build:
       context: ./backend
       target: development
-    container_name: backend
     volumes:
       - ./backend:/usr/src/app
       - backend_node_modules:/usr/src/app/node_modules
@@ -41,7 +40,6 @@ services:
         preprocessing: ./ml-model/preprocessing
       dockerfile: Dockerfile
       target: development
-    container_name: ml-model
     volumes:
       - ./ml-model/inference/src:/usr/src/app/src
       - ./ml-model/preprocessing/src:/usr/src/preprocessing/src
@@ -55,8 +53,7 @@ services:
     command: uv run uvicorn truthlens.api.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir /usr/src/app/src --reload-dir /usr/src/preprocessing/src
 
   db:
-    image: postgres:15-alpine
-    container_name: db
+    image: docker.io/library/postgres:15-alpine
     env_file:
       - ./backend/.env
     ports:
@@ -70,8 +67,7 @@ services:
       retries: 10
 
   redis:
-    image: redis:8-alpine
-    container_name: redis
+    image: docker.io/library/redis:8-alpine
     ports:
       - "6379:6379"
     volumes:
