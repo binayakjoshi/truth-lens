@@ -4,14 +4,12 @@ import { useState, type MouseEvent } from "react";
 import { useRouter } from "next/navigation";
 
 import LogoutIcon from "@mui/icons-material/Logout";
-import PersonIcon from "@mui/icons-material/Person";
 import {
   Avatar,
   Menu,
   MenuItem,
   ListItemIcon,
   ListItemText,
-  Divider,
   IconButton,
 } from "@mui/material";
 
@@ -46,11 +44,6 @@ const UserMenu = ({ firstName, lastName }: UserMenuProps) => {
 
   const handleMenuClose = () => {
     setAnchorEl(null);
-  };
-
-  const handleProfileClick = () => {
-    handleMenuClose();
-    router.push("/profile"); // empty/placeholder route for now
   };
 
   const handleLogoutClick = () => {
@@ -101,13 +94,6 @@ const UserMenu = ({ firstName, lastName }: UserMenuProps) => {
           },
         }}
       >
-        <MenuItem onClick={handleProfileClick}>
-          <ListItemIcon>
-            <PersonIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Profile</ListItemText>
-        </MenuItem>
-        <Divider />
         <MenuItem onClick={handleLogoutClick}>
           <ListItemIcon>
             <LogoutIcon fontSize="small" color="error" />

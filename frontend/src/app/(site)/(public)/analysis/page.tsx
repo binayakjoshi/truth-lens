@@ -59,7 +59,7 @@ const AnalysisPage = () => {
       const body = await res.json();
 
       if (!res.ok) {
-        if (res.status === 422) {
+        if (res.status === 429 || res.status === 422) {
           error(body.message);
           return;
         }
